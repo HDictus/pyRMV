@@ -1,0 +1,2 @@
+class CellDensity:
+    pass
