@@ -1,7 +1,7 @@
-from attrs import define
+from dataclasses import dataclass
 
 
-@define
+@dataclass
 class PvalueThreshold:
 
     threshold: float = 0.05
