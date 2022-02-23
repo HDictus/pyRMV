@@ -14,6 +14,5 @@ class CellDensity:
         """
         measure the cell density of a model under given parameters
         """
-        print(model)
-        return {terms.CELL_DENSITY:
-                model.num_cells(parameters) / model.region_volume(parameters)}
+
+        return {terms.CELL_DENSITY: model.cell_density(parameters)}

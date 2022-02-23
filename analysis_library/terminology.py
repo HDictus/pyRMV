@@ -1,6 +1,6 @@
 # strings for now
+from analysis_core import LABEL
 
-LABEL = "Dataset label"
 SPECIES = "Species"
 CITATION = "citation"
 REGION = "Region"
