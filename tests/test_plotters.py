@@ -48,3 +48,20 @@ def test_barplot_multiple_ind():
     assert ax.get_xlabel() == 'a, c'
     assert [l.get_text() for l in ax.get_xticklabels()] ==\
         ['1, 0', '2, 0', '1, 1', '2, 1']
+
+def test_barplot_excludes_nonvarying_independent():
+    data = pd.DataFrame({'a': [1, 1, 1, 1],
+                         'b': [1, 2, 1, 2],
+                         'c': [1, 2, 3, 4],
+                         'd': [3, 4, 5, 6],
+                         'e': [2, 3, 2, 3]})
+    plot = BarPlot()(
+        data=data,
+        independent=['a', 'c', 'e'],
+        dependent=['d'],
+        compare=['b'])
+
+    ax = plot.gca()
+    assert ax.get_xlabel() == 'c'
+    assert [l.get_text() for l in ax.get_xticklabels()] ==\
+        ['1', '2', '3', '4']

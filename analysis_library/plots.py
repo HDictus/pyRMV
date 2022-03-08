@@ -8,12 +8,36 @@ import seaborn as sns
 
 class BarPlot:
 
+    # TODO: wait, wtf are we passing compare as None, again?
     def __call__(self, data, independent, dependent, compare=(None, )):
-        f = _bar_plot(data, independent, dependent, hue=compare[0])
+        xcolumns, constants, compare_owned = _varying_independent_only(
+            data, independent, compare[0])
+        print(xcolumns)
+        f = _bar_plot(data, xcolumns, dependent, hue=compare[0])
         return f
 
 
+# TODO: what to do if nothing varies? i.e. comparing just one value
+# TODO: ensure this supports mutliple ind/compare
+def _varying_independent_only(data, independent, compare):
+    """TODO: mention the tidy data paper in this docsting"""
+    if compare is not None:
+        varied = []
+        for d, group in data.groupby(compare):
+            varied_within, constant, _ = _varying_independent_only(
+                group, independent, None)
+            for col in varied_within:
+                if col not in varied:
+                    varied.append(col)
+        return varied, [], []
+
+    print([(c, len(data[c].unique())) for c in independent])
+    varied = [c for c in independent if len(data[c].unique()) > 1]
+    constant = [c for c in independent if c not in varied]
+    return varied, constant, []
+
 def _bar_plot(measurements, independent, dependent, ax=None, hue=None):
+
     independent_label = ", ".join(independent)
     measurements = measurements.assign(
         **{independent_label:
