@@ -13,7 +13,7 @@ class BarPlot:
         xcolumns, constants, compare_owned = _varying_independent_only(
             data, independent, compare)
         print(xcolumns)
-        f = _bar_plot(data, xcolumns, dependent, hue=compare[0])
+        f = _bar_plot(data, xcolumns, dependent, hue=compare)
         return f
 
 
@@ -23,7 +23,6 @@ class BarPlot:
 def _varying_independent_only(data, independent, compare):
     """TODO: mention the tidy data paper in this docsting"""
     if compare is not None:
-        compare=compare[0] # TODO: this is dumb LOL, should have function which groups compared into one column
         varied = []
         for d, group in data.groupby(compare):
             varied_within, constant, _ = _varying_independent_only(
@@ -33,7 +32,6 @@ def _varying_independent_only(data, independent, compare):
                     varied.append(col)
         return varied, [], []
 
-    print([(c, len(data[c].unique())) for c in independent])
     varied = [c for c in independent if len(data[c].unique()) > 1]
     constant = [c for c in independent if c not in varied]
     return varied, constant, []
@@ -58,7 +56,7 @@ def _bar_plot(measurements, independent, dependent, ax=None, hue=None):
     #     self.independent)
     # ax = measurements.plot(kind='bar', y=self.dependent)# , color='dataset')
     axes = sns.barplot(data=measurements,
-                       x=independent_label, y=dependent[0],
+                       x=independent_label, y=dependent,
                        hue=hue, ax=ax)
 
     # TODO: multiple dependents on a single plot is awkward...

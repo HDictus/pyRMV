@@ -16,7 +16,7 @@ def test_barplot_single_dataset():
     outd = BarPlot()(
         data=data,
         independent=['a'],
-        dependent=['b'])
+        dependent='b')
     fig = outd
     ax = fig.gca()
     assert ax.get_xlabel() == 'a'
@@ -30,8 +30,8 @@ def test_barplot_compare_datasets():
     outd = BarPlot()(
         data=data,
         independent=['a'],
-        dependent=['b'],
-        compare=['c'])
+        dependent='b',
+        compare='c')
     ax = outd.gca()
     print(list(ax.get_xticklabels())[0].get_text())
     assert [l.get_text() for l in ax.get_xticklabels()] == ['1', '2']
@@ -43,7 +43,7 @@ def test_barplot_multiple_ind():
     outd = BarPlot()(
         data=data,
         independent=['a', 'c'],
-        dependent=['b'])
+        dependent='b')
     ax = outd.gca()
     assert ax.get_xlabel() == 'a, c'
     assert [l.get_text() for l in ax.get_xticklabels()] ==\
@@ -53,13 +53,13 @@ def test_barplot_excludes_nonvarying_independent():
     data = pd.DataFrame({'a': [1, 1, 1, 1],
                          'b': [1, 2, 1, 2],
                          'c': [1, 2, 3, 4],
-                         'd': [3, 4, 5, 6],
+                         'dd': [3, 4, 5, 6],
                          'e': [2, 3, 2, 3]})
     plot = BarPlot()(
         data=data,
         independent=['a', 'c', 'e'],
-        dependent=['d'],
-        compare=['b'])
+        dependent='dd',
+        compare='b')
 
     ax = plot.gca()
     assert ax.get_xlabel() == 'c'
