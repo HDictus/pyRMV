@@ -1,12 +1,11 @@
 # strings for now
-from analysis_core import LABEL
+from analysis_core.terminology import (
+    LABEL, Term, CITATION, SAMPLE_SIZE, MIN, MAX)
 
-SPECIES = "Species"
-CITATION = "citation"
-REGION = "Region"
-MEAN = "mean "
-STD = "std "
-LAYER = "Layer"
-CELL_DENSITY = "Cell Density ($cells/cm^{3}$)"
-SAMPLE_SIZE = "sample size"
-AGE = "age"
+
+SPECIES = Term("Species")
+REGION = Term("Region")
+LAYER = Term("Layer")
+CELL_DENSITY = Term("Cell Density ($cells/cm^{3}$)")
+AGE = Term("age")
+SYN_CLASS = Term("Synapse class")

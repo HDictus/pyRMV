@@ -1,4 +1,5 @@
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 
@@ -10,10 +11,10 @@ class BarPlot:
 
     # TODO: wait, wtf are we passing compare as None, again?
     def __call__(self, data, independent, dependent, compare=None):
+        f, ax = plt.subplots()
         xcolumns, constants, compare_owned = _varying_independent_only(
             data, independent, compare)
-        print(xcolumns)
-        f = _bar_plot(data, xcolumns, dependent, hue=compare)
+        f = _bar_plot(data, xcolumns, dependent, hue=compare, ax=ax)
         return f
 
 
@@ -38,12 +39,8 @@ def _varying_independent_only(data, independent, compare):
 
 
 def _bar_plot(measurements, independent, dependent, ax=None, hue=None):
-
-    independent_label = ", ".join(independent)
-    measurements = measurements.assign(
-        **{independent_label:
-           [", ".join([str(v) for v in row.values])
-            for i, row in measurements[independent].iterrows()]})
+    measurements, independent_label = _concatenate_independent(
+        measurements, independent)
     # TODO: this should not be necessary
     # TODO: these difficulties imply writing a plotter under the current
     # system is too complicated.
@@ -64,3 +61,38 @@ def _bar_plot(measurements, independent, dependent, ax=None, hue=None):
     #  dependent in the analysis...
     fig = axes.get_figure()
     return fig
+
+
+class LinePlot:
+
+    # TODO: wait, wtf are we passing compare as None, again?
+    def __call__(self, data, independent, dependent, compare=None):
+        f, ax = plt.subplots()
+        xcolumns, constants, compare_owned = _varying_independent_only(
+            data, independent, compare)
+        f = _line_plot(data, x=xcolumns, y=dependent, hue=compare, ax=ax)
+        return f
+
+
+def _line_plot(data, x, y, hue=None, ax=None):
+    data, x = _concatenate_independent(data, x)
+    axes = sns.lineplot(data=data,
+                        x=x, y=y, hue=hue, ax=ax)
+    fig = axes.get_figure()
+    return fig
+
+
+def _concatenate_independent(measurements, independent):
+    independent_label = ", ".join(independent)
+
+    if isinstance(independent, list):
+        if len(independent) == 1:
+            return measurements, independent[0]
+    else:
+        return measurements, independent
+
+    measurements = measurements.assign(
+        **{independent_label:
+           [", ".join([str(v) for v in row.values])
+            for i, row in measurements[independent].iterrows()]})
+    return measurements, independent_label
