@@ -1,6 +1,8 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# TODO: initial keyword arguments for BarPlot like hue_by, shade_by, style_by,\
+#       subplots_by, plots_by
 
 
 # TODO: should probably act on an axis by default: s.t. plots_by, subplots_by
@@ -70,14 +72,13 @@ class LinePlot:
         f, ax = plt.subplots()
         xcolumns, constants, compare_owned = _varying_independent_only(
             data, independent, compare)
-        f = _line_plot(data, x=xcolumns, y=dependent, hue=compare, ax=ax)
+        f = _line_plot(data, x=xcolumns[0], y=dependent, hue=compare, ax=ax)
         return f
 
 
 def _line_plot(data, x, y, hue=None, ax=None):
-    data, x = _concatenate_independent(data, x)
-    axes = sns.lineplot(data=data,
-                        x=x, y=y, hue=hue, ax=ax)
+    # data, x = _concatenate_independent(data, x)
+    axes = sns.lineplot(data=data, x=x, y=y, hue=hue, ax=ax)
     fig = axes.get_figure()
     return fig
 
