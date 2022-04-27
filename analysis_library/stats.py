@@ -24,13 +24,21 @@ class TTest:
         groups = data.groupby(independent)
         for value1 in comparevalues:
             for value2 in comparevalues:
+                if value1 == value2:
+                    continue
+                results = []
                 for group, dataframe in groups:
                     v1 = dataframe[dataframe[compare] == value1][dependent]
                     v2 = dataframe[dataframe[compare] == value2][dependent]
+                    if len(independent) == 1:
+                        params = {independent[0]: group}
+                    else:
+                        params = {key: value for key, value in zip(independent, group)}
                     test_result = dict(
-                        **{terms.PVALUE: ttest_ind(v1, v2, equal_var=False)},
-                        **{key: value for key, value in zip(independent, group)})
+                        **{terms.PVALUE: ttest_ind(v1, v2, equal_var=False).pvalue},
+                        **params)
+                    results.append(test_result)
 
-                    out[f"the mean {dependent} of {value1} is equal to the mean of {dependent} of {value2}"] = test_result
+                out[f"the mean {dependent} of {value1} is equal to the mean of {dependent} of {value2}"] = results
 
         return out
