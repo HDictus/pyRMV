@@ -7,7 +7,7 @@ with open('README.rst', encoding='utf-8') as f:
     README = f.read()
 
 setup(
-    name="analysis-library",
+    name="analysis-neuro",
     author="bbp",
     version=VERSION,
     long_description=README,
