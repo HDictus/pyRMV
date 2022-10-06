@@ -22,7 +22,10 @@ def test_extracts_parameters_from_observations():
             'measured thing': [100, 200, 300, 400, 500],
             terms.DATASET: 'blabla',
             'a param': ['a', 'b', 'c', 'd', 'e'],
-            'nother param': ['z', 'z', 'x', 'x', 'y']}))
+            'nother param': ['z', 'z', 'x', 'x', 'y'],
+            terms.CITATION: 'someone_something_someyear',
+            terms.NOTES: 'yeah just whatever basically'
+        }))
     pd.testing.assert_frame_equal(
         ana.parameters,
         pd.DataFrame({

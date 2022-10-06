@@ -1,4 +1,4 @@
-,dataset,species,citation,region,whatever metadata,Cell Density ($cells/mm^{3}$),sample size,std Cell Density ($cells/mm^{3}$),layer
+dataset,species,citation,region,whatever metadata,cell density ($cells/mm^3$),sample size,std cell density ($cells/mm^3$),layer
 Keller?2018,mouse,TODO: ,SSp-ll,blah blah blah,18309.2,6,1910,L1
 Keller?2018,mouse,TODO: ,SSp-ll,blah blah blah,141754.0,6,8136,L2
 Keller?2018,mouse,TODO: ,SSp-ll,blah blah blah,73430.0,6,6822,L3

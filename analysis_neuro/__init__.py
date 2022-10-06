@@ -1,7 +1,8 @@
 from . import terminology as terms
 import pandas as pd
 
-measurements = {terms.CELL_DENSITY: {'method name': 'cell_density'}}
+measurements = {terms.CELL_DENSITY: {'method name': 'cell_density'},
+                terms.CELL_COUNT: {'method name': 'cell_count'}}
 
 
 def _join_columns(dataframe):
@@ -38,7 +39,8 @@ class Analysis:
     def __init__(self, measurement, observations,
                  stats=None, plotter=None, verdict=None, doc=None):
         self.measurement = measurement
-        exclude_from_parameters = [measurement, terms.DATASET]
+        exclude_from_parameters = [
+            measurement, terms.DATASET, terms.CITATION, terms.NOTES]
         self.parameters = observations[[
             col for col in observations if col not in exclude_from_parameters]]
         self.observations = observations 
@@ -71,7 +73,9 @@ class Analysis:
         measurements = pd.concat(to_concat)
         report = {
             'Introduction': self.doc,
-            'measurements': measurements}
+            'measurements': measurements,
+            'stats': 'TODO: not yet implemented',
+            'verdict': 'TODO: not yet implemented'}
         if self.plotter is not None:
             # we will need to expand on this behavior as we try to support more plotters
             # maybe by inspecting the plotter's signature?
