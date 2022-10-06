@@ -1,3 +1,5 @@
+"""Terminology used in validation."""
+
 REGION = "region"
 LAYER = "layer"
 NEURON_OR_GLIA = "neuron or glia?"

@@ -1,22 +1,24 @@
-import pandas as pd
+"""Collected analyses and validations."""
 from pathlib import Path
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from analysis_neuro import Analysis
 from analysis_neuro import terminology as terms
 from analysis_neuro import stats
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 schuz_density_1989 = Analysis(
     observations=pd.read_csv(
-        Path(__file__).parent / "data" / "schuz_neuron_density_1989.csv", index_col=0
+        Path(__file__).parent / "data" / "schuz_neuron_density_1989.csv",
+        index_col=0
     ),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.squared_error,
     doc="""
     We evaluate the similarity of the total neuron density in the primary
-    visual cortex of the model to in-vivo values by comparing to the 
+    visual cortex of the model to in-vivo values by comparing to the
     mean density observed in @schuz_density_1989.
     Because Schuz does not report the individual densities for the three
     mice used, we cannot perform a statistical test.
@@ -27,7 +29,8 @@ schuz_density_1989 = Analysis(
 
 
 keller_density_2018 = Analysis(
-    observations=pd.read_csv(Path(__file__).parent / "data" / "keller_2018.csv"),
+    observations=pd.read_csv(
+        Path(__file__).parent / "data" / "keller_2018.csv"),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.TTest(),
@@ -43,7 +46,8 @@ _collected_thalamus_data = pd.DataFrame(
         terms.CITATION: ["bertschy_internal_2021"] * 3
         + ["evangelio_thalamocortical_2018"] * 2,
         terms.NOTES: [
-            "https://bbpteam.epfl.ch/project/spaces" "/display/NEX/LNMC+Cell+density"
+            ("https://bbpteam.epfl.ch/project/spaces/"
+             "display/NEX/LNMC+Cell+density")
         ]
         * 3
         + [""] * 2,

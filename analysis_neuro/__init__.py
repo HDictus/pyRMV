@@ -1,14 +1,15 @@
-from . import terminology as terms
+"""Package for constructing analyses and validations of neuroscience models."""
 import pandas as pd
+from . import terminology as terms
 
-measurements = {
+_measurements = {
     terms.CELL_DENSITY: {"method name": "cell_density"},
     terms.CELL_COUNT: {"method name": "cell_count"},
 }
 
 
 def _join_columns(dataframe):
-    """combine the columns of dataframe into a single series"""
+    """Combine the columns of dataframe into a single series."""
     series_name = ", ".join(dataframe.columns)
     values = [" ".join(str(v) for v in row) for row in dataframe.values]
     return pd.Series(values, name=series_name)
@@ -31,13 +32,15 @@ class Analysis:
     stats (optional): a callable for statistical tests accepting :
         (measurement_data, dependent_var, independent_vars, compared_vars)
         and returning a dict of {<hypothesis description>: dataframe}
-        where the dataframe contains the test statistic for the hypotheses tested
+        where the dataframe contains the test statistic for the hypotheses
+        tested
     plotter (optional): a callable for plotting accepting:
          (measurement_data, dependent_var, independent_vars, compared_vars)
          and returning a dict of {'caption': 'figure'}
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         measurement,
@@ -47,6 +50,7 @@ class Analysis:
         verdict=None,
         doc=None,
     ):
+        """Initialize an Analysis from various components."""
         self.measurement = measurement
         exclude_from_parameters = [
             measurement,
@@ -62,16 +66,17 @@ class Analysis:
         self.stats = stats
         self.verdict = verdict
         self.doc = doc
-        return
 
     def measure(self, model):
-        method = measurements[self.measurement]["method name"]
+        """Measure the required measurements on model."""
+        method = _measurements[self.measurement]["method name"]
         measured = getattr(model, method)(self.parameters)
         measured[terms.DATASET] = model.label
         return measured
 
     @property
     def varying_parameters(self):
+        """Parameters which are not constants."""
         return [
             col
             for col in self.parameters.columns
@@ -79,9 +84,7 @@ class Analysis:
         ]
 
     def __call__(self, *models):
-        """
-        Run this analysis instance on a model
-        """
+        """Run this analysis instance on a model."""
         to_concat = [self.measure(model) for model in models]
         # if observations represents experimental values, we want to
         # include those in the dataframe
@@ -95,15 +98,15 @@ class Analysis:
             "verdict": "TODO: not yet implemented",
         }
         if self.plotter is not None:
-            # we will need to expand on this behavior as we try to support more plotters
+            # we will need to expand on this behavior as we try to support more
             # maybe by inspecting the plotter's signature?
-            # otherwise, we may need to define a different interface for plotters
-            # this will mean you can't pass seaborn functions directly, but will
-            # need to wrap them
+            # otherwise, we may need to define a different plotting interface
+            # this will mean you can't pass seaborn functions directly,
+            # instead we will need to wrap them
             dependent = measurements[self.measurement]
             independent = _join_columns(measurements[self.varying_parameters])
             compare = measurements[terms.DATASET]
-            a = self.plotter(x=independent, y=dependent, hue=compare)
-            report["figures"] = a.get_figure()
+            axis = self.plotter(x=independent, y=dependent, hue=compare)
+            report["figures"] = axis.get_figure()
 
         return report
