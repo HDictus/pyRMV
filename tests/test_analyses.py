@@ -27,3 +27,4 @@ def test_schuz_density_1989():
         == [1000, 2000, 3000, 4000]
     )
     assert report["figures"]
+    assert report["stats"]

@@ -1,9 +1,9 @@
 import pandas as pd
 from mock import MagicMock
 
-from analysis_neuro import Analysis, measurements, terms
+from analysis_neuro import Analysis, _measurements, terms
 
-measurements["measured thing"] = {"method name": "thing"}
+_measurements["measured thing"] = {"method name": "thing"}
 
 
 class MockModel:
@@ -156,5 +156,30 @@ def test_plots_with_multiple_params():
     )
 
 
+def test_runs_statistical_tests():
+    mockresults = MagicMock()
+    mockstats = MagicMock(return_value=mockresults)
+    
+    observations = pd.DataFrame(
+        {
+            "measured thing": [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "layer": ["L1", "L23", "L4", "L5", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+        }
+    )
+
+    ana = Analysis(observations=observations,
+                   measurement='measured thing',
+                   stats=mockstats)
+    
+    results = ana(MockModel(4))
+    assert results['stats'] == mockresults
+    mockstats.assert_called_with(
+        results['measurements'],
+        dependent='measured thing',
+        independent=['layer', 'mtype'],
+        compare=terms.DATASET)
+        
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
