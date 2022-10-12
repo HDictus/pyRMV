@@ -124,6 +124,17 @@ class Analysis:
             if len(self.parameters[col].unique()) > 1
         ]
 
+    def statistical_tests(self, measurements):
+        """
+        Run the statistical tests for this analysis on some data
+        """
+        if self.stats is None:
+            return "No statistical tests performed"
+        return self.stats(measurements,
+                          dependent=self.measurement,
+                          independent=self.varying_parameters,
+                          compare=terms.DATASET)
+    
     def __call__(self, *models):
         """Run this analysis instance on a model."""
         to_concat = [self.measure(model) for model in models]
@@ -135,7 +146,7 @@ class Analysis:
         report = {
             "Introduction": self.doc,
             "measurements": measurements,
-            "stats": "TODO: not yet implemented",
+            "stats": self.statistical_tests(measurements),
             "verdict": "TODO: not yet implemented",
         }
         if self.plotter is not None:

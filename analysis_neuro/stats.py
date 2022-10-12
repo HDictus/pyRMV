@@ -1,9 +1,36 @@
-"""TODO."""
+"""Tools for statistical hypothesis testing"""
+from analysis_neuro import terminology as terms
 
 
 def squared_error(data, dependent, independent, compare):
-    """TODO."""
-    return
+    """
+    Compute the squared error between groups in data.
+
+    Hypothesis:
+       the compared values are similar between groups
+
+    Metrics:
+       squared error
+    """
+    datasets = data.groupby(compare)
+    hypotheses = {}
+    already_compared = set()
+    
+    def by_ind(dataset):
+        return dataset.set_index(independent)[dependent]
+    
+    for label1, dataset1 in datasets:
+        for label2, dataset2 in datasets:
+            if (label2, label1) in already_compared:
+                continue
+            if label1 == label2:
+                continue
+            already_compared.add((label1, label2))
+            hypothesis = (f"{dependent} is similar for {compare}"
+                          f" {label1} and {label2}")
+            sqerr = (by_ind(dataset1) - by_ind(dataset2))**2
+            hypotheses[hypothesis] = sqerr.rename(terms.SQERROR).reset_index()
+    return hypotheses
 
 
 class TTest:
@@ -16,7 +43,7 @@ class TTest:
     Hypothesis:
         The true mean of the compared populations is equal
 
-    Returns:
+    Metrics:
         T-statistic, P-value
     """
 

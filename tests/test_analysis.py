@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest as pyt
 from mock import MagicMock
-
 from analysis_neuro import Analysis, terms
 
 terms.measurements["measured thing"] = {"method name": "thing"}
@@ -157,6 +156,7 @@ def test_plots_with_multiple_params():
     )
 
 
+
 def test_invalid_observation_supplied():
     observations = 1234
     with pyt.raises(ValueError) as ve:
@@ -176,6 +176,33 @@ def test_plotter_stats_verdict_signatures():
             ana = Analysis(measurement='', observations=pd.DataFrame({}),
                            **{kw: invalid_things[1]})
         assert "must be a callable of the form:" in str(ve.value)
+
+
+def test_runs_statistical_tests():
+    mockresults = MagicMock()
+    mockstats = MagicMock(return_value=mockresults)
+    
+    observations = pd.DataFrame(
+        {
+            "measured thing": [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "layer": ["L1", "L23", "L4", "L5", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+        }
+    )
+
+    ana = Analysis(observations=observations,
+                   measurement='measured thing',
+                   stats=mockstats)
+    
+    results = ana(MockModel(4))
+    assert results['stats'] == mockresults
+    mockstats.assert_called_with(
+        results['measurements'],
+        dependent='measured thing',
+        independent=['layer', 'mtype'],
+        compare=terms.DATASET)
+        
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
