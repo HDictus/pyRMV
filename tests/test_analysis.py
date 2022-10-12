@@ -202,7 +202,6 @@ def test_runs_statistical_tests():
         dependent='measured thing',
         independent=['layer', 'mtype'],
         compare=terms.DATASET)
-        
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
