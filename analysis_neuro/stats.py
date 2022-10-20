@@ -1,5 +1,6 @@
 """TODO"""
 
+
 def squared_error(data, dependent, independent, compare):
     return
 

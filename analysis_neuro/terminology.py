@@ -10,3 +10,9 @@ DATASET = "dataset"
 CITATION = "citation"
 NOTES = "notes"
 HEMISPHERE = "hemisphere"
+
+
+measurements = {
+    CELL_DENSITY: {"method name": "cell_density"},
+    CELL_COUNT: {"method name": "cell_count"},
+}

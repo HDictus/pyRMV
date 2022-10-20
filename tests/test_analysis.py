@@ -1,9 +1,9 @@
 import pandas as pd
 from mock import MagicMock
 
-from analysis_neuro import Analysis, measurements, terms
+from analysis_neuro import Analysis, terms
 
-measurements["measured thing"] = {"method name": "thing"}
+terms.measurements["measured thing"] = {"method name": "thing"}
 
 
 class MockModel:

@@ -9,13 +9,6 @@ from analysis_neuro import stats
 
 
 schuz_density_1989 = Analysis(
-    observations=pd.read_csv(
-        Path(__file__).parent / "data" / "schuz_neuron_density_1989.csv",
-        index_col=0
-    ),
-    measurement=terms.CELL_DENSITY,
-    plotter=sns.barplot,
-    stats=stats.squared_error,
     doc="""
     We evaluate the similarity of the total neuron density in the primary
     visual cortex of the model to in-vivo values by comparing to the
@@ -25,12 +18,17 @@ schuz_density_1989 = Analysis(
     So instead we use a mean squared error to quantify the mismatch.
     We cannot render a verdict on the result, only assign a score.
     """,
+    observations=pd.read_csv(
+        Path(__file__).parent / "data" / "schuz_neuron_density_1989.csv", index_col=0
+    ),
+    measurement=terms.CELL_DENSITY,
+    plotter=sns.barplot,
+    stats=stats.squared_error,
 )
 
 
 keller_density_2018 = Analysis(
-    observations=pd.read_csv(
-        Path(__file__).parent / "data" / "keller_2018.csv"),
+    observations=pd.read_csv(Path(__file__).parent / "data" / "keller_2018.csv"),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.TTest(),
@@ -46,22 +44,27 @@ _collected_thalamus_data = pd.DataFrame(
         terms.CITATION: ["bertschy_internal_2021"] * 3
         + ["evangelio_thalamocortical_2018"] * 2,
         terms.NOTES: [
-            ("https://bbpteam.epfl.ch/project/spaces/"
-             "display/NEX/LNMC+Cell+density")
+            ("https://bbpteam.epfl.ch/project/spaces/display/NEX/LNMC+Cell+density")
         ]
         * 3
         + [""] * 2,
-        terms.DATASET: ["Bertschy2021"] * 3 + ["Evangelio2018"] * 2,
+        terms.DATASET: ["experiment"] * 3 + ["experiment"] * 2,
     }
 )
 
 thalamic_nuclei_cell_counts = Analysis(
-    observations=_collected_thalamus_data,
-    measurement=terms.CELL_COUNT,
-    plotter=sns.barplot,
-    stats=stats.squared_error,
     doc="""
     We compare the total cell counts in the thalamus model(s) to various data
     collected from the literature and in internal projects
     """,
+    observations=_collected_thalamus_data,
+    measurement=terms.CELL_COUNT,
+    plotter=sns.barplot,
+    stats=stats.squared_error,
 )
+
+
+for varname in dir():
+    value = eval(varname)
+    if isinstance(value, Analysis):
+        value.__name__ = varname

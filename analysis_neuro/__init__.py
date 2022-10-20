@@ -2,10 +2,7 @@
 import pandas as pd
 from . import terminology as terms
 
-_measurements = {
-    terms.CELL_DENSITY: {"method name": "cell_density"},
-    terms.CELL_COUNT: {"method name": "cell_count"},
-}
+DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES]
 
 
 def _join_columns(dataframe):
@@ -52,12 +49,7 @@ class Analysis:
     ):
         """Initialize an Analysis from various components."""
         self.measurement = measurement
-        exclude_from_parameters = [
-            measurement,
-            terms.DATASET,
-            terms.CITATION,
-            terms.NOTES,
-        ]
+        exclude_from_parameters = [measurement] + DATA_TERMS
         self.parameters = observations[
             [col for col in observations if col not in exclude_from_parameters]
         ]
@@ -69,7 +61,7 @@ class Analysis:
 
     def measure(self, model):
         """Measure the required measurements on model."""
-        method = _measurements[self.measurement]["method name"]
+        method = terms.measurements[self.measurement]["method name"]
         measured = getattr(model, method)(self.parameters)
         measured[terms.DATASET] = model.label
         return measured
@@ -110,3 +102,19 @@ class Analysis:
             report["figures"] = axis.get_figure()
 
         return report
+
+    def with_fields(self, **fields):
+        """
+        Duplicate this analysis, overwriting some fields.
+        """
+        current_fields = dict(
+            measurement=self.measurement,
+            observations=self.observations,
+            plotter=self.plotter,
+            stats=self.stats,
+            verdict=self.verdict,
+            doc=self.doc,
+        )
+        for key, value in fields.items():
+            current_fields[key] = value
+        return self.__class__(**current_fields)
