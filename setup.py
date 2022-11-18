@@ -15,6 +15,12 @@ setup(
     description="collection of analyses and validations for neuroscience",
     license="MIT",
     python_requires='>=3.6',
+    install_requires=[
+        'numpy',
+        'pandas',
+        'seaborn'
+    ],
+
     packages=find_packages(),
     classifiers=[
         'Development Status :: Pre-Alpha',
