@@ -38,5 +38,6 @@ def assert_results_equal(new_result, stored_result):
             if val.endswith(".png"):
                 _assert_figure_equal(new_result[k], val)
                 continue
+        # noqa
         assert type(val) == type(new_result[k])
         assert val == new_result[k], f"{val} != {new_result[k]}"
