@@ -65,6 +65,7 @@ thalamic_nuclei_cell_counts = Analysis(
 
 
 for varname in dir():
+    # pylint: disable=eval-used
     value = eval(varname)
     if isinstance(value, Analysis):
         value.__name__ = varname
