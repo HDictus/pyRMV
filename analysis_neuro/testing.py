@@ -24,7 +24,7 @@ def _assert_figure_equal(new, old_path):
 
 
 def assert_results_equal(new_result, stored_result):
-    """assert that some result dict is equal to a stored one"""
+    """Assert that some result dict is equal to a stored one."""
     print(new_result, stored_result)
     assert set(new_result.keys()) == set(stored_result.keys())
     for k, val in stored_result.items():

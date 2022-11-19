@@ -13,8 +13,7 @@ def _join_columns(dataframe):
 
 
 class Analysis:
-    """
-    An object for defining analyses.
+    """An object for defining analyses.
 
     Analysis is NOT a base class, instead it uses callables provided as
     arguments to compose a specific *instance* of an analysis.
@@ -104,9 +103,7 @@ class Analysis:
         return report
 
     def with_fields(self, **fields):
-        """
-        Duplicate this analysis, overwriting some fields.
-        """
+        """Duplicate this analysis, overwriting some fields."""
         current_fields = dict(
             measurement=self.measurement,
             observations=self.observations,
