@@ -22,6 +22,7 @@ def _assert_figure_equal(new, old_path):
             shutil.copy(newfile, savedpath / "new.png")
             raise AssertionError(f"plots are not the same, see: {savedpath}")
 
+
 # pylint: disable=C0123
 def assert_results_equal(new_result, stored_result):
     """Assert that some result dict is equal to a stored one."""
