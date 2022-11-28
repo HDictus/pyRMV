@@ -1,4 +1,7 @@
 """Package for constructing analyses and validations of neuroscience models."""
+import inspect
+from collections.abc import Callable
+from pathlib import Path
 import pandas as pd
 from . import terminology as terms
 
@@ -10,6 +13,25 @@ def _join_columns(dataframe):
     series_name = ", ".join(dataframe.columns)
     values = [" ".join(str(v) for v in row) for row in dataframe.values]
     return pd.Series(values, name=series_name)
+
+
+def _check_callable(obj, args):
+    """Check that obj is a callable which takes args."""
+    if obj is None:
+        # no object was actually provided to Analysis constructor
+        # ignore it
+        return True
+    if not isinstance(obj, Callable):
+        return False
+    params = inspect.signature(obj).parameters
+    for param in params.values():
+        if param.kind == inspect.Parameter.VAR_KEYWORD:
+            return True
+    for arg in args:
+        if arg not in params:
+            print(arg, params)
+            return False
+    return True
 
 
 class Analysis:
@@ -26,13 +48,12 @@ class Analysis:
     observations: parameters or parameterized experimental data to use
        for the measurements.
     stats (optional): a callable for statistical tests accepting :
-        (measurement_data, dependent_var, independent_vars, compared_vars)
+        (measurement_data, dependent, independent, compare)
         and returning a dict of {<hypothesis description>: dataframe}
         where the dataframe contains the test statistic for the hypotheses
         tested
-    plotter (optional): a callable for plotting accepting:
-         (measurement_data, dependent_var, independent_vars, compared_vars)
-         and returning a dict of {'caption': 'figure'}
+    plotter (optional): a callable for plotting following the seaborn convention
+         accepting x, y, and hue and returning a figure
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
@@ -49,12 +70,40 @@ class Analysis:
         """Initialize an Analysis from various components."""
         self.measurement = measurement
         exclude_from_parameters = [measurement] + DATA_TERMS
+
+        if not isinstance(observations, pd.DataFrame):
+            thispath = Path(__file__).parent
+            examplepath = thispath /"analyses" / "data" / "schuz_neuron_density_1989.csv"
+
+            raise ValueError(
+                "observations must be a pandas.DataFrame of the form:\n"
+                f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
+                 "|value     | value    |...|measured value   | <some name>   |\n"
+                 "|...       |...       |...|...              |               |\n"
+                "namely, the columns represent the measurement and its parameterization\n"
+                f"see {str(examplepath)} for example data")
+
+
         self.parameters = observations[
             [col for col in observations if col not in exclude_from_parameters]
         ]
         self.observations = observations
+
+        if not _check_callable(plotter, ['x', 'y', 'hue']):
+            raise ValueError(
+                "plotter must be a callable of the form:\n"
+                "(x, y, hue) -> matplotlib.pyplot.Figure")
+
         self.plotter = plotter
+
+        if not _check_callable(stats, ['data', 'dependent', 'independent', 'compare']):
+            raise ValueError(
+                "stats must be a callable of the form:\n"
+                "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
+                "where hypothesis is a string describing the hypothesis tested")
+
         self.stats = stats
+
         self.verdict = verdict
         self.doc = doc
 

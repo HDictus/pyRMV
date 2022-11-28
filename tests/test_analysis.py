@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest as pyt
 from mock import MagicMock
 
 from analysis_neuro import Analysis, terms
@@ -155,6 +156,26 @@ def test_plots_with_multiple_params():
         pd.Series(["blabla"] * 5 + ["4"] * 5, name=terms.DATASET),
     )
 
+
+def test_invalid_observation_supplied():
+    observations = 1234
+    with pyt.raises(ValueError) as ve:
+        ana=Analysis(measurement='', observations=observations)
+    print(dir(ve.value))
+    assert 'must be a pandas.DataFrame of the form:' in str(ve.value)
+
+
+def test_plotter_stats_verdict_signatures():
+    invalid_things = ('123', lambda a: a)
+    for kw in ['stats', 'plotter']:
+        with pyt.raises(ValueError) as ve:
+            ana = Analysis(measurement='', observations=pd.DataFrame({}),
+                           **{kw: invalid_things[0]})
+        assert "must be a callable of the form:" in str(ve.value)
+        with pyt.raises(ValueError) as ve:
+            ana = Analysis(measurement='', observations=pd.DataFrame({}),
+                           **{kw: invalid_things[1]})
+        assert "must be a callable of the form:" in str(ve.value)
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?

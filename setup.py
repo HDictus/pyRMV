@@ -20,7 +20,8 @@ setup(
         'pandas',
         'seaborn'
     ],
-
+    extras_require={
+        "docs": ["sphinx", "sphinx-bluebrain-theme"],
     packages=find_packages(),
     classifiers=[
         'Development Status :: Pre-Alpha',
