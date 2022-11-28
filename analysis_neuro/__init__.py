@@ -111,6 +111,8 @@ class Analysis:
         """Measure the required measurements on model."""
         method = terms.measurements[self.measurement]["method name"]
         measured = getattr(model, method)(self.parameters)
+        # the model's label should be included to distinguish it from other
+        # models and experimental data
         measured[terms.DATASET] = model.label
         return measured
 
