@@ -130,7 +130,7 @@ class Analysis:
         """
         if self.stats is None:
             return "No statistical tests performed"
-        return self.stats(measurements,
+        return self.stats(data=measurements,
                           dependent=self.measurement,
                           independent=self.varying_parameters,
                           compare=terms.DATASET)
