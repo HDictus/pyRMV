@@ -196,7 +196,7 @@ def test_runs_statistical_tests():
     results = ana(MockModel(4))
     assert results['stats'] == mockresults
     mockstats.assert_called_with(
-        results['measurements'],
+        data=results['measurements'],
         dependent='measured thing',
         independent=['layer', 'mtype'],
         compare=terms.DATASET)
