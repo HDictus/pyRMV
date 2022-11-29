@@ -22,6 +22,10 @@ setup(
     ],
     extras_require={
         "docs": ["sphinx", "sphinx-bluebrain-theme"]},
+    project_urls={
+        "Source": "https://bbpgitlab.epfl.ch/circuits/personal/analysis-neuro",
+    },
+
     packages=find_packages(),
     classifiers=[
         'Development Status :: Pre-Alpha',
