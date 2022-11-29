@@ -23,6 +23,7 @@ setup(
     extras_require={
         "docs": ["sphinx", "sphinx-bluebrain-theme"]},
     project_urls={
+        "Tracker": "https://bbpteam.epfl.ch/project/issues/browse/MMBVISCX-19",
         "Source": "https://bbpgitlab.epfl.ch/circuits/personal/analysis-neuro",
     },
 
