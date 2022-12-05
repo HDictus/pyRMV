@@ -61,6 +61,10 @@ def _has_std_and_size(dataset, dependent):
     return not np.isnan(dataset[terms.SAMPLE_SIZE]).all()
 
 
+def _has_samples(dataset, dependent, independent):
+    return (dataset.groupby(independent)[dependent].count() > 1).any()
+
+
 def ttest(data, dependent, independent, compare):
     """
     Perform a two-tailed t-test between comparable datapoints.
@@ -81,10 +85,27 @@ def ttest(data, dependent, independent, compare):
     hypotheses = {}
     
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
-        if (not _has_std_and_size(dataset1, dependent)
-            and _has_std_and_size(dataset2, dependent)):
-            label1, label2 = (label2, label1)
-            dataset1, dataset2 = (dataset2, dataset1)
+        if _has_std_and_size(dataset1, dependent):
+            if _has_std_and_size(dataset2, dependent):
+                raise NotImplementedError(
+                    "Comparison between two populations (2-sample t-test) "
+                    "has not yet been implemented. Please make a pull-request."
+                    "Current functionality supports 1-sample t-test")
+        else:
+            if _has_std_and_size(dataset2, dependent):
+                label1, label2 = (label2, label1)
+                dataset1, dataset2 = (dataset2, dataset1)
+            else:
+                if (_has_samples(dataset1, dependent, independent)\
+                    or _has_samples(dataset2, dependent, independent)):
+                    raise NotImplementedError(
+                        "Performing t-test for samples (instead of precomputed"
+                        " standard deviation and sample size) is not yet "
+                        "implemented. please make a pull-request")
+                else:
+                    raise ValueError(
+                        "The data provided do not contain the information "
+                        "necessary to perform any kind of t-test")
 
         hypothesis = (f'population mean of {dependent} for {label1} is '
                       f'equal to the value of {dependent} for {label2}')
