@@ -51,6 +51,16 @@ def _ttest_1samp(dataset1, dataset2, dependent):
     return t, p
 
 
+def _has_std_and_size(dataset, dependent):
+    if terms.STD + dependent not in dataset:
+        return False
+    if np.isnan(dataset[terms.STD + dependent]).all():
+        return False
+    if terms.SAMPLE_SIZE not in dataset:
+        return False
+    return not np.isnan(dataset[terms.SAMPLE_SIZE]).all()
+
+
 def ttest(data, dependent, independent, compare):
     """
     Perform a two-tailed t-test between comparable datapoints.
@@ -71,12 +81,19 @@ def ttest(data, dependent, independent, compare):
     hypotheses = {}
     
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
+        if (not _has_std_and_size(dataset1, dependent)
+            and _has_std_and_size(dataset2, dependent)):
+            label1, label2 = (label2, label1)
+            dataset1, dataset2 = (dataset2, dataset1)
+
         hypothesis = (f'population mean of {dependent} for {label1} is '
                       f'equal to the value of {dependent} for {label2}')
-        t, p = _ttest_1samp(dataset1, dataset2, dependent)        
-        hypotheses[hypothesis] = dataset1[independent].assign(
-            **{terms.TSTAT: t,
-               terms.PVALUE: p})
+        t, p = _ttest_1samp(dataset1, dataset2, dependent)
+        hypotheses[hypothesis] = dataset1[independent]\
+            .reset_index(drop=True).assign(
+                **{terms.TSTAT: t,
+                   terms.PVALUE: p})
+        
     return hypotheses
 
 class PooledPvalueThreshold:
