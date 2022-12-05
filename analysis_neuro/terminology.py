@@ -17,4 +17,7 @@ measurements = {
 }
 
 SQERROR = "squared error"
-
+STD = 'std '
+TSTAT = 't-statistic'
+PVALUE = 'p-value'
+SAMPLE_SIZE = 'sample size'

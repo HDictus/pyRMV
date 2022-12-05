@@ -1,5 +1,21 @@
 """Tools for statistical hypothesis testing"""
+from scipy import stats
+import numpy as np
+import pandas as pd
 from analysis_neuro import terminology as terms
+
+
+def _iter_compare(data, compare):
+    datasets = data.groupby(compare)
+    already_compared = set()
+    for label1, dataset1 in datasets:
+        for label2, dataset2 in datasets:
+            if (label2, label1) in already_compared:
+                continue
+            if label1 == label2:
+                continue
+            already_compared.add((label1, label2))
+            yield label1, dataset1, label2, dataset2
 
 
 def squared_error(data, dependent, independent, compare):
@@ -12,49 +28,56 @@ def squared_error(data, dependent, independent, compare):
     Metrics:
        squared error
     """
-    datasets = data.groupby(compare)
+
     hypotheses = {}
-    already_compared = set()
     
     def by_ind(dataset):
         return dataset.set_index(independent)[dependent]
     
-    for label1, dataset1 in datasets:
-        for label2, dataset2 in datasets:
-            if (label2, label1) in already_compared:
-                continue
-            if label1 == label2:
-                continue
-            already_compared.add((label1, label2))
-            hypothesis = (f"{dependent} is similar for {compare}"
-                          f" {label1} and {label2}")
-            sqerr = (by_ind(dataset1) - by_ind(dataset2))**2
-            hypotheses[hypothesis] = sqerr.rename(terms.SQERROR).reset_index()
+    for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
+        hypothesis = (f"{dependent} is similar for {compare}"
+                      f" {label1} and {label2}")
+        sqerr = (by_ind(dataset1) - by_ind(dataset2))**2
+        hypotheses[hypothesis] = sqerr.rename(terms.SQERROR).reset_index()
     return hypotheses
 
 
-class TTest:
-    """Performs welch's t-test between the compared values.
+def _ttest_1samp(dataset1, dataset2, dependent):
+    std = dataset1[terms.STD + dependent]
+    sample_size = dataset1[terms.SAMPLE_SIZE]
+    t = np.abs((dataset1[dependent].values - dataset2[dependent].values))\
+        / (std.values / np.sqrt(sample_size.values))
+    p = [stats.t.sf(tt, df=ss-1) for tt, ss in zip(t, sample_size)]
+    return t, p
 
+
+def ttest(data, dependent, independent, compare):
+    """
+    Perform a two-tailed t-test between comparable datapoints.
+    
     Assumptions:
-        the sample means of the compared values are normally distributed
-        the individual samples are independent of each other
+        Samples are independent of one another.
+        Samples are approximately normally distributed.
 
-    Hypothesis:
-        The true mean of the compared populations is equal
+    Hypotheses:
+        The samples have the same population mean.
 
     Metrics:
-        T-statistic, P-value
+        T-statistic
+        P-value
+    For the time being, this t-test only supports comparisons where
+    one of the datasets provides a standard deviation and sample size.
     """
-
-    def __init__(self):
-        """Perform a t-test between compared values."""
-        return
-
-    def __call__(self, data, dependent, independent, compare):
-        """See class documentation."""
-        return
-
+    hypotheses = {}
+    
+    for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
+        hypothesis = (f'population mean of {dependent} for {label1} is '
+                      f'equal to the value of {dependent} for {label2}')
+        t, p = _ttest_1samp(dataset1, dataset2, dependent)        
+        hypotheses[hypothesis] = dataset1[independent].assign(
+            **{terms.TSTAT: t,
+               terms.PVALUE: p})
+    return hypotheses
 
 class PooledPvalueThreshold:
     """Pools the p-values of some statistical test across observations.
