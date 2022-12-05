@@ -117,17 +117,24 @@ def ttest(data, dependent, independent, compare):
         
     return hypotheses
 
-class PooledPvalueThreshold:
+class PooledPValueThreshold:
     """Pools the p-values of some statistical test across observations.
 
     The hypothesis fails if any p-value is below some threshold.
     This threshold is adjusted with a Bonferroni correction for the number of observations.
     """
 
-    def __init__(self, threshold):
+    def __init__(self, threshold=0.05):
         """Initialize."""
+        self.threshold = threshold
         return
 
-    def __call__(self, stats, data, dependent, independent, compare):
+    def __call__(self, stats, **kw):
         """Run."""
-        return
+        verdicts = {}
+        for hypothesis, data in stats.items():
+            p = data[terms.PVALUE]
+            bonferroni_threshold = self.threshold / data.shape[0]
+            fail = (p <= bonferroni_threshold).any()
+            verdicts[hypothesis] = 'Fail' if fail else 'Pass'
+        return verdicts

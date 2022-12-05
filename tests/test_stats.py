@@ -121,3 +121,37 @@ def test_ttest_not_implemented():
         stats.ttest(
             neitherhasanything, dependent='msr', independent=['a', 'b', 'c'], compare='comp')
         
+
+def test_PooledPValueThreshold():
+    hypotheses = {
+        'some hypothesis': pd.DataFrame({
+            'a': [1, 2],
+            terms.PVALUE: [0.11, 0.1],
+        })}
+    verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
+    assert verdicts['some hypothesis'] == 'Pass'
+
+    hypotheses = {
+        'some hypothesis': pd.DataFrame({
+            'a': [1, 2],
+            terms.PVALUE: [0.11, 0.05],
+        })}
+    verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
+    assert verdicts['some hypothesis'] == 'Fail'
+
+    
+    hypotheses = {
+        'some hypothesis': pd.DataFrame({
+            'a': [1, 2, 3, 4],
+            terms.PVALUE: [0.026, 0.5, 0.1, 0.1],
+        })}
+    verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
+    assert verdicts['some hypothesis'] == 'Pass'
+
+    hypotheses = {
+        'some hypothesis': pd.DataFrame({
+            'a': [1, 2, 3, 4],
+            terms.PVALUE: [0.025, 0.5, 0.1, 0.1],
+        })}
+    verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
+    assert verdicts['some hypothesis'] == 'Fail'
