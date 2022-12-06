@@ -32,7 +32,7 @@ keller_density_2018 = Analysis(
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.TTest(),
-    verdict=stats.PooledPvalueThreshold(threshold=0.05),
+    verdict=stats.PooledPValueThreshold(threshold=0.05),
 )
 
 
