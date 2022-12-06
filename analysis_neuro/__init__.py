@@ -73,16 +73,15 @@ class Analysis:
 
         if not isinstance(observations, pd.DataFrame):
             thispath = Path(__file__).parent
-            examplepath = thispath /"analyses" / "data" / "schuz_neuron_density_1989.csv"
+            examplepath = thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
 
             raise ValueError(
                 "observations must be a pandas.DataFrame of the form:\n"
                 f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
-                 "|value     | value    |...|measured value   | <some name>   |\n"
-                 "|...       |...       |...|...              |               |\n"
+                "|value     | value    |...|measured value   | <some name>   |\n"
+                "|...       |...       |...|...              |               |\n"
                 "namely, the columns represent the measurement and its parameterization\n"
                 f"see {str(examplepath)} for example data")
-
 
         self.parameters = observations[
             [col for col in observations if col not in exclude_from_parameters]
