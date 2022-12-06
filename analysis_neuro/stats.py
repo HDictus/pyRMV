@@ -46,7 +46,7 @@ def _ttest_1samp(dataset1, dataset2, dependent):
     sample_size = dataset1[terms.SAMPLE_SIZE]
     tstat = np.abs((dataset1[dependent].values - dataset2[dependent].values))\
         / (std.values / np.sqrt(sample_size.values))
-    pvalue = [stats.t.sf(tt, df=ss-1) for tt, ss in zip(tstat, sample_size)]
+    pvalue = [stats.t.sf(tt, df=ss - 1) for tt, ss in zip(tstat, sample_size)]
     return tstat, pvalue
 
 
@@ -95,8 +95,10 @@ def ttest(data, dependent, independent, compare):
                 label1, label2 = (label2, label1)
                 dataset1, dataset2 = (dataset2, dataset1)
             else:
-                if (_has_samples(dataset1, dependent, independent)\
-                    or _has_samples(dataset2, dependent, independent)):
+                if (
+                        _has_samples(dataset1, dependent, independent)
+                        or _has_samples(dataset2, dependent, independent)
+                ):
                     raise NotImplementedError(
                         "Performing t-test for samples (instead of precomputed"
                         " standard deviation and sample size) is not yet "
