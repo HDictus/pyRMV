@@ -18,7 +18,8 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'seaborn'
+        'seaborn',
+        'scipy'
     ],
     extras_require={
         "docs": ["sphinx", "sphinx-bluebrain-theme"]},
