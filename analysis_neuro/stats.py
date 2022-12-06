@@ -1,7 +1,6 @@
 """Tools for statistical hypothesis testing"""
 from scipy import stats
 import numpy as np
-import pandas as pd
 from analysis_neuro import terminology as terms
 
 
@@ -30,10 +29,10 @@ def squared_error(data, dependent, independent, compare):
     """
 
     hypotheses = {}
-    
+
     def by_ind(dataset):
         return dataset.set_index(independent)[dependent]
-    
+
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
         hypothesis = (f"{dependent} is similar for {compare}"
                       f" {label1} and {label2}")
@@ -45,10 +44,10 @@ def squared_error(data, dependent, independent, compare):
 def _ttest_1samp(dataset1, dataset2, dependent):
     std = dataset1[terms.STD + dependent]
     sample_size = dataset1[terms.SAMPLE_SIZE]
-    t = np.abs((dataset1[dependent].values - dataset2[dependent].values))\
+    tstat = np.abs((dataset1[dependent].values - dataset2[dependent].values))\
         / (std.values / np.sqrt(sample_size.values))
-    p = [stats.t.sf(tt, df=ss-1) for tt, ss in zip(t, sample_size)]
-    return t, p
+    pvalue = [stats.t.sf(tt, df=ss-1) for tt, ss in zip(tstat, sample_size)]
+    return tstat, pvalue
 
 
 def _has_std_and_size(dataset, dependent):
@@ -68,7 +67,7 @@ def _has_samples(dataset, dependent, independent):
 def ttest(data, dependent, independent, compare):
     """
     Perform a two-tailed t-test between comparable datapoints.
-    
+
     Assumptions:
         Samples are independent of one another.
         Samples are approximately normally distributed.
@@ -83,7 +82,7 @@ def ttest(data, dependent, independent, compare):
     one of the datasets provides a standard deviation and sample size.
     """
     hypotheses = {}
-    
+
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
         if _has_std_and_size(dataset1, dependent):
             if _has_std_and_size(dataset2, dependent):
@@ -102,21 +101,22 @@ def ttest(data, dependent, independent, compare):
                         "Performing t-test for samples (instead of precomputed"
                         " standard deviation and sample size) is not yet "
                         "implemented. please make a pull-request")
-                else:
-                    raise ValueError(
-                        "The data provided do not contain the information "
-                        "necessary to perform any kind of t-test")
+                raise ValueError(
+                    "The data provided do not contain the information "
+                    "necessary to perform any kind of t-test")
 
         hypothesis = (f'population mean of {dependent} for {label1} is '
                       f'equal to the value of {dependent} for {label2}')
-        t, p = _ttest_1samp(dataset1, dataset2, dependent)
+        tstat, pvalue = _ttest_1samp(dataset1, dataset2, dependent)
         hypotheses[hypothesis] = dataset1[independent]\
             .reset_index(drop=True).assign(
-                **{terms.TSTAT: t,
-                   terms.PVALUE: p})
-        
+                **{terms.TSTAT: tstat,
+                   terms.PVALUE: pvalue})
+
     return hypotheses
 
+
+# pylint: disable=too-few-public-methods
 class PooledPValueThreshold:
     """Pools the p-values of some statistical test across observations.
 
@@ -127,14 +127,13 @@ class PooledPValueThreshold:
     def __init__(self, threshold=0.05):
         """Initialize."""
         self.threshold = threshold
-        return
 
-    def __call__(self, stats, **kw):
+    def __call__(self, hypotheses, **kw):
         """Run."""
         verdicts = {}
-        for hypothesis, data in stats.items():
-            p = data[terms.PVALUE]
+        for hypothesis, data in hypotheses.items():
+            pvalue = data[terms.PVALUE]
             bonferroni_threshold = self.threshold / data.shape[0]
-            fail = (p <= bonferroni_threshold).any()
+            fail = (pvalue <= bonferroni_threshold).any()
             verdicts[hypothesis] = 'Fail' if fail else 'Pass'
         return verdicts

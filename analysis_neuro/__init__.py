@@ -134,7 +134,7 @@ class Analysis:
                           dependent=self.measurement,
                           independent=self.varying_parameters,
                           compare=terms.DATASET)
-    
+
     def __call__(self, *models):
         """Run this analysis instance on a model."""
         to_concat = [self.measure(model) for model in models]

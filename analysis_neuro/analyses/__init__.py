@@ -31,7 +31,7 @@ keller_density_2018 = Analysis(
     observations=pd.read_csv(Path(__file__).parent / "data" / "keller_2018.csv"),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
-    stats=stats.TTest(),
+    stats=stats.ttest,
     verdict=stats.PooledPValueThreshold(threshold=0.05),
 )
 
