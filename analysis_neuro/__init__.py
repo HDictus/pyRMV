@@ -69,7 +69,8 @@ class Analysis:
     ):
         """Initialize an Analysis from various components."""
         self.measurement = measurement
-        exclude_from_parameters = [measurement] + DATA_TERMS
+        exclude_from_parameters = [measurement] + DATA_TERMS\
+            + [terms.STD + measurement, terms.SAMPLE_SIZE]
 
         if not isinstance(observations, pd.DataFrame):
             thispath = Path(__file__).parent
