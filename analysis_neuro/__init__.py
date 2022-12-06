@@ -125,9 +125,7 @@ class Analysis:
         ]
 
     def statistical_tests(self, measurements):
-        """
-        Run the statistical tests for this analysis on some data.
-        """
+        """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
         return self.stats(data=measurements,

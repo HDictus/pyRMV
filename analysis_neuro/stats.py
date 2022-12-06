@@ -1,4 +1,4 @@
-"""Tools for statistical hypothesis testing"""
+"""Tools for statistical hypothesis testing."""
 from scipy import stats
 import numpy as np
 from analysis_neuro import terminology as terms
@@ -18,8 +18,7 @@ def _iter_compare(data, compare):
 
 
 def squared_error(data, dependent, independent, compare):
-    """
-    Compute the squared error between groups in data.
+    """Compute the squared error between groups in data.
 
     Hypothesis:
        the compared values are similar between groups
@@ -27,7 +26,6 @@ def squared_error(data, dependent, independent, compare):
     Metrics:
        squared error
     """
-
     hypotheses = {}
 
     def by_ind(dataset):
@@ -65,8 +63,7 @@ def _has_samples(dataset, dependent, independent):
 
 
 def ttest(data, dependent, independent, compare):
-    """
-    Perform a two-tailed t-test between comparable datapoints.
+    """Perform a two-tailed t-test between comparable datapoints.
 
     Assumptions:
         Samples are independent of one another.
