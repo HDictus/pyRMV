@@ -4,6 +4,7 @@ from collections.abc import Callable
 from pathlib import Path
 import pandas as pd
 from . import terminology as terms
+from . import plots
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES]
 
@@ -89,10 +90,13 @@ class Analysis:
         ]
         self.observations = observations
 
-        if not _check_callable(plotter, ['x', 'y', 'hue']):
+        if not (_check_callable(plotter, ['x', 'y', 'hue']) or
+                _check_callable(plotter, ['data', 'dependent', 'independent', 'compare'])):
             raise ValueError(
                 "plotter must be a callable of the form:\n"
-                "(x, y, hue) -> matplotlib.pyplot.Figure")
+                "(x, y, hue) -> matplotlib.pyplot.Axis OR\n",
+                "(data, dependent, independent, compare) -> "
+                "matplotlib.pyplot.Figure")
 
         self.plotter = plotter
 
@@ -159,16 +163,18 @@ class Analysis:
             "verdict": verdict,
         }
         if self.plotter is not None:
-            # we will need to expand on this behavior as we try to support more
-            # maybe by inspecting the plotter's signature?
-            # otherwise, we may need to define a different plotting interface
-            # this will mean you can't pass seaborn functions directly,
-            # instead we will need to wrap them
-            dependent = measurements[self.measurement]
-            independent = _join_columns(measurements[self.varying_parameters])
-            compare = measurements[terms.DATASET]
-            axis = self.plotter(x=independent, y=dependent, hue=compare)
-            report["figures"] = axis.get_figure()
+            if _check_callable(self.plotter, ['x', 'y', 'hue']):
+                dependent = measurements[self.measurement]
+                independent = _join_columns(measurements[self.varying_parameters])
+                compare = measurements[terms.DATASET]
+                figure = self.plotter(x=independent, y=dependent, hue=compare).get_figure()
+            else:
+                figure = self.plotter(
+                    data=measurements,
+                    dependent=self.measurement,
+                    independent=self.varying_parameters,
+                    compare=terms.DATASET)
+            report["figures"] = figure
 
         return report
 

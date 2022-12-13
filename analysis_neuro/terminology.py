@@ -3,6 +3,8 @@
 REGION = "region"
 LAYER = "layer"
 NEURON_OR_GLIA = "neuron or glia?"
+MTYPE = 'mtype'
+
 CELL_DENSITY = "cell density ($cells/mm^3$)"
 CELL_COUNT = "cell count"
 REGION_VOLUME = "volume ($mm^3$)"
@@ -11,13 +13,23 @@ CITATION = "citation"
 NOTES = "notes"
 HEMISPHERE = "hemisphere"
 
-measurements = {
-    CELL_DENSITY: {"method name": "cell_density"},
-    CELL_COUNT: {"method name": "cell_count"},
-}
 
 SQERROR = "squared error"
 STD = 'std '
 TSTAT = 't-statistic'
 PVALUE = 'p-value'
 SAMPLE_SIZE = 'sample size'
+
+
+CONNECTION_PROBABILITY = 'connection probability'
+
+PRESYNAPTIC = 'Presynaptic'
+POSTSYNAPTIC = 'Postsynaptic'
+
+
+
+measurements = {
+    CELL_DENSITY: {"method name": "cell_density"},
+    CELL_COUNT: {"method name": "cell_count"},
+    CONNECTION_PROBABILITY: {'method name': "connection_probability"}
+}

@@ -115,6 +115,20 @@ def ttest(data, dependent, independent, compare):
     return hypotheses
 
 
+def binom_test(data, dependent, independent, compare):
+    """Perform a binomial test.
+    
+    Assumptions:
+       Samples are independent.
+       One sample probability accurately represents its population
+    
+    Hypothesis:
+       The probability represented by the dependent variable is the
+       same for both compared populations.
+    """
+    return {'hypo': data}
+
+
 # pylint: disable=too-few-public-methods
 class PooledPValueThreshold:
     """Pools the p-values of some statistical test across observations.

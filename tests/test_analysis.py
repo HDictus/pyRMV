@@ -93,6 +93,25 @@ def test_runs_plotter():
         pd.Series(["blabla"] * 5 + ["4"] * 5, name=terms.DATASET),
     )
 
+def test_runs_plotter_alternate():
+    mockfigure = MagicMock()
+    
+    def plotter(data, dependent, independent, compare):
+        return mockfigure
+    
+    observations = pd.DataFrame(
+        {
+            "measured thing": [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "a param": ["a", "b", "c", "d", "e"],
+        }
+    )
+
+    ana = Analysis(
+        measurement="measured thing", plotter=plotter, observations=observations
+    )
+    assert ana(MockModel(4))['figures'] == mockfigure
+
 
 def test_plots_only_by_varying_params():
     plotter = MagicMock()
