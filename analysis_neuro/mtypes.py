@@ -8,7 +8,6 @@ PRIMITIVES = ['L1_DAC','L1_HAC','L1_LAC','L1_NGC-DA','L1_NGC-SA','L1_SAC',
               'L6_BP','L6_BPC','L6_BTC','L6_CHC','L6_DBC','L6_HPC','L6_IPC','L6_LBC','L6_MC','L6_NBC','L6_NGC','L6_SBC','L6_TPC:A','L6_TPC:C', 'L6_UPC']
 
 
-
 ALIASES = {
     'PC': ['UPC', 'TPC', 'IPC', 'BPC', 'HPC'],
     'eNGC': ['L1_NGC-DA', 'L1_NGC-SA'],  # cite:jiang_principles_2016
