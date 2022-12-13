@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from analysis_neuro import Analysis
 from analysis_neuro import terminology as terms
-from analysis_neuro import stats
+from analysis_neuro import stats, plots
 
 
 schuz_density_1989 = Analysis(
@@ -62,6 +62,17 @@ thalamic_nuclei_cell_counts = Analysis(
     plotter=sns.barplot,
     stats=stats.squared_error,
 )
+
+
+jiang_connprob_2016 = Analysis(
+    doc="""
+    We compare connection probabilities to those observed by Jiang et al.
+    """,
+    observations=pd.read_csv(Path(__file__).parent / 'data' / 'jiang_connprob_2016.csv'),
+    measurement=terms.CONNECTION_PROBABILITY,
+    plotter=plots.crossplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05))
 
 
 for varname in dir():
