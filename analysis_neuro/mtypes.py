@@ -1,0 +1,34 @@
+"""Defines mtype names."""
+
+PRIMITIVES = ['L1_DAC','L1_HAC','L1_LAC','L1_NGC-DA','L1_NGC-SA','L1_SAC',
+              'L23_BP','L23_BTC','L23_CHC','L23_DBC','L23_LBC','L23_MC','L23_NBC','L23_NGC','L23_SBC',
+              'L2_IPC','L2_TPC:A','L2_TPC:B','L3_TPC:A','L3_TPC:C',
+              'L4_BP','L4_BTC','L4_CHC','L4_DBC','L4_LBC','L4_MC','L4_NBC','L4_NGC','L4_SBC','L4_SSC','L4_TPC','L4_UPC',
+              'L5_BP','L5_BTC','L5_CHC','L5_DBC','L5_LBC','L5_MC','L5_NBC','L5_NGC','L5_SBC','L5_TPC:A','L5_TPC:B','L5_TPC:C','L5_UPC',
+              'L6_BP','L6_BPC','L6_BTC','L6_CHC','L6_DBC','L6_HPC','L6_IPC','L6_LBC','L6_MC','L6_NBC','L6_NGC','L6_SBC','L6_TPC:A','L6_TPC:C', 'L6_UPC']
+
+
+
+ALIASES = {
+    'PC': ['UPC', 'TPC', 'IPC', 'BPC', 'HPC'],
+    'eNGC': ['L1_NGC-DA', 'L1_NGC-SA'],  # cite:jiang_principles_2016
+    'SBC-like': ['L1_SAC'],  # cite:jiang_principles_2016
+    'HEC': ['NBC'],  # cite:jiang_principles_2016, horizontally extended cell
+    'jBC': ['LBC'], # cite:jiang_principles_2016, basket cell
+    'jSC': ['SBC'], # cite:jiang_principles_2016, shrub cell
+    'DC': ['DBC'], # cite:jiang_principles_2016¸deep-projecting cell
+}
+
+for msc in ['UPC', 'TPC', 'IPC', 'NBC', 'LBC', 'BPC', 'HPC', 'SBC']:
+    ALIASES[msc] = [mtype for mtype in PRIMITIVES if msc in mtype]
+    
+
+def resolve(mtype):
+    """Resolve an mtype into a set mtype primitives."""
+    if mtype in PRIMITIVES:
+        return {mtype}
+    if mtype in ALIASES:
+        return {prim for mt in ALIASES[mtype] for prim in resolve(mt)}
+
+    raise ValueError(f"Mtype {mtype} not recognized, please create a pull request to add it.")
+            
