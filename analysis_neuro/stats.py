@@ -1,6 +1,7 @@
 """Tools for statistical hypothesis testing."""
 from scipy import stats
 import numpy as np
+import pandas as pd
 from analysis_neuro import terminology as terms
 
 
@@ -115,20 +116,6 @@ def ttest(data, dependent, independent, compare):
     return hypotheses
 
 
-def binom_test(data, dependent, independent, compare):
-    """Perform a binomial test.
-    
-    Assumptions:
-       Samples are independent.
-       One sample probability accurately represents its population
-    
-    Hypothesis:
-       The probability represented by the dependent variable is the
-       same for both compared populations.
-    """
-    return {'hypo': data}
-
-
 # pylint: disable=too-few-public-methods
 class PooledPValueThreshold:
     """Pools the p-values of some statistical test across observations.
@@ -150,3 +137,49 @@ class PooledPValueThreshold:
             fail = (pvalue <= bonferroni_threshold).any()
             verdicts[hypothesis] = 'Fail' if fail else 'Pass'
         return verdicts
+
+
+# TODO: at the moment we're always assuming that the datasets are ordered the same
+# there has to be a way to guaranteee this.
+def binom_test(data: pd.DataFrame,
+               dependent: str,
+               independent: list,
+               compare: str):
+    """Perform a binomial test for all values of the independent variables.
+    
+    Assumptions:
+       Samples are independent.
+       the dataset without reported sample size accurately describes the
+         population value of the probability
+    
+    Hypothesis:
+       The probability represented by the dependent variable is the 
+       same for both compared populations.
+    
+    Arguments:
+       data: the data to perform the test for
+       dependent: the column containing the dependent variable, a probability
+       independent: columns of independent variables
+       compare: the columns distinguishing the datasets to compare
+    """
+    hypotheses = {}
+    for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
+        if (terms.SAMPLE_SIZE not in dataset1 or
+            np.all(np.isnan(dataset1[terms.SAMPLE_SIZE]))):
+            if (terms.SAMPLE_SIZE not in dataset2 or
+                np.all(np.isnan(dataset2[terms.SAMPLE_SIZE]))):
+                raise NotImplementedError(
+                    "Currently we can't perform binomial tests on data of this form.\n"
+                    "Please make a pull request.")
+            label1, label2 = label2, label1
+            dataset1, dataset2 = dataset2, dataset1
+        hypothesis = f"The probability {dependent} is the same for {label1} as for {label2}."
+        probabilities = dataset2[dependent]
+        num = np.int32(dataset1[terms.SAMPLE_SIZE])
+        successes = np.int32(np.around(dataset1[dependent] * num))
+        pvalues = [stats.binomtest(k, n, p).pvalue for k, n, p in
+                   zip(successes, num, probabilities)]
+        statistic = dataset1[independent]
+        statistic[terms.PVALUE] = pvalues
+        hypotheses[hypothesis] = statistic
+    return hypotheses

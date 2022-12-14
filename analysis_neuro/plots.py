@@ -3,8 +3,12 @@ import matplotlib.pyplot as plt
 
 
 def crossplot(data, dependent, independent, compare):
-    # TODO: how can we ensure the case of lists for all of these are always
-    #  cleanly handled
+    """Compare datasets with a crossplot.
+    
+    Plot the dependent variable for each of the compared datasets
+    along a different axis, showing the level of agreement between them by
+    how close they are to the diagonal.
+    """
     comparevalues = data[compare].unique()
     
     if len(comparevalues) < 2:
@@ -29,6 +33,7 @@ def crossplot(data, dependent, independent, compare):
     plt.title(dependent)
     minimum = max(ax.get_xlim()[0], ax.get_ylim()[0])
     maximum = min(ax.get_xlim()[1], ax.get_ylim()[1])
-    plt.plot((minimum, maximum), (minimum, maximum))
+    plt.plot((minimum, maximum), (minimum, maximum),
+             color='gray', linestyle='--')
     return fig
     
