@@ -222,6 +222,7 @@ def test_runs_statistical_tests():
         independent=['layer', 'mtype'],
         compare=terms.DATASET)
 
+
 def test_runs_verdict():
     mockresults = MagicMock()
     mockstats = MagicMock(return_value=mockresults)
@@ -244,5 +245,6 @@ def test_runs_verdict():
     results = ana(MockModel(4))
     assert results['verdict'] == {'hypo': 'Pass'}
     mockverdict.assert_called_with(mockresults)
+
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?

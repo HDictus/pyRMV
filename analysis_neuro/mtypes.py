@@ -10,15 +10,10 @@ PRIMITIVES = ['L1_DAC','L1_HAC','L1_LAC','L1_NGC-DA','L1_NGC-SA','L1_SAC',
 
 ALIASES = {
     'PC': ['UPC', 'TPC', 'IPC', 'BPC', 'HPC'],
-    'eNGC': ['L1_NGC-DA', 'L1_NGC-SA'],  # cite:jiang_principles_2016
-    'SBC-like': ['L1_SAC'],  # cite:jiang_principles_2016
-    'HEC': ['NBC'],  # cite:jiang_principles_2016, horizontally extended cell
-    'jBC': ['LBC'], # cite:jiang_principles_2016, basket cell
-    'jSC': ['SBC'], # cite:jiang_principles_2016, shrub cell
-    'DC': ['DBC'], # cite:jiang_principles_2016¸deep-projecting cell
 }
 
-for msc in ['UPC', 'TPC', 'IPC', 'NBC', 'LBC', 'BPC', 'HPC', 'SBC']:
+for msc in ['UPC', 'TPC', 'IPC', 'NBC', 'LBC', 'BPC', 'HPC',
+            'SBC', 'MC', 'NGC', 'BTC', 'BP', 'DBC', 'CHC', 'SAC']:
     ALIASES[msc] = [mtype for mtype in PRIMITIVES if msc in mtype]
     
 

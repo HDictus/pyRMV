@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pytest as pyt
-from scipy.stats import t as tdist
+import scipy
 from analysis_neuro import stats, terms
 
 
@@ -45,7 +45,7 @@ def test_ttest_1samp():
         np.sqrt(np.array([3, 2, 3])))
     exp_p_value = []
     for t, n in zip(exp_t_statistic, [3, 2, 3]):
-        exp_p_value.append(tdist.sf(t, df=n-1))
+        exp_p_value.append(scipy.stats.t.sf(t, df=n-1))
         
     pd.testing.assert_frame_equal(
         hypo['population mean of msr for x is equal to the value of msr for y'],
@@ -76,7 +76,7 @@ def test_ttest_1samp_reverse():
         np.sqrt(np.array([3, 2, 3])))
     exp_p_value = []
     for t, n in zip(exp_t_statistic, [3, 2, 3]):
-        exp_p_value.append(tdist.sf(t, df=n-1))
+        exp_p_value.append(scipy.stats.t.sf(t, df=n-1))
         
     pd.testing.assert_frame_equal(
         hypo['population mean of msr for y is equal to the value of msr for x'],
@@ -155,3 +155,25 @@ def test_PooledPValueThreshold():
         })}
     verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
     assert verdicts['some hypothesis'] == 'Fail'
+
+
+def test_binom_test_1_has_std():
+    data = pd.DataFrame(
+        {'a': [1, 1, 2]*2,
+         'b': [1, 2, 1]*2,
+         'c': [1, 2, 3]*2,
+         'msr': [0.5, 1.0, 0.25,
+                 0.1, 0.2, 0.3],
+         'comp': ['x']*3 + ['y']*3,
+         terms.STD + 'msr': [1, 2, 3, np.nan, np.nan, np.nan],
+         terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan]})
+    expected = [
+        scipy.stats.binomtest(k, n, p).pvalue for k, n, p in
+        [(2, 4, 0.1), (2, 2, 0.2), (1, 4, 0.3)]]
+    hypotheses = stats.binom_test(
+        data, dependent='msr', independent=['a','b','c'], compare='comp')
+    assert "The probability msr is the same for x as for y." in hypotheses
+    assert np.allclose(
+        hypotheses["The probability msr is the same for x as for y."][terms.PVALUE].values,
+        expected)
+    return

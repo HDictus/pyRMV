@@ -23,8 +23,8 @@ SAMPLE_SIZE = 'sample size'
 
 CONNECTION_PROBABILITY = 'connection probability'
 
-PRESYNAPTIC = 'Presynaptic'
-POSTSYNAPTIC = 'Postsynaptic'
+PRESYNAPTIC = 'Presynaptic '
+POSTSYNAPTIC = 'Postsynaptic '
 
 
 
