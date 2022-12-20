@@ -103,7 +103,14 @@ class Analysis:
                 "where hypothesis is a string describing the hypothesis tested")
 
         self.stats = stats
-
+        if not _check_callable(verdict, ['stats']):
+            raise ValueError(
+                "verdict must be a callable of the form:\n"
+                "(stats: dict[str: DataFrame]) -> dict[str: str]"
+                "Where stats is a dict with hypotheses as the keys and "
+                "dataframes of test statistics as the values, and the output"
+                "is a dict of hypotheses and the associated verdict "
+                "( e.g. 'Pass', 'Fail')")
         self.verdict = verdict
         self.doc = doc
 
@@ -142,11 +149,14 @@ class Analysis:
         if self.measurement in self.observations:
             to_concat = [self.observations] + to_concat
         measurements = pd.concat(to_concat)
+        stats = self.statistical_tests(measurements)
+        verdict = "No verdict rendered" if self.verdict is None\
+            else self.verdict(stats)
         report = {
             "Introduction": self.doc,
             "measurements": measurements,
-            "stats": self.statistical_tests(measurements),
-            "verdict": "TODO: not yet implemented",
+            "stats": stats,
+            "verdict": verdict,
         }
         if self.plotter is not None:
             # we will need to expand on this behavior as we try to support more

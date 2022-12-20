@@ -167,7 +167,7 @@ def test_invalid_observation_supplied():
 
 def test_plotter_stats_verdict_signatures():
     invalid_things = ('123', lambda a: a)
-    for kw in ['stats', 'plotter']:
+    for kw in ['stats', 'plotter', 'verdict']:
         with pyt.raises(ValueError) as ve:
             ana = Analysis(measurement='', observations=pd.DataFrame({}),
                            **{kw: invalid_things[0]})
@@ -203,5 +203,27 @@ def test_runs_statistical_tests():
         independent=['layer', 'mtype'],
         compare=terms.DATASET)
 
+def test_runs_verdict():
+    mockresults = MagicMock()
+    mockstats = MagicMock(return_value=mockresults)
+    mockverdict = MagicMock(return_value={'hypo': 'Pass'})
+    observations = pd.DataFrame(
+        {
+            "measured thing": [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "layer": ["L1", "L23", "L4", "L5", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+        }
+    )
+
+    ana = Analysis(
+        observations=observations,
+        measurement='measured thing',
+        stats=mockstats,
+        verdict=mockverdict)
+    
+    results = ana(MockModel(4))
+    assert results['verdict'] == {'hypo': 'Pass'}
+    mockverdict.assert_called_with(mockresults)
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
