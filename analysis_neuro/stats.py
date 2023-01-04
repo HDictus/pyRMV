@@ -162,6 +162,12 @@ def binom_test(data: pd.DataFrame,
        independent: columns of independent variables
        compare: the columns distinguishing the datasets to compare
     """
+
+    def _binom_checknan(k, n, p):
+        if k < 0 or np.isnan(p):
+            return np.nan
+        return stats.binomtest(k, n, p).pvalue
+    
     hypotheses = {}
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
         if (terms.SAMPLE_SIZE not in dataset1 or
@@ -177,7 +183,7 @@ def binom_test(data: pd.DataFrame,
         probabilities = dataset2[dependent]
         num = np.int32(dataset1[terms.SAMPLE_SIZE])
         successes = np.int32(np.around(dataset1[dependent] * num))
-        pvalues = [stats.binomtest(k, n, p).pvalue for k, n, p in
+        pvalues = [_binom_checknan(k, n, p) for k, n, p in
                    zip(successes, num, probabilities)]
         statistic = dataset1[independent]
         statistic[terms.PVALUE] = pvalues

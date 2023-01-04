@@ -12,7 +12,7 @@ DATASET = "dataset"
 CITATION = "citation"
 NOTES = "notes"
 HEMISPHERE = "hemisphere"
-
+COLUMN_RADIUS = 'column radius (um)'
 
 SQERROR = "squared error"
 STD = 'std '
@@ -22,6 +22,8 @@ SAMPLE_SIZE = 'sample size'
 
 
 CONNECTION_PROBABILITY = 'connection probability'
+INTERSOMATIC_DISTANCE = 'interesomatic distance (um)'
+
 
 PRESYNAPTIC = 'Presynaptic '
 POSTSYNAPTIC = 'Postsynaptic '

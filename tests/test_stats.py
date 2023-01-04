@@ -177,3 +177,24 @@ def test_binom_test_1_has_std():
         hypotheses["The probability msr is the same for x as for y."][terms.PVALUE].values,
         expected)
     return
+
+def test_binom_test_nan():
+    data = pd.DataFrame(
+        {'a': [1, 1, 2]*2,
+         'b': [1, 2, 1]*2,
+         'c': [1, 2, 3]*2,
+         'msr': [0.5, 1.0, np.nan,
+                 0.1, np.nan, 0.3],
+         'comp': ['x']*3 + ['y']*3,
+         terms.STD + 'msr': [1, 2, 3, np.nan, np.nan, np.nan],
+         terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan]})
+    expected = [
+        scipy.stats.binomtest(2, 4, 0.1).pvalue] + [np.nan, np.nan]
+    hypotheses = stats.binom_test(
+        data, dependent='msr', independent=['a','b','c'], compare='comp')
+    assert "The probability msr is the same for x as for y." in hypotheses
+    assert np.allclose(
+        np.nan_to_num(
+            hypotheses["The probability msr is the same for x as for y."][terms.PVALUE].values),
+        np.nan_to_num(expected))
+    return
