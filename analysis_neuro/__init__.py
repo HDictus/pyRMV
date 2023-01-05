@@ -30,7 +30,6 @@ def _check_callable(obj, args):
             return True
     for arg in args:
         if arg not in params:
-            print(arg, params)
             return False
     return True
 
@@ -69,9 +68,8 @@ class Analysis:
         doc=None,
     ):
         """Initialize an Analysis from various components."""
+        
         self.measurement = measurement
-        exclude_from_parameters = [measurement] + DATA_TERMS\
-            + [terms.STD + measurement, terms.SAMPLE_SIZE]
 
         if not isinstance(observations, pd.DataFrame):
             thispath = Path(__file__).parent
@@ -85,9 +83,6 @@ class Analysis:
                 "namely, the columns represent the measurement and its parameterization\n"
                 f"see {str(examplepath)} for example data")
 
-        self.parameters = observations[
-            [col for col in observations if col not in exclude_from_parameters]
-        ]
         self.observations = observations
 
         if not (_check_callable(plotter, ['x', 'y', 'hue']) or
@@ -127,6 +122,18 @@ class Analysis:
         measured[terms.DATASET] = model.label
         return measured
 
+    @property
+    def parameters(self):
+        exclude_from_parameters = [self.measurement] + DATA_TERMS\
+            + [terms.STD + self.measurement, terms.SAMPLE_SIZE]
+        paramcols = [col for col in self.observations if col not in exclude_from_parameters]
+
+        def _multicolumn_unique(df, cols):
+            """return the unique combinations of cols in df"""
+            return df[cols].groupby(cols).sum().reset_index()
+        
+        return _multicolumn_unique(self.observations, paramcols)
+    
     @property
     def varying_parameters(self):
         """Parameters which are not constants."""

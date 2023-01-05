@@ -24,7 +24,6 @@ SAMPLE_SIZE = 'sample size'
 CONNECTION_PROBABILITY = 'connection probability'
 INTERSOMATIC_DISTANCE = 'interesomatic distance (um)'
 
-
 PRESYNAPTIC = 'Presynaptic '
 POSTSYNAPTIC = 'Postsynaptic '
 
@@ -33,5 +32,6 @@ POSTSYNAPTIC = 'Postsynaptic '
 measurements = {
     CELL_DENSITY: {"method name": "cell_density"},
     CELL_COUNT: {"method name": "cell_count"},
-    CONNECTION_PROBABILITY: {'method name': "connection_probability"}
+    CONNECTION_PROBABILITY: {'method name': "connection_probability"},
+    INTERSOMATIC_DISTANCE: {'method name': 'intersomatic_distance'},
 }

@@ -40,6 +40,30 @@ def test_extracts_parameters_from_observations():
     )
 
 
+def test_single_parameter_from_repeated_observations():
+    ana = Analysis(
+        measurement="measured thing",
+        observations=pd.DataFrame(
+            {
+                "measured thing": [100, 200, 300, 400, 500],
+                terms.DATASET: "blabla",
+                "a param": ["a", "a", "a", "a", "a"],
+                "nother param": ["b", "b", "b", "c", "c"],
+                terms.NOTES: ["wha", "who?", "when?", "why?", "wherefore?"],
+            }
+        ),
+    )
+    pd.testing.assert_frame_equal(
+        ana.parameters,
+        pd.DataFrame(
+            {
+                "a param": ["a", "a"],
+                "nother param": ["b", "c"],
+            }
+        ),
+    )
+
+
 def test_requests_measurements():
     ana = Analysis(
         measurement="measured thing",
