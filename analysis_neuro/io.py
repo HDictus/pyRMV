@@ -24,7 +24,7 @@ def _append_path(path, resultdict):
 def load_result(path):
     """Load an analysis report from the directory provided."""
     path = Path(path)
-    with open(path / "dict.json", "r", encoding='utf8') as jsonfile:
+    with open(path / "dict.json", "r", encoding="utf8") as jsonfile:
         resultdict = json.load(jsonfile)
     resultdict = _append_path(path, resultdict)
     return resultdict
@@ -54,5 +54,5 @@ def save_result(result, path):
     jsonpath = path / "dict.json"
     path.mkdir(exist_ok=True)
     resultdict = _prepare_dict(result, path)
-    with open(jsonpath, "w", encoding='utf8') as jsonfile:
+    with open(jsonpath, "w", encoding="utf8") as jsonfile:
         json.dump(resultdict, jsonfile)

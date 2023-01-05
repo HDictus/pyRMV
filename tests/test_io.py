@@ -14,8 +14,11 @@ def test_save_and_load_figures_and_measurement():
     )
     fig, ax = plt.subplots()
     measurement.hist("ameasurement", ax=ax)
-    result = {"measurement": measurement, "figures": {"afigure": fig},
-              'Introduction': 'abcdefg'}
+    result = {
+        "measurement": measurement,
+        "figures": {"afigure": fig},
+        "Introduction": "abcdefg",
+    }
     with TemporaryDirectory() as tdir:
         savepath = Path(tdir) / "result"
         save_result(result, savepath)

@@ -34,7 +34,9 @@ def assert_results_equal(new_result, stored_result):
             continue
         if isinstance(val, str):
             if val.endswith(".csv"):
-                pd.testing.assert_frame_equal(new_result[k], pd.read_csv(val, index_col=0))
+                pd.testing.assert_frame_equal(
+                    new_result[k], pd.read_csv(val, index_col=0)
+                )
                 continue
             if val.endswith(".png"):
                 _assert_figure_equal(new_result[k], val)

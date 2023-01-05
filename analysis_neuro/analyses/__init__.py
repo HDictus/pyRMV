@@ -70,18 +70,24 @@ jiang_connprob_2015 = Analysis(
     doc="""
     We compare connection probabilities to those observed by Jiang et al.
     """,
-    observations=pd.read_csv(Path(__file__).parent / 'data' / 'jiang_connprob_2016.csv'),
+    observations=pd.read_csv(
+        Path(__file__).parent / "data" / "jiang_connprob_2016.csv"
+    ),
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=plots.crossplot,
     stats=stats.binom_test,
-    verdict=stats.PooledPValueThreshold(0.05))
+    verdict=stats.PooledPValueThreshold(0.05),
+)
 
 
 def _histogram(data, dependent, independent, compare):
+    # pylint: disable=unused-argument
     fig = plt.figure()
     bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
     for label, dataset in data.groupby(compare):
-        plt.hist(dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6)
+        plt.hist(
+            dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
+        )
     plt.legend()
     return fig
 
@@ -95,7 +101,8 @@ jiang_intersomatic_2015 = Analysis(
     """,
     measurement=terms.INTERSOMATIC_DISTANCE,
     observations=jiangd.jiang_intersomatic_2015,
-    plotter=_histogram)
+    plotter=_histogram,
+)
 
 
 for varname in dir():

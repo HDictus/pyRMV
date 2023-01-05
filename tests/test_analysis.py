@@ -117,12 +117,13 @@ def test_runs_plotter():
         pd.Series(["blabla"] * 5 + ["4"] * 5, name=terms.DATASET),
     )
 
+
 def test_runs_plotter_alternate():
     mockfigure = MagicMock()
-    
+
     def plotter(data, dependent, independent, compare):
         return mockfigure
-    
+
     observations = pd.DataFrame(
         {
             "measured thing": [100, 200, 300, 400, 500],
@@ -134,7 +135,7 @@ def test_runs_plotter_alternate():
     ana = Analysis(
         measurement="measured thing", plotter=plotter, observations=observations
     )
-    assert ana(MockModel(4))['figures'] == mockfigure
+    assert ana(MockModel(4))["figures"] == mockfigure
 
 
 def test_plots_only_by_varying_params():
@@ -199,32 +200,33 @@ def test_plots_with_multiple_params():
     )
 
 
-
 def test_invalid_observation_supplied():
     observations = 1234
     with pyt.raises(ValueError) as ve:
-        ana=Analysis(measurement='', observations=observations)
+        ana = Analysis(measurement="", observations=observations)
     print(dir(ve.value))
-    assert 'must be a pandas.DataFrame of the form:' in str(ve.value)
+    assert "must be a pandas.DataFrame of the form:" in str(ve.value)
 
 
 def test_plotter_stats_verdict_signatures():
-    invalid_things = ('123', lambda a: a)
-    for kw in ['stats', 'plotter', 'verdict']:
+    invalid_things = ("123", lambda a: a)
+    for kw in ["stats", "plotter", "verdict"]:
         with pyt.raises(ValueError) as ve:
-            ana = Analysis(measurement='', observations=pd.DataFrame({}),
-                           **{kw: invalid_things[0]})
+            ana = Analysis(
+                measurement="", observations=pd.DataFrame({}), **{kw: invalid_things[0]}
+            )
         assert "must be a callable of the form:" in str(ve.value)
         with pyt.raises(ValueError) as ve:
-            ana = Analysis(measurement='', observations=pd.DataFrame({}),
-                           **{kw: invalid_things[1]})
+            ana = Analysis(
+                measurement="", observations=pd.DataFrame({}), **{kw: invalid_things[1]}
+            )
         assert "must be a callable of the form:" in str(ve.value)
 
 
 def test_runs_statistical_tests():
     mockresults = MagicMock()
     mockstats = MagicMock(return_value=mockresults)
-    
+
     observations = pd.DataFrame(
         {
             "measured thing": [100, 200, 300, 400, 500],
@@ -234,23 +236,24 @@ def test_runs_statistical_tests():
         }
     )
 
-    ana = Analysis(observations=observations,
-                   measurement='measured thing',
-                   stats=mockstats)
-    
+    ana = Analysis(
+        observations=observations, measurement="measured thing", stats=mockstats
+    )
+
     results = ana(MockModel(4))
-    assert results['stats'] == mockresults
+    assert results["stats"] == mockresults
     mockstats.assert_called_with(
-        data=results['measurements'],
-        dependent='measured thing',
-        independent=['layer', 'mtype'],
-        compare=terms.DATASET)
+        data=results["measurements"],
+        dependent="measured thing",
+        independent=["layer", "mtype"],
+        compare=terms.DATASET,
+    )
 
 
 def test_runs_verdict():
     mockresults = MagicMock()
     mockstats = MagicMock(return_value=mockresults)
-    mockverdict = MagicMock(return_value={'hypo': 'Pass'})
+    mockverdict = MagicMock(return_value={"hypo": "Pass"})
     observations = pd.DataFrame(
         {
             "measured thing": [100, 200, 300, 400, 500],
@@ -262,13 +265,15 @@ def test_runs_verdict():
 
     ana = Analysis(
         observations=observations,
-        measurement='measured thing',
+        measurement="measured thing",
         stats=mockstats,
-        verdict=mockverdict)
-    
+        verdict=mockverdict,
+    )
+
     results = ana(MockModel(4))
-    assert results['verdict'] == {'hypo': 'Pass'}
+    assert results["verdict"] == {"hypo": "Pass"}
     mockverdict.assert_called_with(mockresults)
+
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?

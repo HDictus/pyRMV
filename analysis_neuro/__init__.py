@@ -68,12 +68,13 @@ class Analysis:
         doc=None,
     ):
         """Initialize an Analysis from various components."""
-        
         self.measurement = measurement
 
         if not isinstance(observations, pd.DataFrame):
             thispath = Path(__file__).parent
-            examplepath = thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
+            examplepath = (
+                thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
+            )
 
             raise ValueError(
                 "observations must be a pandas.DataFrame of the form:\n"
@@ -81,35 +82,41 @@ class Analysis:
                 "|value     | value    |...|measured value   | <some name>   |\n"
                 "|...       |...       |...|...              |               |\n"
                 "namely, the columns represent the measurement and its parameterization\n"
-                f"see {str(examplepath)} for example data")
+                f"see {str(examplepath)} for example data"
+            )
 
         self.observations = observations
 
-        if not (_check_callable(plotter, ['x', 'y', 'hue']) or
-                _check_callable(plotter, ['data', 'dependent', 'independent', 'compare'])):
+        if not (
+            _check_callable(plotter, ["x", "y", "hue"])
+            or _check_callable(plotter, ["data", "dependent", "independent", "compare"])
+        ):
             raise ValueError(
                 "plotter must be a callable of the form:\n"
                 "(x, y, hue) -> matplotlib.pyplot.Axis OR\n",
                 "(data, dependent, independent, compare) -> "
-                "matplotlib.pyplot.Figure")
+                "matplotlib.pyplot.Figure",
+            )
 
         self.plotter = plotter
 
-        if not _check_callable(stats, ['data', 'dependent', 'independent', 'compare']):
+        if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
             raise ValueError(
                 "stats must be a callable of the form:\n"
                 "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
-                "where hypothesis is a string describing the hypothesis tested")
+                "where hypothesis is a string describing the hypothesis tested"
+            )
 
         self.stats = stats
-        if not _check_callable(verdict, ['stats']):
+        if not _check_callable(verdict, ["stats"]):
             raise ValueError(
                 "verdict must be a callable of the form:\n"
                 "(stats: dict[str: DataFrame]) -> dict[str: str]"
                 "Where stats is a dict with hypotheses as the keys and "
                 "dataframes of test statistics as the values, and the output"
                 "is a dict of hypotheses and the associated verdict "
-                "( e.g. 'Pass', 'Fail')")
+                "( e.g. 'Pass', 'Fail')"
+            )
         self.verdict = verdict
         self.doc = doc
 
@@ -124,16 +131,22 @@ class Analysis:
 
     @property
     def parameters(self):
-        exclude_from_parameters = [self.measurement] + DATA_TERMS\
+        """Determine validation parameters from provided observations."""
+        exclude_from_parameters = (
+            [self.measurement]
+            + DATA_TERMS
             + [terms.STD + self.measurement, terms.SAMPLE_SIZE]
-        paramcols = [col for col in self.observations if col not in exclude_from_parameters]
+        )
+        paramcols = [
+            col for col in self.observations if col not in exclude_from_parameters
+        ]
 
-        def _multicolumn_unique(df, cols):
-            """return the unique combinations of cols in df"""
-            return df[cols].groupby(cols).sum().reset_index()
-        
+        def _multicolumn_unique(dframe, cols):
+            """Return the unique combinations of cols in dframe."""
+            return dframe[cols].groupby(cols).sum().reset_index()
+
         return _multicolumn_unique(self.observations, paramcols)
-    
+
     @property
     def varying_parameters(self):
         """Parameters which are not constants."""
@@ -147,10 +160,12 @@ class Analysis:
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
-        return self.stats(data=measurements,
-                          dependent=self.measurement,
-                          independent=self.varying_parameters,
-                          compare=terms.DATASET)
+        return self.stats(
+            data=measurements,
+            dependent=self.measurement,
+            independent=self.varying_parameters,
+            compare=terms.DATASET,
+        )
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
@@ -161,8 +176,7 @@ class Analysis:
             to_concat = [self.observations] + to_concat
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
-        verdict = "No verdict rendered" if self.verdict is None\
-            else self.verdict(stats)
+        verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
         report = {
             "Introduction": self.doc,
             "measurements": measurements,
@@ -170,17 +184,20 @@ class Analysis:
             "verdict": verdict,
         }
         if self.plotter is not None:
-            if _check_callable(self.plotter, ['x', 'y', 'hue']):
+            if _check_callable(self.plotter, ["x", "y", "hue"]):
                 dependent = measurements[self.measurement]
                 independent = _join_columns(measurements[self.varying_parameters])
                 compare = measurements[terms.DATASET]
-                figure = self.plotter(x=independent, y=dependent, hue=compare).get_figure()
+                figure = self.plotter(
+                    x=independent, y=dependent, hue=compare
+                ).get_figure()
             else:
                 figure = self.plotter(
                     data=measurements,
                     dependent=self.measurement,
                     independent=self.varying_parameters,
-                    compare=terms.DATASET)
+                    compare=terms.DATASET,
+                )
             report["figures"] = figure
 
         return report
