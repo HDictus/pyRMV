@@ -3,9 +3,11 @@ from pathlib import Path
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 from analysis_neuro import Analysis
 from analysis_neuro import terminology as terms
 from analysis_neuro import stats, plots
+import analysis_neuro.analyses.data.jiang_distances as jiangd
 
 
 schuz_density_1989 = Analysis(
@@ -64,7 +66,7 @@ thalamic_nuclei_cell_counts = Analysis(
 )
 
 
-jiang_connprob_2016 = Analysis(
+jiang_connprob_2015 = Analysis(
     doc="""
     We compare connection probabilities to those observed by Jiang et al.
     """,
@@ -73,6 +75,27 @@ jiang_connprob_2016 = Analysis(
     plotter=plots.crossplot,
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05))
+
+
+def _histogram(data, dependent, independent, compare):
+    fig = plt.figure()
+    bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
+    for label, dataset in data.groupby(compare):
+        plt.hist(dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6)
+    plt.legend()
+    return fig
+
+
+jiang_intersomatic_2015 = Analysis(
+    doc="""
+    We compare intersomatic distances observed for L5 pyramidal cells sampled
+    in Jiang's paper (supplementary material, fig S13 B) to validate the
+    assumption in jiang_connprob_2016 that a column size of 75 um accurately
+    recreates the distance profiles of their study.
+    """,
+    measurement=terms.INTERSOMATIC_DISTANCE,
+    observations=jiangd.jiang_intersomatic_2015,
+    plotter=_histogram)
 
 
 for varname in dir():
