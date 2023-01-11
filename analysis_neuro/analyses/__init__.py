@@ -71,7 +71,7 @@ jiang_connprob_2015 = Analysis(
     We compare connection probabilities to those observed by Jiang et al.
     """,
     observations=pd.read_csv(
-        Path(__file__).parent / "data" / "jiang_connprob_2016.csv"
+        Path(__file__).parent / "data" / "jiang_connprob_2015.csv"
     ),
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=plots.crossplot,
@@ -96,7 +96,7 @@ jiang_intersomatic_2015 = Analysis(
     doc="""
     We compare intersomatic distances observed for L5 pyramidal cells sampled
     in Jiang's paper (supplementary material, fig S13 B) to validate the
-    assumption in jiang_connprob_2016 that a column size of 75 um accurately
+    assumption in jiang_connprob_2015 that a column size of 75 um accurately
     recreates the distance profiles of their study.
     """,
     measurement=terms.INTERSOMATIC_DISTANCE,
