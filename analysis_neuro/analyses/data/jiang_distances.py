@@ -1,4 +1,4 @@
-"""Supplementary distance data from Jiang et al. 2016."""
+"""Supplementary distance data from Jiang et al. 2015."""
 
 import pandas as pd
 from analysis_neuro import terminology as terms

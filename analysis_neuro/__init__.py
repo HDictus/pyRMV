@@ -97,10 +97,13 @@ class Analysis:
     stats (optional): a callable for statistical tests accepting :
         (measurement_data, dependent, independent, compare)
         and returning a dict of {<hypothesis description>: dataframe}
-        where the dataframe contains the test statistic for the hypotheses
+        where the dataframes contain the test statistics for the hypotheses
         tested
-    plotter (optional): a callable for plotting following the seaborn convention
-         accepting x, y, and hue and returning a figure
+    plotter (optional): a callable for plotting in one of two forms:
+        (x: pd.Series, y: pd.Series, hue: pd.Series) -> figure 
+        (several plots from the seaborn package satisfy this)
+        OR:
+        (data: pd.DataFrame, dependent: str, independent: list[str], compare: str)
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
