@@ -87,7 +87,7 @@ for msc in [
 ]:
     ALIASES[msc] = [mtype for mtype in PRIMITIVES if msc in mtype]
 
-    
+
 SUPPORTED_MTYPE_LABELS = PRIMITIVES + list(ALIASES.keys())
 
 

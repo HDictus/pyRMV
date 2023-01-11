@@ -34,6 +34,53 @@ def _check_callable(obj, args):
     return True
 
 
+def measure(model, measurement, parameters):
+    """Measure the quantity measurement from model under parameters
+
+    Arguments:
+        model: a class implementing a method measuring measurement
+        measurement: string representing a measurement type.
+            should be one of the terms represented in
+            analysis_neuro.terminology.measurements
+        parameters: a DataFrame describing the parameters of the
+            measurements to make. Use terminology from
+            analysis_neuro.terminology to ensure consistency.
+    """
+    method = terms.measurements[measurement]["method name"]
+    measured = getattr(model, method)(parameters)
+    return measured
+
+
+def extract_parameters(observations, measurement):
+    """Identify the measurement parameters from experimental observations.
+
+    Excludes the column of measured values and any parameters describing
+    the dataset (citation, notes, sample size), leaving only the parameters
+    of the measurement in question. Only each unique combination of parameters
+    is retained, collapsing multiple measurements.
+
+    Arguments:
+       observations: a dataframe of experimental measurements. Each column
+           corresponds to a variable, each row to an observation.
+       measurement: a string indicating the column which corresponds to the
+           measured quantity. will be excluded from the parameters.
+    """
+    exclude_from_parameters = (
+        [measurement]
+        + DATA_TERMS
+        + [terms.STD + measurement, terms.SAMPLE_SIZE]
+    )
+    paramcols = [
+        col for col in observations if col not in exclude_from_parameters
+    ]
+
+    def _multicolumn_unique(dframe, cols):
+        """Return the unique combinations of cols in dframe."""
+        return dframe[cols].groupby(cols).sum().reset_index()
+
+    return _multicolumn_unique(observations, paramcols)
+
+
 class Analysis:
     """An object for defining analyses.
 
@@ -121,9 +168,12 @@ class Analysis:
         self.doc = doc
 
     def measure(self, model):
-        """Measure the required measurements on model."""
-        method = terms.measurements[self.measurement]["method name"]
-        measured = getattr(model, method)(self.parameters)
+        """Measure the required measurements on model.
+
+        Model must have the method required to measure self.measurement
+        see analysis_neuro.terminology.measurements
+        """
+        measured =  measure(model, measurement=self.measurement, parameters=self.parameters)
         # the model's label should be included to distinguish it from other
         # models and experimental data
         measured[terms.DATASET] = model.label
@@ -132,20 +182,8 @@ class Analysis:
     @property
     def parameters(self):
         """Determine validation parameters from provided observations."""
-        exclude_from_parameters = (
-            [self.measurement]
-            + DATA_TERMS
-            + [terms.STD + self.measurement, terms.SAMPLE_SIZE]
-        )
-        paramcols = [
-            col for col in self.observations if col not in exclude_from_parameters
-        ]
+        return extract_parameters(self.observations, self.measurement)
 
-        def _multicolumn_unique(dframe, cols):
-            """Return the unique combinations of cols in dframe."""
-            return dframe[cols].groupby(cols).sum().reset_index()
-
-        return _multicolumn_unique(self.observations, paramcols)
 
     @property
     def varying_parameters(self):
