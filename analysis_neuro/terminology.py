@@ -1,31 +1,134 @@
-"""Terminology used in validation."""
+"""Terminology used in validation.
 
-REGION = "region"
-LAYER = "layer"
-NEURON_OR_GLIA = "neuron or glia?"
-MTYPE = "mtype"
+Each term is used as a column header in dataframes.
+The description specifies the format of the column's contents.
 
-CELL_DENSITY = "cell density ($cells/mm^3$)"
-CELL_COUNT = "cell count"
-REGION_VOLUME = "volume ($mm^3$)"
-DATASET = "dataset"
-CITATION = "citation"
-NOTES = "notes"
-HEMISPHERE = "hemisphere"
-COLUMN_RADIUS = "column radius (um)"
+Terms can be combined using addition, e.g.
+PRESYNAPTIC + MTYPE
 
-SQERROR = "squared error"
-STD = "std "
-TSTAT = "t-statistic"
-PVALUE = "p-value"
-SAMPLE_SIZE = "sample size"
+terminology.measurements is a dict describing the methods associated
+with terms that represent a measured quality.
+e.g. terminology.measurements[terminology.CONNECTION_PROBABILITY]
+-> {'method name': 'connection_probability'}
+"""
 
+class Term(str):
+    """A string with an associated description defining it."""
 
-CONNECTION_PROBABILITY = "connection probability"
-INTERSOMATIC_DISTANCE = "interesomatic distance (um)"
+    def __new__(cls, term, *args, **kwargs):
+        """
+        Arguments
+        ----------
+        `term`: single word label.
+        """
+        return super().__new__(cls, term)
 
-PRESYNAPTIC = "Presynaptic "
-POSTSYNAPTIC = "Postsynaptic "
+    def __init__(self, term, description="No description provided", **kwargs):
+        """
+        Arguments
+        ------------
+        `term`: single word label
+        `description`: description of the term
+        any additional keyword arguments provided become attributes,
+        allowing the combination of terminology in heirarchies
+        """
+        self.description = description
+        for kw, arg in kwargs.items():
+            setattr(self, kw, arg)
+        return super().__init__()
+
+    def document(self, label=None):
+        if label is None:
+            label = self
+        return "{}: {}" .format(label, self.description)
+
+    def __add__(self, added):
+        description = [self.description.format(added=added)]
+        if isinstance(added, Term):
+            description.append(f"{added} : \n{added.description}")
+        return self.__class__(
+            str(self) + str(added),
+            ("\n\n".join(description)))
+
+    
+REGION = Term(
+    "region",
+    description="Acronym of a brain region according to AIBS atlas naming convenion")
+LAYER = Term(
+    "layer",
+    description="Layer of some brain region as a capitalized acronym: e.g. L1, L23, SP, VPL")
+NEURON_OR_GLIA = Term(
+    "neuron or glia?",
+    description="Either 'neuron' or 'glia', indicating which of the two broad classes of cells to look at")
+MTYPE = Term(
+    "mtype",
+    description=("Morphological type as a capitalized string, e.g. L1_SAC, L23_CHC, PC, LBC."
+                 " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values")
+)
+
+CELL_DENSITY = Term(
+    "cell density ($cells/mm^3$)",
+    description="Number of cells per cubic millimetre")
+CELL_COUNT = Term(
+    "cell count",
+    description="Total number of cells")
+REGION_VOLUME = Term(
+    "volume ($mm^3$)",
+    description="Volume of the measured parts of the brain in cubic millimetres")
+DATASET = Term(
+    "dataset",
+    descripion="The dataset these data belongs to.")
+CITATION = Term(
+    "citation",
+    descripion=("A citation for these data. Zotero bibtex format is reccommended: "
+                "<first-authors-last-name>_<first-word-of-title>_<year>."
+                "For example billeh_systematic_2020"))
+NOTES = Term(
+    "notes",
+    description="Any notes related to the dataset.")
+
+HEMISPHERE = Term(
+    "hemisphere",
+    description="Hemisphere of the brain, either 'left' or 'right'")
+
+COLUMN_RADIUS = Term(
+    "column radius (um)",
+    description="Radius of a central column to sample from, in micrometers.")
+
+SQERROR = Term(
+    "squared error",
+    description="Statistical metric. Squared error between two datasets")
+STD = Term(
+    "std ",
+    description="standard deviation")
+TSTAT = Term(
+    "t-statistic",
+    description="Statistical metric, student's t-statistic")
+PVALUE = Term(
+    "p-value",
+    description=("Statistical metric, p-value. "
+                "Probability of equal or greater deviation from the expectation value "
+                 "assuming the tested hypothesis."))
+SAMPLE_SIZE = Term(
+    "sample size",
+    description=("Size of a sample taken from a population. "
+                 "Use when individual samples are unavailable or impractical"))
+    
+
+CONNECTION_PROBABILITY = Term(
+    "connection probability",
+    description=("The probability that any specific cell in the presynaptic population "
+                 "is connected to any random cell in the postsynaptic population"))
+INTERSOMATIC_DISTANCE = Term(
+    "interesomatic distance (um)",
+    description=("The distance between the centers of the soma of a pair of cells"))
+
+PRESYNAPTIC = Term(
+    "Presynaptic ",
+    description="Prefix to apply for specifying presynaptic cell populations. e.g. PRESYNAPTIC + MTYPE")
+POSTSYNAPTIC = Term(
+    "Postsynaptic ",
+    description="Prefix to apply for specifying postsynaptic cell populations. e.g. POSTSYNAPTIC + MTYPE")
 
 
 measurements = {
