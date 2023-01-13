@@ -10,6 +10,9 @@ from analysis_neuro import stats, plots
 import analysis_neuro.analyses.data.jiang_distances as jiangd
 
 
+DATADIR = Path(__file__).parent / "data"
+
+
 schuz_density_1989 = Analysis(
     doc="""
     We evaluate the similarity of the total neuron density in the primary
@@ -21,7 +24,7 @@ schuz_density_1989 = Analysis(
     We cannot render a verdict on the result, only assign a score.
     """,
     observations=pd.read_csv(
-        Path(__file__).parent / "data" / "schuz_neuron_density_1989.csv", index_col=0
+        DATADIR / "schuz_neuron_density_1989.csv", index_col=0
     ),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
@@ -30,7 +33,7 @@ schuz_density_1989 = Analysis(
 
 
 keller_density_2018 = Analysis(
-    observations=pd.read_csv(Path(__file__).parent / "data" / "keller_2018.csv"),
+    observations=pd.read_csv(DATADIR / "keller_2018.csv"),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.ttest,
@@ -71,7 +74,7 @@ jiang_connprob_2015 = Analysis(
     We compare connection probabilities to those observed by Jiang et al.
     """,
     observations=pd.read_csv(
-        Path(__file__).parent / "data" / "jiang_connprob_2015.csv"
+        DATADIR / "jiang_connprob_2015.csv"
     ),
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=plots.crossplot,
@@ -104,6 +107,32 @@ jiang_intersomatic_2015 = Analysis(
     plotter=_histogram,
 )
 
+
+
+def _histogram_siegle(data, dependent, independent, compare):
+    # pylint: disable=unused-argument
+    out = {}
+    for key, inddata in data.groupby(independent):
+        fig = plt.figure()
+        bins = np.linspace(inddata[dependent].min(), inddata[dependent].max(), 13)
+        for label, dataset in inddata.groupby(compare):
+            plt.hist(
+                dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
+            )
+            plt.legend()
+        out[str(key)] = fig
+    return out
+
+
+siegle_osi_2019 = Analysis(
+    doc="""
+    We compare to the levels of orientation selectivity observed in 
+    Seigle et al. 2019""",
+    measurement=terms.ORIENTATION_SELECTIVITY,
+    observations=pd.read_csv(DATADIR / 'siegle_osi_2019.csv', index_col=0),
+    plotter=_histogram_siegle,)
+    # stats=stats.ttest,
+    # verdict=stats.PooledPValueThreshold(0.05))
 
 for varname in dir():
     # pylint: disable=eval-used

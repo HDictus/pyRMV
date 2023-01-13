@@ -65,6 +65,9 @@ MTYPE = Term(
     description=("Morphological type as a capitalized string, e.g. L1_SAC, L23_CHC, PC, LBC."
                  " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values")
 )
+SPIKING_CLASS = Term(
+    "spiking class",
+    description=("Spiking class of a neuron, eiher FS or RS"))
 
 CELL_DENSITY = Term(
     "cell density ($cells/mm^3$)",
@@ -75,6 +78,8 @@ CELL_COUNT = Term(
 REGION_VOLUME = Term(
     "volume ($mm^3$)",
     description="Volume of the measured parts of the brain in cubic millimetres")
+
+
 DATASET = Term(
     "dataset",
     descripion="The dataset these data belongs to.")
@@ -113,7 +118,38 @@ SAMPLE_SIZE = Term(
     "sample size",
     description=("Size of a sample taken from a population. "
                  "Use when individual samples are unavailable or impractical"))
-    
+
+VISUAL_STIMULUS = Term(
+    "visual stimulus type",
+    description="The type of visual stimulus used in an experiment, e.g. drifting grating")
+STIMULUS_AZIMUTH = Term(
+    "stimulus width (degrees)",
+    descripion="The width of the visual stimulus used in degrees on the azimuth plane")
+STIMULUS_ELEVATION = Term(
+    "stimulus height (degrees)",
+    description="The width of the visual stimulus used in degrees on the elevation plane")
+FRAME_RATE = Term(
+    "stimulus framerate (Hz)",
+    description="The framerate of the simulus used, in Hertz")
+DRIFT_SPEED = Term(
+    "simulus drift speed (degrees/s)",
+    description="The speed at which a visual stimulus drifts across the visual field")
+START_TIME = Term(
+    "start time (ms)",
+    description="The time at which the stimulus commences, preceded by a blank stimulus")
+END_TIME = Term(
+    "end time (ms)",
+    description="The time at which the stimulus ceases")
+RESOLUTION = Term(
+    "resolution",
+    description="Pixel dimensions of the visual stimulus. tuple of (width, height)")
+STIM_ORIENTATION = Term(
+    "stimulus orientation (degrees)",
+    description=(
+        "Orientation(s) of the stimulus used in the experiment. "
+        "for drifting gratings, 0 degrees drifts to the right and increasing orientation "
+        "is clockwise. If a tuple, describes the set of different orientations used for"
+        " a particular measurement (for example, orientation selectivity"))
 
 CONNECTION_PROBABILITY = Term(
     "connection probability",
@@ -122,6 +158,10 @@ CONNECTION_PROBABILITY = Term(
 INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"))
+ORIENTATION_SELECTIVITY = Term(
+    "orientation selectivity index",
+    description=("The level of selectivity a neuron has for particular stimulus orientations under "
+                 "the experimental conditions"))
 
 PRESYNAPTIC = Term(
     "Presynaptic ",
@@ -136,4 +176,5 @@ measurements = {
     CELL_COUNT: {"method name": "cell_count"},
     CONNECTION_PROBABILITY: {"method name": "connection_probability"},
     INTERSOMATIC_DISTANCE: {"method name": "intersomatic_distance"},
+    ORIENTATION_SELECTIVITY: {"method name": "orientation_selectivity"},
 }
