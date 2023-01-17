@@ -6,7 +6,8 @@ import pandas as pd
 from . import terminology as terms
 from . import plots
 
-DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES]
+DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID,
+              terms.TRIAL_ID]
 
 
 def _join_columns(dataframe):

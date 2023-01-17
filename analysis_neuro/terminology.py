@@ -91,6 +91,15 @@ CITATION = Term(
 NOTES = Term(
     "notes",
     description="Any notes related to the dataset.")
+CELL_ID = Term(
+    'gid',
+    description=("A unique identifier for a cell. When a measurement returns an"
+                 " observation for each of multiple cells, this column should be included"))
+TRIAL_ID = Term(
+    'trial id',
+    description=('A unique identifier for each trial in an experiment. When a measurement returns '
+                 'an observation for each of multiple trials, this column should be included'))
+
 
 HEMISPHERE = Term(
     "hemisphere",
@@ -162,6 +171,9 @@ ORIENTATION_SELECTIVITY = Term(
     "orientation selectivity index",
     description=("The level of selectivity a neuron has for particular stimulus orientations under "
                  "the experimental conditions"))
+FIRING_RATE = Term(
+    "firing rate (Hz)",
+    description=("Rate of firing under the experimental conditions, in Hertz"))
 
 PRESYNAPTIC = Term(
     "Presynaptic ",
@@ -177,4 +189,5 @@ measurements = {
     CONNECTION_PROBABILITY: {"method name": "connection_probability"},
     INTERSOMATIC_DISTANCE: {"method name": "intersomatic_distance"},
     ORIENTATION_SELECTIVITY: {"method name": "orientation_selectivity"},
+    FIRING_RATE: {'method name': 'firing_rate'}
 }
