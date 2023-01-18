@@ -12,9 +12,13 @@ e.g. terminology.measurements[terminology.CONNECTION_PROBABILITY]
 -> {'method name': 'connection_probability'}
 """
 
+
+_ALLTERMS = {}
+
+
 class Term(str):
     """A string with an associated description defining it."""
-
+    
     def __new__(cls, term, *args, **kwargs):
         """
         Arguments
@@ -32,6 +36,7 @@ class Term(str):
         any additional keyword arguments provided become attributes,
         allowing the combination of terminology in heirarchies
         """
+        _ALLTERMS[term] = self
         self.description = description
         for kw, arg in kwargs.items():
             setattr(self, kw, arg)
@@ -53,7 +58,7 @@ class Term(str):
     
 REGION = Term(
     "region",
-    description="Acronym of a brain region according to AIBS atlas naming convenion")
+    description="Acronym of a brain region according to AIBS atlas naming convention")
 LAYER = Term(
     "layer",
     description="Layer of some brain region as a capitalized acronym: e.g. L1, L23, SP, VPL")
@@ -191,3 +196,10 @@ measurements = {
     ORIENTATION_SELECTIVITY: {"method name": "orientation_selectivity"},
     FIRING_RATE: {'method name': 'firing_rate'}
 }
+
+
+def describe(*terms):
+    if len(terms) == 0:
+        terms = _ALLTERMS.keys()
+    return "\n\n".join([f"{term}: {_ALLTERMS[term].description}" for term in terms])
+        

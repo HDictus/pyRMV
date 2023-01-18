@@ -92,7 +92,7 @@ class Analysis:
     These components, provided at initialization are as follows:
 
     measurement: a string describing the measurement to analyze.
-       should have a corresponding entry in analysis_neuro.measurements
+       should have a corresponding entry in analysis_neuro.terminology.measurements
     observations: parameters or parameterized experimental data to use
        for the measurements.
     stats (optional): a callable for statistical tests accepting :
