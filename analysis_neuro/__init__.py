@@ -6,8 +6,7 @@ import pandas as pd
 from . import terminology as terms
 from . import plots
 
-DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID,
-              terms.TRIAL_ID]
+DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
 
 def _join_columns(dataframe):
@@ -36,7 +35,7 @@ def _check_callable(obj, args):
 
 
 def measure(model, measurement, parameters):
-    """Measure the quantity measurement from model under parameters
+    """Measure the quantity measurement from a model.
 
     Arguments:
         model: a class implementing a method measuring measurement
@@ -67,13 +66,9 @@ def extract_parameters(observations, measurement):
            measured quantity. will be excluded from the parameters.
     """
     exclude_from_parameters = (
-        [measurement]
-        + DATA_TERMS
-        + [terms.STD + measurement, terms.SAMPLE_SIZE]
+        [measurement] + DATA_TERMS + [terms.STD + measurement, terms.SAMPLE_SIZE]
     )
-    paramcols = [
-        col for col in observations if col not in exclude_from_parameters
-    ]
+    paramcols = [col for col in observations if col not in exclude_from_parameters]
 
     def _multicolumn_unique(dframe, cols):
         """Return the unique combinations of cols in dframe."""
@@ -101,7 +96,7 @@ class Analysis:
         where the dataframes contain the test statistics for the hypotheses
         tested
     plotter (optional): a callable for plotting in one of two forms:
-        (x: pd.Series, y: pd.Series, hue: pd.Series) -> figure 
+        (x: pd.Series, y: pd.Series, hue: pd.Series) -> figure
         (several plots from the seaborn package satisfy this)
         OR:
         (data: pd.DataFrame, dependent: str, independent: list[str], compare: str)
@@ -177,7 +172,9 @@ class Analysis:
         Model must have the method required to measure self.measurement
         see analysis_neuro.terminology.measurements
         """
-        measured =  measure(model, measurement=self.measurement, parameters=self.parameters)
+        measured = measure(
+            model, measurement=self.measurement, parameters=self.parameters
+        )
         # the model's label should be included to distinguish it from other
         # models and experimental data
         measured[terms.DATASET] = model.label
@@ -187,7 +184,6 @@ class Analysis:
     def parameters(self):
         """Determine validation parameters from provided observations."""
         return extract_parameters(self.observations, self.measurement)
-
 
     @property
     def varying_parameters(self):

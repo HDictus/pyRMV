@@ -2,9 +2,7 @@
 import numpy as np
 
 
-def data_from_histogram(
-        bin_edges, bin_tops, horizontal_range, vertical_range
-):
+def data_from_histogram(bin_edges, bin_tops, horizontal_range, vertical_range):
     """Generate artificial data based on a histogram.
 
     Each bin will have N datapoints located at its center, where N is the
@@ -23,7 +21,8 @@ def data_from_histogram(
     horizontal_sz = horizontal_range[1] - horizontal_range[0]
     horizontal_per_pixel = horizontal_sz / diff
     xvalues = [
-        horizontal_range[0] + (be - bin_edges[0]) * horizontal_per_pixel for be in bin_edges
+        horizontal_range[0] + (be - bin_edges[0]) * horizontal_per_pixel
+        for be in bin_edges
     ]
 
     binmeans = [(e1 + e2) * 0.5 for e1, e2 in zip(xvalues[:-1], xvalues[1:])]

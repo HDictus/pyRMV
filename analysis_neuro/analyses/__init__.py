@@ -10,6 +10,7 @@ from analysis_neuro import stats, plots
 import analysis_neuro.analyses.data.jiang_distances as jiangd
 from analysis_neuro.analyses.data.siegle_2019 import osi
 
+
 DATADIR = Path(__file__).parent / "data"
 
 
@@ -23,9 +24,7 @@ schuz_density_1989 = Analysis(
     So instead we use a mean squared error to quantify the mismatch.
     We cannot render a verdict on the result, only assign a score.
     """,
-    observations=pd.read_csv(
-        DATADIR / "schuz_neuron_density_1989.csv", index_col=0
-    ),
+    observations=pd.read_csv(DATADIR / "schuz_neuron_density_1989.csv", index_col=0),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.squared_error,
@@ -73,9 +72,7 @@ jiang_connprob_2015 = Analysis(
     doc="""
     We compare connection probabilities to those observed by Jiang et al.
     """,
-    observations=pd.read_csv(
-        DATADIR / "jiang_connprob_2015.csv"
-    ),
+    observations=pd.read_csv(DATADIR / "jiang_connprob_2015.csv"),
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=plots.crossplot,
     stats=stats.binom_test,
@@ -108,7 +105,6 @@ jiang_intersomatic_2015 = Analysis(
 )
 
 
-
 def _histogram_siegle(data, dependent, independent, compare):
     # pylint: disable=unused-argument
     out = {}
@@ -124,16 +120,16 @@ def _histogram_siegle(data, dependent, independent, compare):
     return out
 
 
-
 siegle_osi_2019 = Analysis(
     doc="""
-    We compare to the levels of orientation selectivity observed in 
+    We compare to the levels of orientation selectivity observed in
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
     observations=osi,
-    plotter=_histogram_siegle,)
-    # stats=stats.ttest,
-    # verdict=stats.PooledPValueThreshold(0.05))
+    plotter=_histogram_siegle,
+)
+# stats=stats.ttest,
+# verdict=stats.PooledPValueThreshold(0.05))
 
 for varname in dir():
     # pylint: disable=eval-used
