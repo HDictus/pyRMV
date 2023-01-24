@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest as pyt
+import warnings
 from mock import MagicMock
-from analysis_neuro import Analysis, terms
+from analysis_neuro import Analysis, terms, TerminologyError
 
 terms.measurements["measured thing"] = {"method name": "thing"}
 
@@ -203,8 +204,7 @@ def test_plots_with_multiple_params():
 def test_invalid_observation_supplied():
     observations = 1234
     with pyt.raises(ValueError) as ve:
-        ana = Analysis(measurement="", observations=observations)
-    print(dir(ve.value))
+        ana = Analysis(measurement="measured thing", observations=observations)
     assert "must be a pandas.DataFrame of the form:" in str(ve.value)
 
 
@@ -213,12 +213,16 @@ def test_plotter_stats_verdict_signatures():
     for kw in ["stats", "plotter", "verdict"]:
         with pyt.raises(ValueError) as ve:
             ana = Analysis(
-                measurement="", observations=pd.DataFrame({}), **{kw: invalid_things[0]}
+                measurement="measured thing",
+                observations=pd.DataFrame({}),
+                **{kw: invalid_things[0]}
             )
         assert "must be a callable of the form:" in str(ve.value)
         with pyt.raises(ValueError) as ve:
             ana = Analysis(
-                measurement="", observations=pd.DataFrame({}), **{kw: invalid_things[1]}
+                measurement="measured thing",
+                observations=pd.DataFrame({}),
+                **{kw: invalid_things[1]}
             )
         assert "must be a callable of the form:" in str(ve.value)
 
@@ -274,6 +278,34 @@ def test_runs_verdict():
     assert results["verdict"] == {"hypo": "Pass"}
     mockverdict.assert_called_with(mockresults)
 
+
+def test_warns_invalid_term():
+    matchstr = "Column header 'not in terms' is not defined in analysis_neuro.terminology"
+    with pyt.warns(Warning, match=matchstr) as wrn:
+        Analysis(
+            observations=pd.DataFrame({'not in terms': [0, 1, 2, 3]}),
+            measurement=terms.CELL_DENSITY)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Analysis(
+            observations=pd.DataFrame({'Presynaptic ' + 'mtype': ['PC']}),
+            measurement=terms.CELL_DENSITY)
+
+def test_raises_error_if_nonstring_col():
+    with pyt.raises(ValueError):
+        Analysis(
+            observations=pd.DataFrame({3451: ['PC']}),
+            measurement=terms.CELL_DENSITY)
+    
+
+def test_raises_error_invalid_measurement():
+    with pyt.raises(TerminologyError) as te:
+        Analysis(
+            observations=pd.DataFrame({terms.LAYER: ['L1', 'L2', 'L3']}),
+            measurement='lololo'
+        )
+    assert ("Provided measurement 'lololo' is not defined in"
+            " analysis_neuro.terminology.measurements.") in str(te.value)
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?

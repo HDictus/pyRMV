@@ -1,10 +1,16 @@
 """Package for constructing analyses and validations of neuroscience models."""
 import inspect
+import warnings
 from collections.abc import Callable
 from pathlib import Path
 import pandas as pd
 from . import terminology as terms
 from . import plots
+
+
+class TerminologyError(ValueError):
+    pass
+
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -46,6 +52,8 @@ def measure(model, measurement, parameters):
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
     """
+    _validate_measurement(measurement)
+    _validate_observations(parameters)
     method = terms.measurements[measurement]["method name"]
     measured = getattr(model, method)(parameters)
     return measured
@@ -114,23 +122,10 @@ class Analysis:
         doc=None,
     ):
         """Initialize an Analysis from various components."""
+        _validate_measurement(measurement)
         self.measurement = measurement
 
-        if not isinstance(observations, pd.DataFrame):
-            thispath = Path(__file__).parent
-            examplepath = (
-                thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
-            )
-
-            raise ValueError(
-                "observations must be a pandas.DataFrame of the form:\n"
-                f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
-                "|value     | value    |...|measured value   | <some name>   |\n"
-                "|...       |...       |...|...              |               |\n"
-                "namely, the columns represent the measurement and its parameterization\n"
-                f"see {str(examplepath)} for example data"
-            )
-
+        _validate_observations(observations)
         self.observations = observations
 
         if not (
@@ -253,3 +248,42 @@ class Analysis:
         for key, value in fields.items():
             current_fields[key] = value
         return self.__class__(**current_fields)
+
+    
+def _validate_observations(observations):
+    if not isinstance(observations, pd.DataFrame):
+        thispath = Path(__file__).parent
+        examplepath = (
+            thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
+        )
+        
+        raise ValueError(
+            "observations must be a pandas.DataFrame of the form:\n"
+            f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
+            "|value     | value    |...|measured value   | <some name>   |\n"
+            "|...       |...       |...|...              |               |\n"
+            "namely, the columns represent the measurement and its parameterization\n"
+            f"see {str(examplepath)} for example data"
+        )
+    for c in observations.columns:
+        if not isinstance(c, str):
+            raise ValueError("column headers must be strings")
+        if c not in terms._ALLTERMS:
+            # check if it is a prefix-postfix combo
+            is_valid_prefixed = False
+            for t in terms._ALLTERMS:
+                if t.endswith(" "):
+                    # if it is prefixed and the postfix term exists
+                    if c.startswith(t) and c[len(t):] in terms._ALLTERMS:
+                        is_valid_prefixed = True
+                        break
+            if not is_valid_prefixed:
+                warnings.warn(
+                    f"Column header '{c}' is not defined in analysis_neuro.terminology")
+
+
+def _validate_measurement(measurement):
+    if measurement not in terms.measurements:
+        raise TerminologyError(
+            f"Provided measurement '{measurement}' is not defined in "
+            "analysis_neuro.terminology.measurements.")
