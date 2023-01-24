@@ -23,6 +23,7 @@ setup(
     },
     url="http://bluebrain.epfl.ch",
     packages=find_packages(),
+    include_package_data=True,
     classifiers=[
         "Development Status :: Pre-Alpha",
         "Programming Language :: Python",
