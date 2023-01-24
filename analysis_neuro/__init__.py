@@ -56,6 +56,7 @@ def measure(model, measurement, parameters):
     _validate_observations(parameters)
     method = terms.measurements[measurement]["method name"]
     measured = getattr(model, method)(parameters)
+    _validate_measured(measured, measurement, parameters)
     return measured
 
 
@@ -287,3 +288,29 @@ def _validate_measurement(measurement):
         raise TerminologyError(
             f"Provided measurement '{measurement}' is not defined in "
             "analysis_neuro.terminology.measurements.")
+
+
+def _validate_measured(measured_data, measurement, parameters):
+
+    def _exception(msg):
+        fake_example_measurement = pd.DataFrame([
+            dict(**row, **{measurement: '<some value>'})
+            for __, row in parameters.iterrows() for _ in range(4)])
+
+        raise ValueError(
+            f"The measurement method {terms.measurements[measurement]['method name']} must return"
+            " a pandas DataFrame containing the parameters and measurements.\n"
+            f"e.g. \n: {fake_example_measurement}\n\n"
+            f"Recieved instead:\n{measured_data}\n\n"
+            f"The problem with that is that {msg}.")
+
+    if not isinstance(measured_data, pd.DataFrame):
+        _exception("it is not a DataFrame")
+
+    if measurement not in measured_data.columns:
+        _exception("it does not contain a column for the measurement")
+
+    if any([c not in measured_data for c in parameters.columns]):
+        _exception("it does not include all the parameters. "
+                   "It can be hard to tell measurements apart without them")
+    

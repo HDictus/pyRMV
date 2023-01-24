@@ -2,7 +2,7 @@ import pandas as pd
 import pytest as pyt
 import warnings
 from mock import MagicMock
-from analysis_neuro import Analysis, terms, TerminologyError
+from analysis_neuro import Analysis, terms, TerminologyError, measure
 
 terms.measurements["measured thing"] = {"method name": "thing"}
 
@@ -309,3 +309,54 @@ def test_raises_error_invalid_measurement():
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
+
+
+def test_measure_checks_valid_return_format():
+    class ReturnsNumberMock:
+
+        label = 'blabla'
+
+        def cell_density(self, parameters):
+            return 0
+            
+    with pyt.raises(ValueError):
+        Analysis(
+            observations=pd.DataFrame(
+                {terms.LAYER: ['L1'],
+                 terms.REGION: ['VISp']}),
+            measurement=terms.CELL_DENSITY)(
+                ReturnsNumberMock())
+
+    class ReturnsNoMeasurement:
+
+        label = 'lololo'
+
+        def cell_density(self, parameters):
+            return parameters
+            
+    with pyt.raises(ValueError):
+        Analysis(
+            observations=pd.DataFrame(
+                {terms.LAYER: ['L1'],
+                 terms.REGION: ['VISp']}),
+            measurement=terms.CELL_DENSITY)(
+                ReturnsNoMeasurement())
+
+        
+    class ReturnsIncompleteParams:
+
+        label = 'hihihi',
+
+        def cell_density(self, parameters):
+            out = parameters[[terms.LAYER]]
+            out[terms.CELL_DENSITY] = 10
+            return out
+            
+    with pyt.raises(ValueError):
+        Analysis(
+            observations=pd.DataFrame(
+                {terms.LAYER: ['L1'],
+                 terms.REGION: ['VISp']}),
+            measurement=terms.CELL_DENSITY)(
+                ReturnsIncompleteParams())
+
