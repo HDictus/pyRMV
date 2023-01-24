@@ -280,32 +280,40 @@ def test_runs_verdict():
 
 
 def test_warns_invalid_term():
-    matchstr = "Column header 'not in terms' is not defined in analysis_neuro.terminology"
+    matchstr = (
+        "Column header 'not in terms' is not defined in analysis_neuro.terminology"
+    )
     with pyt.warns(Warning, match=matchstr) as wrn:
         Analysis(
-            observations=pd.DataFrame({'not in terms': [0, 1, 2, 3]}),
-            measurement=terms.CELL_DENSITY)
+            observations=pd.DataFrame({"not in terms": [0, 1, 2, 3]}),
+            measurement=terms.CELL_DENSITY,
+        )
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         Analysis(
-            observations=pd.DataFrame({'Presynaptic ' + 'mtype': ['PC']}),
-            measurement=terms.CELL_DENSITY)
+            observations=pd.DataFrame({"Presynaptic " + "mtype": ["PC"]}),
+            measurement=terms.CELL_DENSITY,
+        )
+
 
 def test_raises_error_if_nonstring_col():
     with pyt.raises(ValueError):
         Analysis(
-            observations=pd.DataFrame({3451: ['PC']}),
-            measurement=terms.CELL_DENSITY)
-    
+            observations=pd.DataFrame({3451: ["PC"]}), measurement=terms.CELL_DENSITY
+        )
+
 
 def test_raises_error_invalid_measurement():
     with pyt.raises(TerminologyError) as te:
         Analysis(
-            observations=pd.DataFrame({terms.LAYER: ['L1', 'L2', 'L3']}),
-            measurement='lololo'
+            observations=pd.DataFrame({terms.LAYER: ["L1", "L2", "L3"]}),
+            measurement="lololo",
         )
-    assert ("Provided measurement 'lololo' is not defined in"
-            " analysis_neuro.terminology.measurements.") in str(te.value)
+    assert (
+        "Provided measurement 'lololo' is not defined in"
+        " analysis_neuro.terminology.measurements."
+    ) in str(te.value)
+
 
 # TODO: test case where observatioons have measurement but not label
 # should raise an error? or just put 'biodata' in place?
@@ -314,49 +322,41 @@ def test_raises_error_invalid_measurement():
 def test_measure_checks_valid_return_format():
     class ReturnsNumberMock:
 
-        label = 'blabla'
+        label = "blabla"
 
         def cell_density(self, parameters):
             return 0
-            
+
     with pyt.raises(ValueError):
         Analysis(
-            observations=pd.DataFrame(
-                {terms.LAYER: ['L1'],
-                 terms.REGION: ['VISp']}),
-            measurement=terms.CELL_DENSITY)(
-                ReturnsNumberMock())
+            observations=pd.DataFrame({terms.LAYER: ["L1"], terms.REGION: ["VISp"]}),
+            measurement=terms.CELL_DENSITY,
+        )(ReturnsNumberMock())
 
     class ReturnsNoMeasurement:
 
-        label = 'lololo'
+        label = "lololo"
 
         def cell_density(self, parameters):
             return parameters
-            
+
     with pyt.raises(ValueError):
         Analysis(
-            observations=pd.DataFrame(
-                {terms.LAYER: ['L1'],
-                 terms.REGION: ['VISp']}),
-            measurement=terms.CELL_DENSITY)(
-                ReturnsNoMeasurement())
+            observations=pd.DataFrame({terms.LAYER: ["L1"], terms.REGION: ["VISp"]}),
+            measurement=terms.CELL_DENSITY,
+        )(ReturnsNoMeasurement())
 
-        
     class ReturnsIncompleteParams:
 
-        label = 'hihihi',
+        label = ("hihihi",)
 
         def cell_density(self, parameters):
             out = parameters[[terms.LAYER]]
             out[terms.CELL_DENSITY] = 10
             return out
-            
+
     with pyt.raises(ValueError):
         Analysis(
-            observations=pd.DataFrame(
-                {terms.LAYER: ['L1'],
-                 terms.REGION: ['VISp']}),
-            measurement=terms.CELL_DENSITY)(
-                ReturnsIncompleteParams())
-
+            observations=pd.DataFrame({terms.LAYER: ["L1"], terms.REGION: ["VISp"]}),
+            measurement=terms.CELL_DENSITY,
+        )(ReturnsIncompleteParams())

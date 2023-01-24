@@ -9,7 +9,7 @@ from . import plots
 
 
 class TerminologyError(ValueError):
-    pass
+    """Error in use of terminology."""
 
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
@@ -250,14 +250,12 @@ class Analysis:
             current_fields[key] = value
         return self.__class__(**current_fields)
 
-    
+
 def _validate_observations(observations):
     if not isinstance(observations, pd.DataFrame):
         thispath = Path(__file__).parent
-        examplepath = (
-            thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
-        )
-        
+        examplepath = thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
+
         raise ValueError(
             "observations must be a pandas.DataFrame of the form:\n"
             f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
@@ -266,43 +264,50 @@ def _validate_observations(observations):
             "namely, the columns represent the measurement and its parameterization\n"
             f"see {str(examplepath)} for example data"
         )
-    for c in observations.columns:
-        if not isinstance(c, str):
+    # pylint: disable=protected-access
+    for column in observations.columns:
+        if not isinstance(column, str):
             raise ValueError("column headers must be strings")
-        if c not in terms._ALLTERMS:
+        if column not in terms._ALLTERMS:
             # check if it is a prefix-postfix combo
             is_valid_prefixed = False
-            for t in terms._ALLTERMS:
-                if t.endswith(" "):
+            for term in terms._ALLTERMS:
+                if term.endswith(" "):
                     # if it is prefixed and the postfix term exists
-                    if c.startswith(t) and c[len(t):] in terms._ALLTERMS:
+                    if column.startswith(term) and column[len(term):] in terms._ALLTERMS:
                         is_valid_prefixed = True
                         break
             if not is_valid_prefixed:
                 warnings.warn(
-                    f"Column header '{c}' is not defined in analysis_neuro.terminology")
+                    f"Column header '{column}' is not defined in analysis_neuro.terminology"
+                )
 
 
 def _validate_measurement(measurement):
     if measurement not in terms.measurements:
         raise TerminologyError(
             f"Provided measurement '{measurement}' is not defined in "
-            "analysis_neuro.terminology.measurements.")
+            "analysis_neuro.terminology.measurements."
+        )
 
 
 def _validate_measured(measured_data, measurement, parameters):
-
     def _exception(msg):
-        fake_example_measurement = pd.DataFrame([
-            dict(**row, **{measurement: '<some value>'})
-            for __, row in parameters.iterrows() for _ in range(4)])
+        fake_example_measurement = pd.DataFrame(
+            [
+                dict(**row, **{measurement: "<some value>"})
+                for __, row in parameters.iterrows()
+                for _ in range(4)
+            ]
+        )
 
         raise ValueError(
             f"The measurement method {terms.measurements[measurement]['method name']} must return"
             " a pandas DataFrame containing the parameters and measurements.\n"
             f"e.g. \n: {fake_example_measurement}\n\n"
             f"Recieved instead:\n{measured_data}\n\n"
-            f"The problem with that is that {msg}.")
+            f"The problem with that is that {msg}."
+        )
 
     if not isinstance(measured_data, pd.DataFrame):
         _exception("it is not a DataFrame")
@@ -310,7 +315,8 @@ def _validate_measured(measured_data, measurement, parameters):
     if measurement not in measured_data.columns:
         _exception("it does not contain a column for the measurement")
 
-    if any([c not in measured_data for c in parameters.columns]):
-        _exception("it does not include all the parameters. "
-                   "It can be hard to tell measurements apart without them")
-    
+    if any(c not in measured_data for c in parameters.columns):
+        _exception(
+            "it does not include all the parameters. "
+            "It can be hard to tell measurements apart without them"
+        )
