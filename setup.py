@@ -15,7 +15,7 @@ setup(
     description="collection of analyses and validations for neuroscience",
     license="MIT",
     python_requires=">=3.6",
-    install_requires=["numpy", "pandas", "seaborn", "scipy", "mock"],
+    install_requires=["numpy", "pandas", "seaborn", "scipy", "mock", "importlib-resources"],
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/browse/MMBVISCX-19",
