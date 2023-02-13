@@ -238,14 +238,14 @@ class Analysis:
 
     def with_fields(self, **fields):
         """Duplicate this analysis, overwriting some fields."""
-        current_fields = dict(
-            measurement=self.measurement,
-            observations=self.observations,
-            plotter=self.plotter,
-            stats=self.stats,
-            verdict=self.verdict,
-            doc=self.doc,
-        )
+        current_fields = {
+            'measurement': self.measurement,
+            'observations': self.observations,
+            'plotter': self.plotter,
+            'stats': self.stats,
+            'verdict': self.verdict,
+            'doc': self.doc,
+        }
         for key, value in fields.items():
             current_fields[key] = value
         return self.__class__(**current_fields)
@@ -295,7 +295,7 @@ def _validate_measured(measured_data, measurement, parameters):
     def _exception(msg):
         fake_example_measurement = pd.DataFrame(
             [
-                dict(**row, **{measurement: "<some value>"})
+                {**row, **{measurement: "<some value>"}}
                 for __, row in parameters.iterrows()
                 for _ in range(4)
             ]
