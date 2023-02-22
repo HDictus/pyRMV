@@ -7,20 +7,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from analysis_neuro.io import DPI
 
 def _assert_figure_equal(new, old_path):
     with TemporaryDirectory() as tmpd:
         newfile = Path(tmpd) / "new.png"
-        new.savefig(newfile)
-        diff = plt.imread(newfile) - plt.imread(old_path)
-        rms = np.mean(diff**2)
-        are_same = rms < 0.02
+        oldim = plt.imread(old_path)
+        print(new.get_size_inches(), oldim.shape)
+        dpi = int(np.ceil((oldim.shape[1] / new.get_size_inches())[0]))
+        print(dpi)
+        new.savefig(newfile, dpi=dpi)
+        errmsg = ""
+        try:
+            diff = plt.imread(newfile) - oldim
+            rms = np.mean(diff**2)
+            are_same = rms < 0.02
+        except ValueError as ve:
+            are_same = False
+            errmsg = str(ve)
         if not are_same:
             savedpath = Path() / ".testing"
             savedpath.mkdir(exist_ok=True)
             shutil.copy(old_path, savedpath / "old.png")
             shutil.copy(newfile, savedpath / "new.png")
-            raise AssertionError(f"plots are not the same, see: {savedpath}")
+            raise AssertionError(f"{errmsg}\nplots are not the same, see: {savedpath.resolve()}")
 
 
 # pylint: disable=C0123
@@ -42,5 +52,6 @@ def assert_results_equal(new_result, stored_result):
                 _assert_figure_equal(new_result[k], val)
                 continue
         # noqa
-        assert type(val) == type(new_result[k])
+        print(val, new_result[k])
+        assert type(val) == type(new_result[k]), f"{type(val)} =/= {type(new_result[k])}"
         assert val == new_result[k], f"{val} != {new_result[k]}"

@@ -5,6 +5,11 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+DPI = 256
+
+def _safepath(filename):
+    return "".join([c for c in filename if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
 
 def _append_path(path, resultdict):
     out = {}
@@ -34,12 +39,12 @@ def _prepare_dict(result, path):
     resultdict = {}
     for key, value in result.items():
         if isinstance(value, pd.DataFrame):
-            savepath = path / f"{key}.csv"
+            savepath = path / f"{_safepath(key)}.csv"
             value.to_csv(savepath)
             resultdict[key] = str(savepath.name)
         elif isinstance(value, plt.Figure):
-            savepath = path / f"{key}.png"
-            value.savefig(savepath)
+            savepath = path / f"{_safepath(key)}.png"
+            value.savefig(savepath, dpi=DPI)
             resultdict[key] = str(savepath.name)
         elif isinstance(value, dict):
             resultdict[key] = _prepare_dict(value, path)

@@ -18,6 +18,8 @@ def test_save_and_load_figures_and_measurement():
         "measurement": measurement,
         "figures": {"afigure": fig},
         "Introduction": "abcdefg",
+        "stats": {'a hypothesis with (\arbitr$ary ch@ract/ers':
+                  measurement.assign(pvalue=1)},
     }
     with TemporaryDirectory() as tdir:
         savepath = Path(tdir) / "result"
