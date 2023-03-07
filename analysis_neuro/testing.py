@@ -7,16 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from analysis_neuro.io import DPI
-
 
 def _assert_figure_equal(new, old_path):
     with TemporaryDirectory() as tmpd:
         newfile = Path(tmpd) / "new.png"
         oldim = plt.imread(old_path)
-        print(new.get_size_inches(), oldim.shape)
         dpi = int(np.ceil((oldim.shape[1] / new.get_size_inches())[0]))
-        print(dpi)
         new.savefig(newfile, dpi=dpi)
         errmsg = ""
         try:
@@ -52,6 +48,5 @@ def assert_results_equal(new_result, stored_result):
                 _assert_figure_equal(new_result[k], val)
                 continue
         # noqa
-        print(val, new_result[k])
         assert type(val) == type(new_result[k]), f"{type(val)} =/= {type(new_result[k])}"
         assert val == new_result[k], f"{val} != {new_result[k]}"
