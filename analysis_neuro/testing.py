@@ -19,9 +19,9 @@ def _assert_figure_equal(new, old_path):
             diff = plt.imread(newfile) - oldim
             rms = np.mean(diff**2)
             are_same = rms < 0.02
-        except ValueError as ve:
+        except ValueError as verr:
             are_same = False
-            errmsg = str(ve)
+            errmsg = str(verr)
         if not are_same:
             savedpath = Path() / ".testing"
             savedpath.mkdir(exist_ok=True)
