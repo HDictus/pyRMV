@@ -1,2 +1,2 @@
 """Module version."""
-VERSION = "0.1.1.dev1"
+VERSION = "0.1.1.dev2"

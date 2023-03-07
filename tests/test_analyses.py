@@ -16,11 +16,28 @@ def test_jiang_connprob():
         def connection_probability(self, params):
             return params.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
 
+    class PerfectModel:
+
+        label='perfect'
+
+        def connection_probability(self, params):
+            return ana.jiang_connprob_2015.observations.assign(**{terms.DATASET: self.label})
+
+
     result = ana.jiang_connprob_2015(MockModel())
     mockresults = result["measurements"][
         result["measurements"][terms.DATASET] == "mock"
     ]
     assert np.all(mockresults[terms.CONNECTION_PROBABILITY] == 0.1)
+    assert result["verdict"] == {
+        "The probability connection probability is the same for Jiang2015 as for mock.": "Fail"
+    }
+
+    perfect = ana.jiang_connprob_2015(PerfectModel())
+    perfect["verdict"] == {
+        "The probability connection probability is the same for Jiang2015 as for perfect.": "Pass"
+    }
+
 
 
 def test_jiang_intersomatic():
@@ -40,9 +57,9 @@ def test_jiang_intersomatic():
 
 def test_siegle_osi():
     class MockModel:
-    
+
         label='mock'
-    
+
         def orientation_selectivity(self, params):
             return pd.DataFrame([
                 dict(**row, **{terms.ORIENTATION_SELECTIVITY: num})
@@ -57,7 +74,7 @@ def test_siegle_osi():
     assert np.all(
         mockmeasurements[terms.ORIENTATION_SELECTIVITY] == np.concatenate(
             [np.linspace(0, 1, 5)] * 2))
-                                 
+
 
 def test_pala_peterson_conprob_2015():
     class MockModel:
@@ -67,9 +84,22 @@ def test_pala_peterson_conprob_2015():
         def connection_probability(self, parameters):
             return parameters.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
 
+    class PerfectModel:
+
+        label='perfect'
+
+        def connection_probability(self, parameters):
+            return ana.pala_peterson_conprob_2015.observations.assign(**{terms.DATASET: self.label})
+
     result = ana.pala_peterson_conprob_2015(MockModel())
     mockresults = result["measurements"][result["measurements"][terms.DATASET] == "mock"]
     assert np.all(mockresults[terms.CONNECTION_PROBABILITY] == 0.1)
     assert result["verdict"] == {
         "The probability connection probability is the same for PalaPeterson2015 as for mock.": "Fail"
+    }
+
+    perfect = ana.pala_peterson_conprob_2015(PerfectModel())
+
+    assert perfect["verdict"] == {
+        "The probability connection probability is the same for PalaPeterson2015 as for perfect.": "Pass"
     }

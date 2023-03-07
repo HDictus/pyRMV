@@ -7,8 +7,10 @@ import pandas as pd
 
 DPI = 256
 
+
 def _safepath(filename):
-    return "".join([c for c in filename if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+    return "".join([c for c in filename
+                    if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
 
 
 def _append_path(path, resultdict):
