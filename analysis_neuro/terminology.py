@@ -71,6 +71,12 @@ MTYPE = Term(
         " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
+GENE_EXPRESSION = Term(
+    "gene expression",
+    description=(
+        "Gene that the cell expresses."
+    ),
+)
 SPIKING_CLASS = Term(
     "spiking class", description=("Spiking class of a neuron, eiher FS or RS")
 )
@@ -212,6 +218,15 @@ POSTSYNAPTIC = Term(
     "Postsynaptic ",
     description=("Prefix to apply for specifying postsynaptic"
                  " cell populations. e.g. POSTSYNAPTIC + MTYPE"),
+)
+MIN = Term(
+    "minimal ",
+    description=("Prefix to apply for specifying minimal value"),
+)
+
+MAX = Term(
+    "maximal ",
+    description=("Prefix to apply for specifying maximal value"),
 )
 
 

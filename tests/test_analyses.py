@@ -58,3 +58,18 @@ def test_siegle_osi():
         mockmeasurements[terms.ORIENTATION_SELECTIVITY] == np.concatenate(
             [np.linspace(0, 1, 5)] * 2))
                                  
+
+def test_pala_peterson_conprob_2015():
+    class MockModel:
+
+        label = "mock"
+
+        def connection_probability(self, parameters):
+            return parameters.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
+
+    result = ana.pala_peterson_conprob_2015(MockModel())
+    mockresults = result["measurements"][result["measurements"][terms.DATASET] == "mock"]
+    assert np.all(mockresults[terms.CONNECTION_PROBABILITY] == 0.1)
+    assert result["verdict"] == {
+        "The probability connection probability is the same for PalaPeterson2015 as for mock.": "Fail"
+    }

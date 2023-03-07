@@ -134,6 +134,18 @@ siegle_osi_2019 = Analysis(
     observations=osi,
     plotter=_histogram_siegle,
 )
+
+
+pala_peterson_conprob_2015 = Analysis(
+    doc="""
+    We compare to the connectivity observed in
+    Pala, Peterson 2015""",
+    observations=pd.read_csv(DATADIR / "pala_peterson_conprob_2015.csv"),
+    measurement=terms.CONNECTION_PROBABILITY,
+    plotter=plots.crossplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05),
+)
 # stats=stats.ttest,
 # verdict=stats.PooledPValueThreshold(0.05))
 
