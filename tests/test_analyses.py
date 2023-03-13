@@ -1,5 +1,6 @@
 import numpy as np
 import analysis_neuro.analyses as ana
+import analysis_neuro as an
 from analysis_neuro import terminology as terms
 import pandas as pd
 
@@ -103,3 +104,38 @@ def test_pala_peterson_conprob_2015():
     assert perfect["verdict"] == {
         "The probability connection probability is the same for PalaPeterson2015 as for perfect.": "Pass"
     }
+
+
+def test_mtype_to_mtype_connectivity():
+
+    class MockModel:
+    
+        label='mock'
+    
+        def mtype(self, params=None):
+            if params is None:
+                params = pd.DataFrame(index=[1])
+            return pd.DataFrame([{**row, terms.MTYPE: mt} for mt in an.mtypes.PRIMITIVES 
+                                 for i, row in params.iterrows()])
+    
+        def connection_probability(self, params):
+            rng = np.random.default_rng(1)
+            return params.assign(**{
+                terms.CONNECTION_PROBABILITY: rng.uniform(0, 0.7, size=params.shape[0])})
+    
+        def synapses_per_connection(self, params):
+            rng = np.random.default_rng(1)
+            return pd.DataFrame([{
+                **row, terms.SYNAPSES_PER_CONNECTION: val
+            } for _, row in params.iterrows() for val in rng.poisson(3, size=10) ])
+    
+        def num_synapses(self, params):
+            rng = np.random.default_rng(1)
+            return params.assign(**{terms.NUM_SYNAPSES: rng.poisson(1000, size=params.shape[0])})
+ 
+    mock = MockModel()
+    
+    results = ana.mtype_to_mtype_connectivity(mock)
+    assert results[terms.CONNECTION_PROBABILITY]
+    assert results[terms.SYNAPSES_PER_CONNECTION]
+    assert results[terms.NUM_SYNAPSES]

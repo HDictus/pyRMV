@@ -146,8 +146,32 @@ pala_peterson_conprob_2015 = Analysis(
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05),
 )
-# stats=stats.ttest,
-# verdict=stats.PooledPValueThreshold(0.05))
+
+
+def mtype_to_mtype_connectivity(*models):
+    """Visualize mtype to mtype connectivity matrices for one or more models.
+    
+    Generates heatmaps for connection probability, synapses per connection, and total synapses
+    between all different mtypes within a 250um radius column. A separate set of heatmaps is created
+    for each model.
+    """
+    mtypes = np.unique([mt for md in models for mt in md.mtype()[terms.MTYPE]])
+    
+    pathways = pd.DataFrame([{
+        terms.PRESYNAPTIC + terms.MTYPE: pre_mtype,
+        terms.POSTSYNAPTIC + terms.MTYPE: post_mtype,
+        terms.COLUMN_RADIUS: 250}
+        for pre_mtype in mtypes for post_mtype in mtypes])
+    conn_prob_matrix = Analysis(
+        measurement=terms.CONNECTION_PROBABILITY,
+        observations=pathways,
+        plotter=plots.pathway_heatmap)
+    syn_conn_matrix = conn_prob_matrix.with_fields(measurement=terms.SYNAPSES_PER_CONNECTION)
+    num_syn_matrix = conn_prob_matrix.with_fields(measurement=terms.NUM_SYNAPSES)
+    return {terms.CONNECTION_PROBABILITY: conn_prob_matrix(*models),
+            terms.SYNAPSES_PER_CONNECTION: syn_conn_matrix(*models),
+            terms.NUM_SYNAPSES: num_syn_matrix(*models)}
+
 
 for varname in dir():
     # pylint: disable=eval-used

@@ -197,6 +197,15 @@ INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"),
 )
+SYNAPSES_PER_CONNECTION = Term(
+    "synapses per connection",
+    description=("The number of synapses between a pair of connected cells")
+)
+NUM_SYNAPSES = Term(
+    "Number of synapses",
+    description="The total number of synapses along a pathway"
+)
+
 ORIENTATION_SELECTIVITY = Term(
     "orientation selectivity index",
     description=(
@@ -234,6 +243,8 @@ measurements = {
     CELL_DENSITY: {"method name": "cell_density"},
     CELL_COUNT: {"method name": "cell_count"},
     CONNECTION_PROBABILITY: {"method name": "connection_probability"},
+    SYNAPSES_PER_CONNECTION: {'method name': 'synapses_per_connection'},
+    NUM_SYNAPSES: {'method name': 'num_synapses'},
     INTERSOMATIC_DISTANCE: {"method name": "intersomatic_distance"},
     ORIENTATION_SELECTIVITY: {"method name": "orientation_selectivity"},
     FIRING_RATE: {"method name": "firing_rate"},
