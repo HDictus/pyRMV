@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest as pyt
 import scipy
-from analysis_neuro import stats, terms
+from analysis_neuro import stats, terms, Assumption
 
 
 def test_squared_error():
@@ -205,6 +205,37 @@ def test_PooledPValueThreshold():
     assert verdicts["some hypothesis"] == "Fail"
 
 
+def test_binom_test_no_sample_size():
+    data_no_samp = pd.DataFrame(
+        {
+            "a": [1, 1, 2] * 2,
+            "b": [1, 2, 1] * 2,
+            "c": [1, 2, 3] * 2,
+            "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.3],
+            "comp": ["x"] * 3 + ["y"] * 3,
+            terms.SAMPLE_SIZE: [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+        })
+    
+    data_nan_samp = pd.DataFrame(
+        {
+            "a": [1, 1, 2] * 2,
+            "b": [1, 2, 1] * 2,
+            "c": [1, 2, 3] * 2,
+            "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.3],
+            "comp": ["x"] * 3 + ["y"] * 3,
+            terms.SAMPLE_SIZE: [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+        })
+
+    with pyt.raises(ValueError):
+        hypotheses = stats.binom_test(
+            data_no_samp, dependent="msr", independent=["a", "b", "c"], compare="comp"
+        )
+    with pyt.raises(ValueError):
+        hypotheses = stats.binom_test(
+            data_nan_samp, dependent="msr", independent=["a", "b", "c"], compare="comp"
+        )
+                             
+    
 def test_binom_test_1_has_std():
     data = pd.DataFrame(
         {
@@ -213,7 +244,6 @@ def test_binom_test_1_has_std():
             "c": [1, 2, 3] * 2,
             "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.3],
             "comp": ["x"] * 3 + ["y"] * 3,
-            terms.STD + "msr": [1, 2, 3, np.nan, np.nan, np.nan],
             terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan],
         }
     )
@@ -224,13 +254,16 @@ def test_binom_test_1_has_std():
     hypotheses = stats.binom_test(
         data, dependent="msr", independent=["a", "b", "c"], compare="comp"
     )
-    assert "The probability msr is the same for x as for y." in hypotheses
-    assert np.allclose(
-        hypotheses["The probability msr is the same for x as for y."][
-            terms.PVALUE
-        ].values,
-        expected,
-    )
+    with pyt.warns(Assumption, match=(
+            "The values of msr for y"
+            " are the ground truth value for y")):
+        assert "The probability msr is the same for x as for y." in hypotheses
+        assert np.allclose(
+            hypotheses["The probability msr is the same for x as for y."][
+                terms.PVALUE
+            ].values,
+            expected,
+        )
     return
 
 
@@ -242,7 +275,32 @@ def test_binom_test_nan():
             "c": [1, 2, 3] * 2,
             "msr": [0.5, 1.0, np.nan, 0.1, np.nan, 0.3],
             "comp": ["x"] * 3 + ["y"] * 3,
-            terms.STD + "msr": [1, 2, 3, np.nan, np.nan, np.nan],
+            terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan],
+        }
+    )
+    expected = [scipy.stats.binomtest(2, 4, 0.1).pvalue] + [np.nan, np.nan]
+    hypotheses = stats.binom_test(
+        data, dependent="msr", independent=["a", "b", "c"], compare="comp"
+    )
+    assert "The probability msr is the same for x as for y." in hypotheses
+    assert np.allclose(
+        np.nan_to_num(
+            hypotheses["The probability msr is the same for x as for y."][
+                terms.PVALUE
+            ].values
+        ),
+        np.nan_to_num(expected),
+    )
+    return
+
+def test_binom_test_two_sample():
+    data = pd.DataFrame(
+        {
+            "a": [1, 1, 2] * 2,
+            "b": [1, 2, 1] * 2,
+            "c": [1, 2, 3] * 2,
+            "msr": [0.5, 1.0, np.nan, 0.1, np.nan, 0.3],
+            "comp": ["x"] * 3 + ["y"] * 3,
             terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan],
         }
     )

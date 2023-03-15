@@ -2,6 +2,8 @@
 from scipy import stats
 import numpy as np
 import pandas as pd
+import warnings
+from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
 
@@ -185,13 +187,18 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
             if terms.SAMPLE_SIZE not in dataset2 or np.all(
                 np.isnan(dataset2[terms.SAMPLE_SIZE])
             ):
-                raise NotImplementedError(
-                    "Currently we can't perform binomial tests on data of this form.\n"
-                    "Please make a pull request."
-                )
+                raise ValueError(
+                    "Neither dataset has a sample size, we cannot perform a binomial test")
             label1, label2 = label2, label1
             dataset1, dataset2 = dataset2, dataset1
+        
 
+        warnings.warn(
+            Assumption(
+                f"The values of {dependent} for {label2} are the ground truth value for {label2}.\n"
+                f"We assume this because {label2} has no sample size associated with its"
+                " measurements"))
+            
         hypothesis = (
             f"The probability {dependent} is the same for {label1} as for {label2}."
         )
@@ -199,4 +206,5 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
         statistic = dataset1[independent]
         statistic[terms.PVALUE] = pvalues
         hypotheses[hypothesis] = statistic
+
     return hypotheses

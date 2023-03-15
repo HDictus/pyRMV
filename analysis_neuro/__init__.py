@@ -86,6 +86,10 @@ def extract_parameters(observations, measurement):
     return _multicolumn_unique(observations, paramcols)
 
 
+class Assumption(UserWarning):
+    """A warning representing an assumption made during the analysis process."""
+    pass
+
 class Analysis:
     """An object for defining analyses.
 
