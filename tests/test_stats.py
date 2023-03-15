@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest as pyt
 import scipy
+import statsmodels.stats.proportion as proportion
 from analysis_neuro import stats, terms, Assumption
 
 
@@ -236,7 +237,7 @@ def test_binom_test_no_sample_size():
         )
                              
     
-def test_binom_test_1_has_std():
+def test_binom_test_1_sample():
     data = pd.DataFrame(
         {
             "a": [1, 1, 2] * 2,
@@ -293,18 +294,25 @@ def test_binom_test_nan():
     )
     return
 
+
 def test_binom_test_two_sample():
     data = pd.DataFrame(
         {
             "a": [1, 1, 2] * 2,
             "b": [1, 2, 1] * 2,
             "c": [1, 2, 3] * 2,
-            "msr": [0.5, 1.0, np.nan, 0.1, np.nan, 0.3],
+            "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.3],
             "comp": ["x"] * 3 + ["y"] * 3,
-            terms.SAMPLE_SIZE: [4, 2, 4, np.nan, np.nan, np.nan],
+            terms.SAMPLE_SIZE: [4, 2, 4, 6, 7, 8],
         }
     )
-    expected = [scipy.stats.binomtest(2, 4, 0.1).pvalue] + [np.nan, np.nan]
+
+    
+    expected = [proportion.proportions_ztest([p1, p2], [n1, n2])[1]
+                for p1, p2, n1, n2 in [
+                        (0.5, 0.1, 4, 6),
+                        (1.0, 0.2, 2, 7),
+                        (0.25, 0.3, 4, 8)]]
     hypotheses = stats.binom_test(
         data, dependent="msr", independent=["a", "b", "c"], compare="comp"
     )
@@ -318,3 +326,5 @@ def test_binom_test_two_sample():
         np.nan_to_num(expected),
     )
     return
+
+

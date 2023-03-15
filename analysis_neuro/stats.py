@@ -1,5 +1,6 @@
 """Tools for statistical hypothesis testing."""
 from scipy import stats
+import statsmodels
 import numpy as np
 import pandas as pd
 import warnings
@@ -147,12 +148,10 @@ class PooledPValueThreshold:
 
 
 def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: str):
-    """Perform a binomial test for all values of the independent variables.
-
+    """Test that a measured probability is the same between two values.
+    
     Assumptions:
        Samples are independent.
-       the dataset without reported sample size accurately describes the
-         population value of the probability
 
     Hypothesis:
        The probability represented by the dependent variable is the
