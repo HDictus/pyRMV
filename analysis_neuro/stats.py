@@ -1,9 +1,8 @@
 """Tools for statistical hypothesis testing."""
+import warnings
 from scipy import stats
-import statsmodels
 import numpy as np
 import pandas as pd
-import warnings
 from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
@@ -147,63 +146,74 @@ class PooledPValueThreshold:
         return verdicts
 
 
+def _have_samples(data: pd.DataFrame):
+    return terms.SAMPLE_SIZE in data.columns\
+        and not np.isnan(data[terms.SAMPLE_SIZE]).all()
+
+
 def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: str):
     """Test that a measured probability is the same between two values.
-    
+
     Assumptions:
        Samples are independent.
+       The sample with the larger sample size precisely represents the true,
+         probability for that sample. If one sample has a sample size of NaN,
+         then that one is assumed to represent the true probability.
 
     Hypothesis:
-       The probability represented by the dependent variable is the
-       same for both compared populations.
+       The probability represented by the dependent variable in one population
+       is equal to the dependent variable in the other.
 
     Arguments:
        data: the data to perform the test for
        dependent: the column containing the dependent variable, a probability
        independent: columns of independent variables
-       compare: the columns distinguishing the datasets to compare
+       compare: the column distinguishing the datasets to compare
     """
 
-    def _binom_checknan(successes, trials, probability):
-        if successes < 0 or np.isnan(probability):
-            return np.nan
-        return stats.binomtest(successes, trials, probability).pvalue
+    def vector_binomtest(sampleprob, trials, probability):
+        print(sampleprob, trials, probability)
+        return [np.nan if any(np.isnan(np.float32([s, n, p]))) else
+                stats.binomtest(int(s * n), int(n), p).pvalue
+                for s, n, p in zip(sampleprob, trials, probability)]
 
-    def _compute_pvalues(dataset1, dataset2):
-        probabilities = dataset2[dependent]
-        num = np.int32(dataset1[terms.SAMPLE_SIZE])
-        successes = np.int32(np.around(dataset1[dependent] * num))
-        pvalues = [
-            _binom_checknan(k, n, p) for k, n, p in zip(successes, num, probabilities)
-        ]
+    def binomtest(data1, data2, label1, label2):
+        assume_1_accurate = np.logical_or(
+            np.isnan(data1[terms.SAMPLE_SIZE].values),
+            data1[terms.SAMPLE_SIZE].values > data2[terms.SAMPLE_SIZE].values)
+        warn_assume_exact(data1[independent][assume_1_accurate], label1)
+        warn_assume_exact(data2[independent][~assume_1_accurate], label2)
+
+        pvalues = np.zeros(assume_1_accurate.shape)
+
+        prob1 = data1[dependent][assume_1_accurate]
+        num2 = data2[terms.SAMPLE_SIZE][assume_1_accurate]
+        samp2 = data2[dependent][assume_1_accurate]
+
+        pvalues[assume_1_accurate] = vector_binomtest(samp2, num2, prob1)
+
+        prob2 = data2[dependent][~assume_1_accurate]
+        num1 = data1[terms.SAMPLE_SIZE][~assume_1_accurate]
+        samp1 = data1[dependent][~assume_1_accurate]
+
+        pvalues[~assume_1_accurate] = vector_binomtest(samp1, num1, prob2)
         return pvalues
+
+    def warn_assume_exact(for_params, label):
+        warnings.warn(
+            f"assuming the values of {dependent} for the {label} are the ground truth for {label}"
+            f" for the following measurements: {for_params}",
+            Assumption)
 
     hypotheses = {}
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
-        if terms.SAMPLE_SIZE not in dataset1 or np.all(
-            np.isnan(dataset1[terms.SAMPLE_SIZE])
-        ):
-            if terms.SAMPLE_SIZE not in dataset2 or np.all(
-                np.isnan(dataset2[terms.SAMPLE_SIZE])
-            ):
-                raise ValueError(
-                    "Neither dataset has a sample size, we cannot perform a binomial test")
-            label1, label2 = label2, label1
-            dataset1, dataset2 = dataset2, dataset1
-        
 
-        warnings.warn(
-            Assumption(
-                f"The values of {dependent} for {label2} are the ground truth value for {label2}.\n"
-                f"We assume this because {label2} has no sample size associated with its"
-                " measurements"))
-            
         hypothesis = (
             f"The probability {dependent} is the same for {label1} as for {label2}."
         )
-        pvalues = _compute_pvalues(dataset1, dataset2)
+        pvalues = binomtest(dataset1, dataset2, label1, label2)
         statistic = dataset1[independent]
-        statistic[terms.PVALUE] = pvalues
+        statistic[terms.PVALUE] = list(pvalues)
         hypotheses[hypothesis] = statistic
 
     return hypotheses

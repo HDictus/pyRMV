@@ -227,14 +227,11 @@ def test_binom_test_no_sample_size():
             terms.SAMPLE_SIZE: [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
         })
 
-    with pyt.raises(ValueError):
-        hypotheses = stats.binom_test(
-            data_no_samp, dependent="msr", independent=["a", "b", "c"], compare="comp"
-        )
-    with pyt.raises(ValueError):
-        hypotheses = stats.binom_test(
-            data_nan_samp, dependent="msr", independent=["a", "b", "c"], compare="comp"
-        )
+
+    hypotheses = stats.binom_test(
+        data_no_samp, dependent="msr", independent=["a", "b", "c"], compare="comp"
+    )
+    assert np.isnan(list(hypotheses.values())[0][terms.PVALUE].values).all()
                              
     
 def test_binom_test_1_sample():
@@ -301,18 +298,18 @@ def test_binom_test_two_sample():
             "a": [1, 1, 2] * 2,
             "b": [1, 2, 1] * 2,
             "c": [1, 2, 3] * 2,
-            "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.3],
+            "msr": [0.5, 1.0, 0.25, 0.1, 0.2, 0.5],
             "comp": ["x"] * 3 + ["y"] * 3,
-            terms.SAMPLE_SIZE: [4, 2, 4, 6, 7, 8],
+            terms.SAMPLE_SIZE: [12, 2, 4, 10, 7, 4],
         }
     )
 
     
-    expected = [proportion.proportions_ztest([p1, p2], [n1, n2])[1]
-                for p1, p2, n1, n2 in [
-                        (0.5, 0.1, 4, 6),
-                        (1.0, 0.2, 2, 7),
-                        (0.25, 0.3, 4, 8)]]
+    expected = [scipy.stats.binomtest(k, n, p).pvalue
+                for k, n, p in (
+                        (1, 10, 0.5),
+                        (2, 2, 0.2),
+                        (1, 4, 0.5))]
     hypotheses = stats.binom_test(
         data, dependent="msr", independent=["a", "b", "c"], compare="comp"
     )

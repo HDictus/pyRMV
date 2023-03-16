@@ -88,7 +88,7 @@ def extract_parameters(observations, measurement):
 
 class Assumption(UserWarning):
     """A warning representing an assumption made during the analysis process."""
-    pass
+
 
 class Analysis:
     """An object for defining analyses.

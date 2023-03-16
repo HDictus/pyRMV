@@ -152,7 +152,7 @@ def mtype_to_mtype_connectivity(*models):
     """Visualize mtype to mtype connectivity matrices for one or more models.
 
     Generates heatmaps for connection probability, synapses per connection, and total synapses
-    between all different mtypes within a 250um radius column. A separate set of heatmaps is created
+    between all different mtypes within a 125um radius column. A separate set of heatmaps is created
     for each model.
     """
     mtypes = np.unique([mt for md in models for mt in md.mtype()[terms.MTYPE]])
@@ -160,7 +160,7 @@ def mtype_to_mtype_connectivity(*models):
     pathways = pd.DataFrame([{
         terms.PRESYNAPTIC + terms.MTYPE: pre_mtype,
         terms.POSTSYNAPTIC + terms.MTYPE: post_mtype,
-        terms.COLUMN_RADIUS: 250}
+        terms.COLUMN_RADIUS: 125}
         for pre_mtype in mtypes for post_mtype in mtypes])
     conn_prob_matrix = Analysis(
         measurement=terms.CONNECTION_PROBABILITY,
