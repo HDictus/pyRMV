@@ -121,7 +121,8 @@ def test_mtype_to_mtype_connectivity():
         def connection_probability(self, params):
             rng = np.random.default_rng(1)
             return params.assign(**{
-                terms.CONNECTION_PROBABILITY: rng.uniform(0, 0.7, size=params.shape[0])})
+                terms.CONNECTION_PROBABILITY: rng.uniform(0, 0.7, size=params.shape[0]),
+                terms.SAMPLE_SIZE: [25] * params.shape[0]})
     
         def synapses_per_connection(self, params):
             rng = np.random.default_rng(1)
@@ -134,8 +135,12 @@ def test_mtype_to_mtype_connectivity():
             return params.assign(**{terms.NUM_SYNAPSES: rng.poisson(1000, size=params.shape[0])})
  
     mock = MockModel()
-    
+
     results = ana.mtype_to_mtype_connectivity(mock)
     assert results[terms.CONNECTION_PROBABILITY]
     assert results[terms.SYNAPSES_PER_CONNECTION]
     assert results[terms.NUM_SYNAPSES]
+    mock2 = MockModel()
+    mock2.label = 'amock'
+
+    results = ana.mtype_to_mtype_connectivity(mock, mock2)

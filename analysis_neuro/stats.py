@@ -217,3 +217,21 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
         hypotheses[hypothesis] = statistic
 
     return hypotheses
+
+
+def is_lognormal(data, dependent, independent, compare):
+    """Test that the dependent variable is lognormally distributed.
+
+    One test for each value of the independent variables.
+    
+    Hypothesis:
+       the dependent variable is lognormally distributed.
+    """
+    hypotheses = {}
+    for label, df in data.groupby(compare):
+        pvals = df.groupby(independent)[dependent].apply(
+            lambda a: stats.normaltest(np.log(a)).pvalue)
+        hypotheses[f"{dependent} is lognormally distributed for {label}"] =\
+            pvals.reset_index().rename(columns={dependent: terms.PVALUE})
+    return hypotheses
+        

@@ -168,7 +168,7 @@ def mtype_to_mtype_connectivity(*models):
         plotter=plots.pathway_heatmap,
         stats=stats.binom_test)
     syn_conn_matrix = conn_prob_matrix.with_fields(measurement=terms.SYNAPSES_PER_CONNECTION,
-                                                   stats=None)
+                                                   stats=stats.is_lognormal)
     num_syn_matrix = conn_prob_matrix.with_fields(measurement=terms.NUM_SYNAPSES,
                                                   stats=None)
     return {terms.CONNECTION_PROBABILITY: conn_prob_matrix(*models),

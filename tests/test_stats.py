@@ -325,3 +325,22 @@ def test_binom_test_two_sample():
     return
 
 
+def test_is_lognormal():
+    nums = np.random.uniform(0, 100, size=(1000))
+    data = pd.DataFrame(
+        {'label': (['a'] * 500) + (['b'] * 500),
+         'var': ([1] * 250) + ([2] * 250) + ([1] * 250) + ([2] * 250),
+         'msr': nums})
+    result = stats.is_lognormal(
+        data, dependent='msr', independent=['var'], compare='label')
+    aexp = pd.DataFrame({
+        'var': [1, 2],
+        terms.PVALUE: [scipy.stats.normaltest(np.log(nums[:250])).pvalue,
+                       scipy.stats.normaltest(np.log(nums[250:500])).pvalue]})
+    pd.testing.assert_frame_equal(result['msr is lognormally distributed for a'], aexp)
+    bexp = pd.DataFrame({
+        'var': [1, 2],
+        terms.PVALUE: [scipy.stats.normaltest(np.log(nums[500:750])).pvalue,
+                       scipy.stats.normaltest(np.log(nums[750:])).pvalue]})
+    pd.testing.assert_frame_equal(result['msr is lognormally distributed for a'], bexp)
+    
