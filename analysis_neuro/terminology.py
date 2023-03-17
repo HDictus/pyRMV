@@ -71,6 +71,12 @@ MTYPE = Term(
         " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
+SYNAPSE_CLASS = Term(
+    "synapse class",
+    description=(
+        "The type of synapses a cell forms. Can be EXC, INH or MOD (representing modulatory)."
+        "EXC synapses use glutamate, INH synapses use GABA, and all other synapses are MOD")
+)
 GENE_EXPRESSION = Term(
     "gene expression",
     description=(
