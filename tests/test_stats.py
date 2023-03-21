@@ -248,12 +248,12 @@ def test_binom_test_1_sample():
         scipy.stats.binomtest(k, n, p).pvalue
         for k, n, p in [(2, 4, 0.1), (2, 2, 0.2), (1, 4, 0.3)]
     ]
-    hypotheses = stats.binom_test(
-        data, dependent="msr", independent=["a", "b", "c"], compare="comp"
-    )
     with pyt.warns(Assumption, match=(
-            "The values of msr for y"
-            " are the ground truth value for y")):
+            "the values of msr for y are the ground truth for y")):
+        hypotheses = stats.binom_test(
+            data, dependent="msr", independent=["a", "b", "c"], compare="comp"
+        )
+
         assert "The probability msr is the same for x as for y." in hypotheses
         assert np.allclose(
             hypotheses["The probability msr is the same for x as for y."][

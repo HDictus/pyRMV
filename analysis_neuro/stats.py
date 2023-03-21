@@ -202,7 +202,7 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
 
     def warn_assume_exact(for_params, label):
         warnings.warn(
-            f"assuming the values of {dependent} for the {label} are the ground truth for {label}"
+            f"Assuming the values of {dependent} for {label} are the ground truth for {label}"
             f" for the following measurements: {for_params}",
             Assumption)
 
