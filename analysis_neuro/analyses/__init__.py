@@ -169,9 +169,9 @@ def mtype_to_mtype_connectivity(*models):
         stats=stats.binom_test,
         verdict=stats.PooledPValueThreshold(0.05))
     syn_conn_matrix = conn_prob_matrix.with_fields(measurement=terms.SYNAPSES_PER_CONNECTION,
-                                                   stats=lambda *a, **k: dict(
+                                                   stats=lambda *a, **k: {
                                                        **stats.is_lognormal(*a, **k),
-                                                       **stats.lognorm_ttest(*a, **k)),
+                                                       **stats.lognorm_ttest(*a, **k)},
                                                    verdict=stats.PooledPValueThreshold(0.05))
     num_syn_matrix = conn_prob_matrix.with_fields(measurement=terms.NUM_SYNAPSES,
                                                   stats=None,
