@@ -1,9 +1,9 @@
 """Tools for statistical hypothesis testing."""
 import warnings
+from typing import List
 from scipy import stats
 import numpy as np
 import pandas as pd
-from typing import List
 from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
@@ -224,18 +224,18 @@ def is_lognormal(data, dependent, independent, compare):
     """Test that the dependent variable is lognormally distributed.
 
     One test for each value of the independent variables.
-    
+
     Hypothesis:
        the dependent variable is lognormally distributed.
     """
     hypotheses = {}
-    for label, df in data.groupby(compare):
-        pvals = df.groupby(independent)[dependent].apply(
+    for label, dataframe in data.groupby(compare):
+        pvals = dataframe.groupby(independent)[dependent].apply(
             lambda a: stats.normaltest(np.log(a)).pvalue)
         hypotheses[f"{dependent} is lognormally distributed for {label}"] =\
             pvals.reset_index().rename(columns={dependent: terms.PVALUE})
     return hypotheses
-        
+
 
 def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
     """Run a t-test for lognormally distributed values.
@@ -251,14 +251,14 @@ def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], co
     Assumptions:
        the samples are lognormally distributed
        samples are independent
-    
+
     Hypothesis:
        The dependent variable has the same mean value for both compared populations
     """
-    
+
     def log_ttest(dataframe, label1, label2):
         return stats.ttest_ind(np.log(dataframe[label1]), np.log(dataframe[label2])).pvalue
-    
+
     hypotheses = {}
     for label1, data1, label2, data2 in _iter_compare(data, compare):
         data1.set_index(independent, inplace=True)
