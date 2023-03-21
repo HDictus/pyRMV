@@ -344,3 +344,21 @@ def test_is_lognormal():
                        scipy.stats.normaltest(np.log(nums[750:])).pvalue]})
     pd.testing.assert_frame_equal(result['msr is lognormally distributed for a'], bexp)
     
+
+def test_lognorm_ttest():
+    nums = np.random.uniform(0, 100, size=(1000))
+    data = pd.DataFrame(
+        {'label': (['a'] * 500) + (['b'] * 500),
+         'var': ([1] * 250) + ([2] * 250) + ([1] * 250) + ([2] * 250),
+         'msr': nums})
+
+    result = stats.lognorm_ttest(
+        data, dependent='msr', independent='var', compare='label')
+    expectation = pd.DataFrame(
+        {'var': [1, 2],
+         terms.PVALUE: [scipy.stats.ttest_ind(np.log(nums[:250]), np.log(nums[500:750])).pvalue,
+                        scipy.stats.ttest_ind(np.log(nums[250:500]), np.log(nums[750:])).pvalue]})
+
+    pd.testing.assert_frame_equal(
+        result['the population mean of msr is the same for a and b'],
+        expectation)

@@ -115,8 +115,10 @@ def test_mtype_to_mtype_connectivity():
         def mtype(self, params=None):
             if params is None:
                 params = pd.DataFrame(index=[1])
-            return pd.DataFrame([{**row, terms.MTYPE: mt} for mt in an.mtypes.PRIMITIVES 
-                                 for i, row in params.iterrows()])
+            return pd.DataFrame([
+                {**row, terms.MTYPE: mt}
+                for mt in np.random.choice(an.mtypes.SUPPORTED_MTYPE_LABELS, 2)
+                for i, row in params.iterrows()])
     
         def connection_probability(self, params):
             rng = np.random.default_rng(1)

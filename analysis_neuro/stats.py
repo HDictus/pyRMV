@@ -3,6 +3,7 @@ import warnings
 from scipy import stats
 import numpy as np
 import pandas as pd
+from typing import List
 from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
@@ -235,3 +236,36 @@ def is_lognormal(data, dependent, independent, compare):
             pvals.reset_index().rename(columns={dependent: terms.PVALUE})
     return hypotheses
         
+
+def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
+    """Run a t-test for lognormally distributed values.
+
+    Arguments:
+        data: A pandas dataframe containing the measured values. one column per variable
+              and one row per sample
+        dependent: the dependent variable, the value to compare across
+        independent: the independent variables. Perfrom a separate comparison for each unique
+            combination of these
+        compare: variable to compare values between.
+
+    Assumptions:
+       the samples are lognormally distributed
+       samples are independent
+    
+    Hypothesis:
+       The dependent variable has the same mean value for both compared populations
+    """
+    
+    def log_ttest(dataframe, label1, label2):
+        return stats.ttest_ind(np.log(dataframe[label1]), np.log(dataframe[label2])).pvalue
+    
+    hypotheses = {}
+    for label1, data1, label2, data2 in _iter_compare(data, compare):
+        data1.set_index(independent, inplace=True)
+        data2.set_index(independent, inplace=True)
+        to_applyon = data1.rename(columns={dependent: label1})
+        to_applyon[label2] = data2[dependent]
+        p_value = to_applyon.reset_index().groupby(independent).apply(log_ttest, label1, label2)
+        hypothesis = f'the population mean of {dependent} is the same for {label1} and {label2}'
+        hypotheses[hypothesis] = p_value.reset_index().rename(columns={0: terms.PVALUE})
+    return hypotheses

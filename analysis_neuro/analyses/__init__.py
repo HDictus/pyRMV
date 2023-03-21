@@ -166,11 +166,16 @@ def mtype_to_mtype_connectivity(*models):
         measurement=terms.CONNECTION_PROBABILITY,
         observations=pathways,
         plotter=plots.pathway_heatmap,
-        stats=stats.binom_test)
+        stats=stats.binom_test,
+        verdict=stats.PooledPValueThreshold(0.05))
     syn_conn_matrix = conn_prob_matrix.with_fields(measurement=terms.SYNAPSES_PER_CONNECTION,
-                                                   stats=stats.is_lognormal)
+                                                   stats=lambda *a, **k: dict(
+                                                       **stats.is_lognormal(*a, **k),
+                                                       **stats.lognorm_ttest(*a, **k)),
+                                                   verdict=stats.PooledPValueThreshold(0.05))
     num_syn_matrix = conn_prob_matrix.with_fields(measurement=terms.NUM_SYNAPSES,
-                                                  stats=None)
+                                                  stats=None,
+                                                  verdict=None)
     return {terms.CONNECTION_PROBABILITY: conn_prob_matrix(*models),
             terms.SYNAPSES_PER_CONNECTION: syn_conn_matrix(*models),
             terms.NUM_SYNAPSES: num_syn_matrix(*models)}
