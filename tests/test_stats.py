@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import pytest as pyt
 import scipy
-import statsmodels.stats.proportion as proportion
 from analysis_neuro import stats, terms, Assumption
 
 
