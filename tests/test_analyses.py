@@ -1,4 +1,5 @@
 import numpy as np
+import pytest as pyt
 import analysis_neuro.analyses as ana
 import analysis_neuro as an
 from analysis_neuro import terminology as terms
@@ -138,11 +139,12 @@ def test_mtype_to_mtype_connectivity():
  
     mock = MockModel()
 
-    results = ana.mtype_to_mtype_connectivity(mock)
-    assert results[terms.CONNECTION_PROBABILITY]
-    assert results[terms.SYNAPSES_PER_CONNECTION]
-    assert results[terms.NUM_SYNAPSES]
-    mock2 = MockModel()
-    mock2.label = 'amock'
-
-    results = ana.mtype_to_mtype_connectivity(mock, mock2)
+    with pyt.warns(DeprecationWarning):
+        results = ana.mtype_to_mtype_connectivity(mock)
+        assert results[terms.CONNECTION_PROBABILITY]
+        assert results[terms.SYNAPSES_PER_CONNECTION]
+        assert results[terms.NUM_SYNAPSES]
+        mock2 = MockModel()
+        mock2.label = 'amock'
+        
+        results = ana.mtype_to_mtype_connectivity(mock, mock2)

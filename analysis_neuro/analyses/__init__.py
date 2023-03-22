@@ -1,5 +1,6 @@
 """Collected analyses and validations."""
 from pathlib import Path
+import warnings
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -148,14 +149,12 @@ pala_peterson_conprob_2015 = Analysis(
 )
 
 
-def mtype_to_mtype_connectivity(*models, radius=125):
-    """Visualize mtype to mtype connectivity matrices for one or more models.
+def mtype_to_mtype_connprob(*models, radius=125):
+    """Visualize the connection probabilty between all mtypes for one or more models.
 
-    Generates heatmaps for connection probability, synapses per connection, and total synapses
-    between all different mtypes within a column of a set radius (in um).
-    A separate set of heatmaps is created for each model.
-    When multiple models are passed, their connection probability and synapses per connection
-    are also 
+    Will use all pairs of cells within the given radius (default 125 um). It will generate
+    a heatplot of the connection probabilit and if provided two models will test whether their
+    connection probabilities are statistically distinguishable.
     """
     mtypes = np.unique([mt for md in models for mt in md.mtype()[terms.MTYPE]])
 
@@ -164,23 +163,76 @@ def mtype_to_mtype_connectivity(*models, radius=125):
         terms.POSTSYNAPTIC + terms.MTYPE: post_mtype,
         terms.COLUMN_RADIUS: radius}
         for pre_mtype in mtypes for post_mtype in mtypes])
-    conn_prob_matrix = Analysis(
+
+    analysis = Analysis(
         measurement=terms.CONNECTION_PROBABILITY,
         observations=pathways,
         plotter=plots.pathway_heatmap,
         stats=stats.binom_test,
         verdict=stats.PooledPValueThreshold(0.05))
-    syn_conn_matrix = conn_prob_matrix.with_fields(measurement=terms.SYNAPSES_PER_CONNECTION,
-                                                   stats=lambda *a, **k: {
-                                                       **stats.is_lognormal(*a, **k),
-                                                       **stats.lognorm_ttest(*a, **k)},
-                                                   verdict=stats.PooledPValueThreshold(0.05))
-    num_syn_matrix = conn_prob_matrix.with_fields(measurement=terms.NUM_SYNAPSES,
-                                                  stats=None,
-                                                  verdict=None)
-    return {terms.CONNECTION_PROBABILITY: conn_prob_matrix(*models),
-            terms.SYNAPSES_PER_CONNECTION: syn_conn_matrix(*models),
-            terms.NUM_SYNAPSES: num_syn_matrix(*models)}
+    return analysis(*models)
+
+
+def mtype_to_mtype_syn_per_conn(*models, radius=125):
+    """Visualize the synapses per connection between all mtypes for one or more models.
+
+    Will use all pairs of cells within the given radius (default 125 um). It will generate
+    a heatplot of the mean synapses per connection and if provided two models
+    will test whether their synapses per connection are lognormally distributed and
+    statistically distinguishable.
+    """
+    mtypes = np.unique([mt for md in models for mt in md.mtype()[terms.MTYPE]])
+
+    pathways = pd.DataFrame([{
+        terms.PRESYNAPTIC + terms.MTYPE: pre_mtype,
+        terms.POSTSYNAPTIC + terms.MTYPE: post_mtype,
+        terms.COLUMN_RADIUS: radius}
+        for pre_mtype in mtypes for post_mtype in mtypes])
+
+    analysis = Analysis(
+        measurement=terms.SYNAPSES_PER_CONNECTION,
+        observations=pathways,
+        plotter=plots.pathway_heatmap,
+        stats=lambda *a, **k: {
+            **stats.is_lognormal(*a, **k),
+            **stats.lognorm_ttest(*a, **k)},
+        verdict=stats.PooledPValueThreshold(0.05))
+    return analysis(*models)
+
+
+def mtype_to_mtype_nsyn(*models, radius=125):
+    """Visualize the total number of synapses along mtype pathways."""
+    mtypes = np.unique([mt for md in models for mt in md.mtype()[terms.MTYPE]])
+
+    pathways = pd.DataFrame([{
+        terms.PRESYNAPTIC + terms.MTYPE: pre_mtype,
+        terms.POSTSYNAPTIC + terms.MTYPE: post_mtype,
+        terms.COLUMN_RADIUS: radius}
+        for pre_mtype in mtypes for post_mtype in mtypes])
+
+    analysis = Analysis(
+        measurement=terms.NUM_SYNAPSES,
+        observations=pathways,
+        plotter=plots.pathway_heatmap)
+    return analysis(*models)
+
+
+def mtype_to_mtype_connectivity(*models, radius=125):
+    """Visualize mtype to mtype connectivity matrices for one or more models.
+
+    Generates heatmaps for connection probability, synapses per connection, and total synapses
+    between all different mtypes within a column of a set radius (in um).
+    A separate set of heatmaps is created for each model.
+    When multiple models are passed, their connection probability and synapses per connection
+    are also
+    """
+    warnings.warn(
+        "This analysis is deprecated, please use the individual analyses:"
+        "mtype_to_mtype_connprob, mtype_to_mtype_syn_per_conn, mtype_to_mtype_nsyn",
+        DeprecationWarning)
+    return {terms.CONNECTION_PROBABILITY: mtype_to_mtype_connprob(*models, radius=radius),
+            terms.SYNAPSES_PER_CONNECTION: mtype_to_mtype_syn_per_conn(*models, radius=radius),
+            terms.NUM_SYNAPSES: mtype_to_mtype_nsyn(*models, radius=radius)}
 
 
 for varname in dir():
