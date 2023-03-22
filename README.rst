@@ -12,28 +12,31 @@ This repository is for the analysis code: all model-specific code should go in b
 
 Any reusable abstractions or tools to make creating new analyses easier can also be created here.
 
+Features
+========
+
+The terminology module establishes a common terminology used in the dataframes that are used for analysis. the Terms defined there specify a column header and describe the nature of the column contents.
+
+The Analysis class allows the straightforward creation of an analysis by specifying the Term of a the quantity to be measured for the analysis, a set of observations using the terminology to describe the experimental circumstances under which the quantity is to be measured, and any plots or statistical tests desired. The plotting and statistical testing functions follow a fixed format and can be either selected from the plots and stats submodules, or created as needed. Once an analysis is initialized it is a callable and can be called on a model object which implements the necessary measurement methods, generating a dict report containing measurements, documentation, plots, and the results of the statistical tests.
+
+Note that the terminology, and by extension the observations describe the measurement as performed on a real animal, and so do not reference any model-specific elements and can therefoe be used to describe the validation conditions of any model which has them in its scope.
+
 
 Contributing
 ============
 
-Whenever you write an analysis with or without using this library, create a pull request with your analysis (even just as a notebook or script).
-No need to clean it up first, even if it's rubbish.
-We've all written rubbish before and no one will judge.
-The sooner it is out there the better, because that way people also know what you are working on and can more easily avoid reinventing your wheels.
-When time allows, you can work together with others to turn the analysis provided in the pull request into a reusable piece of code.
-With practice, you should be able to write pretty clean analyses on the first try - and do so quickly thanks to the abstractions we create together in this library.
+All aspects of the library are open to modification as required by user needs.
+Any new terminology required should be documented in the terminology module.
+Analyses created should be saved within the analyses module, and must be a callable accepting one or more model objects and returning a dict.
 
-
-Also, if you have any old analyses or validations which are still potentially useful, throw them in some pull requests too, and we can get round to refactoring them as soon as someone wants something similar.
-
+To contribute, simply clone the repository, make your desired changes alongside one or more automated tests for the changes, then create a branch, push, and create a pull request.
+After a review process and any necessary changed your improvements will be accepted, and can be used by any other user of the library.
 
 
 Testing strategy
 ----------------
 
-Once an analysis has been created for a model, the model and analysis in question should be added to the growing library of regression tests.
-After relevant changes to the framework, these can be run to verify that the analysis still provides the same results.
-These also double as integration tests: when we modify the code to support a new kind of model, we can run all applicable analyses which have previously been run on older models using the same set of tests.
+We rely on two levels of tests: the first is for whole analyses run on 'mock' models which provide fake data. This works best for analyses that test a hypothesis: provide data that you know will pass the hypothesis test in once case and test that the analysis does so, and pass data that you know will fail the hypothesis test and test that the analysis does so.
 
-Any additional abstractions created should be unit-tested.
+The second is unit tests for any reusable or sufficiently complex abstractions created.
 
