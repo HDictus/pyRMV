@@ -51,6 +51,10 @@ class Term(str):
         return self.__class__(str(self) + str(added), ("\n\n".join(description)))
 
 
+SPECIES = Term(
+    "species",
+    description="The species of any subject(s) experimented on")
+
 REGION = Term(
     "region",
     description="Acronym of a brain region according to AIBS atlas naming convention",

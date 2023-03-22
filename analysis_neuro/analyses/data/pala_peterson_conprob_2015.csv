@@ -1,10 +1,10 @@
-,dataset,layer,Presynaptic mtype,Postsynaptic gene expression,connection probability,sample size,minimal interesomatic distance (um),maximal interesomatic distance (um)
-0,PalaPeterson2015,L23,PC,PV,0.6152,13,25,50
-1,PalaPeterson2015,L23,PC,PV,0.4008,10,50,75
-2,PalaPeterson2015,L23,PC,PV,0.3847,13,75,100
-3,PalaPeterson2015,L23,PC,PV,0.501,6,100,125
-4,PalaPeterson2015,L23,PC,Sst,0.0,1,0,25
-5,PalaPeterson2015,L23,PC,Sst,0.6252,16,25,50
-6,PalaPeterson2015,L23,PC,Sst,0.1783,17,50,75
-7,PalaPeterson2015,L23,PC,Sst,0.1543,13,75,100
-8,PalaPeterson2015,L23,PC,Sst,0.3026,10,100,125
+dataset,layer,Presynaptic mtype,Postsynaptic gene expression,connection probability,sample size,minimal interesomatic distance (um),maximal interesomatic distance (um)
+PalaPeterson2015,L23,PC,PV,0.6152,13,25,50
+PalaPeterson2015,L23,PC,PV,0.4008,10,50,75
+PalaPeterson2015,L23,PC,PV,0.3847,13,75,100
+PalaPeterson2015,L23,PC,PV,0.501,6,100,125
+PalaPeterson2015,L23,PC,Sst,0.0,1,0,25
+PalaPeterson2015,L23,PC,Sst,0.6252,16,25,50
+PalaPeterson2015,L23,PC,Sst,0.1783,17,50,75
+PalaPeterson2015,L23,PC,Sst,0.1543,13,75,100
+PalaPeterson2015,L23,PC,Sst,0.3026,10,100,125
