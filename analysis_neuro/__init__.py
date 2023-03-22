@@ -198,6 +198,7 @@ class Analysis:
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
+        print(self.parameters, self.varying_parameters)
         return self.stats(
             data=measurements,
             dependent=self.measurement,
