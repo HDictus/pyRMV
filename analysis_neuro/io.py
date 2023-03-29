@@ -56,7 +56,7 @@ def _prepare_dict(result, path):
 
 
 def save_result(result, path):
-    """Save an analysis report to the directoy provided."""
+    """Save an analysis report to the directory provided."""
     path = Path(path)
     jsonpath = path / "dict.json"
     path.mkdir(exist_ok=True)
