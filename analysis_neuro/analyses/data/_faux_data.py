@@ -43,7 +43,7 @@ def data_from_histogram(bin_edges, bin_tops, horizontal_range, vertical_range):
         return yvalues
 
 
-    binmeans = extract_bin_mean_values(bin_edges)
+    binmeans = extract_bin_mean_values(bin_edges, horizontal_range)
     entries_per_bin = extract_entries_per_bin(bin_tops, vertical_range)
 
     out_data = []
