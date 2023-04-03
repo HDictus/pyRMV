@@ -8,7 +8,7 @@ from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
 
-def _iter_compare(data: pd.DataFrame, compare: str):
+def _iter_compare(data_: pd.DataFrame, compare: str):
     """Iterate datasets to compare in data.
 
     This iterator extracts datasets from data (identified by the value of compare)
