@@ -1,3 +1,7 @@
+"""Construct datasets based on plots.
+
+These  cannot represent the actual data, but reproduce its properties.
+"""
 import numpy as np
 
 
@@ -16,26 +20,34 @@ def data_from_histogram(bin_edges, bin_tops, horizontal_range, vertical_range):
     Returns:
        list of numbers, each representing one sample of the distribution
     """
-    diff = np.max(bin_edges) - np.min(bin_edges[0])
-    horizontal_axis_size = horizontal_range[1] - horizontal_range[0]
-    horizontal_per_pixel = horizontal_axis_size / diff
-    xvalues = [
-        horizontal_range[0] + (bin_edge - bin_edges[0]) * horizontal_per_pixel
-        for bin_edge in bin_edges
-    ]
 
-    binmeans = [(e1 + e2) * 0.5 for e1, e2 in zip(xvalues[:-1], xvalues[1:])]
+    def extract_bin_mean_values(bin_edges, horizontal_range):
+        diff = np.max(bin_edges) - np.min(bin_edges[0])
+        horizontal_axis_size = horizontal_range[1] - horizontal_range[0]
+        horizontal_per_pixel = horizontal_axis_size / diff
+        xvalues = [
+            horizontal_range[0] + (bin_edge - bin_edges[0]) * horizontal_per_pixel
+            for bin_edge in bin_edges
+        ]
+        binmeans = [(e1 + e2) * 0.5 for e1, e2 in zip(xvalues[:-1], xvalues[1:])]
+        return binmeans
 
-    vertical_sz = vertical_range[1] - vertical_range[0]
-    toppest = np.min(bin_tops)
-    count_per_pixel = vertical_sz / (toppest - np.max(bin_tops))
-    yvalues = [
-        int(vertical_range[0] + np.round((bin_top - bin_tops[0]) * count_per_pixel))
-        for bin_top in bin_tops
-    ]
+    def extract_entries_per_bin(bin_tops, vertical_range):
+        vertical_sz = vertical_range[1] - vertical_range[0]
+        toppest = np.min(bin_tops)
+        count_per_pixel = vertical_sz / (toppest - np.max(bin_tops))
+        yvalues = [
+            int(vertical_range[0] + np.round((bin_top - bin_tops[0]) * count_per_pixel))
+            for bin_top in bin_tops
+        ]
+        return yvalues
+
+
+    binmeans = extract_bin_mean_values(bin_edges)
+    entries_per_bin = extract_entries_per_bin(bin_tops, vertical_range)
 
     out_data = []
     # create num_entries values at each bin center
-    for i, num_entries in enumerate(yvalues):
+    for i, num_entries in enumerate(entries_per_bin):
         out_data = out_data + [binmeans[i]] * num_entries
     return out_data
