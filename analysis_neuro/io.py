@@ -8,7 +8,7 @@ import pandas as pd
 DPI = 256
 
 
-def _safepath(filename):
+def _make_safe_path(filename):
     return "".join([c for c in filename
                     if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
 
@@ -41,13 +41,13 @@ def _prepare_dict(result, path):
     resultdict = {}
     for key, value in result.items():
         if isinstance(value, pd.DataFrame):
-            savepath = path / f"{_safepath(key)}.csv"
-            value.to_csv(savepath)
-            resultdict[key] = str(savepath.name)
+            safe_path = path / f"{_make_safe_path(key)}.csv"
+            value.to_csv(safe_path)
+            resultdict[key] = str(safe_path.name)
         elif isinstance(value, plt.Figure):
-            savepath = path / f"{_safepath(key)}.png"
-            value.savefig(savepath, dpi=DPI)
-            resultdict[key] = str(savepath.name)
+            safe_path = path / f"{_make_safe_path(key)}.png"
+            value.savefig(safe_path, dpi=DPI)
+            resultdict[key] = str(safe_path.name)
         elif isinstance(value, dict):
             resultdict[key] = _prepare_dict(value, path)
         else:
