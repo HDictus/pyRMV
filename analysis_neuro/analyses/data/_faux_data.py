@@ -33,9 +33,9 @@ def data_from_histogram(bin_edges, bin_tops, horizontal_range, vertical_range):
         return binmeans
 
     def extract_entries_per_bin(bin_tops, vertical_range):
-        vertical_sz = vertical_range[1] - vertical_range[0]
+        vertical_axis_size = vertical_range[1] - vertical_range[0]
         toppest = np.min(bin_tops)
-        count_per_pixel = vertical_sz / (toppest - np.max(bin_tops))
+        count_per_pixel = vertical_axis_size / (toppest - np.max(bin_tops))
         yvalues = [
             int(vertical_range[0] + np.round((bin_top - bin_tops[0]) * count_per_pixel))
             for bin_top in bin_tops
