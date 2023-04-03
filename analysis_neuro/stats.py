@@ -8,7 +8,25 @@ from analysis_neuro import Assumption
 from analysis_neuro import terminology as terms
 
 
-def _iter_compare(data, compare):
+def _iter_compare(data: pd.DataFrame, compare: str):
+    """Iterate datasets to compare in data.
+
+    This iterator extracts datasets from data (identified by the value of compare)
+    and yields pairs of them to be compared to each other.
+    Avoids comparing a dataset to itself, and only yields each combination once
+    (as opposed to (dataset1, dataset2), (dataset2, dataset1))
+
+    Arguments:
+       data: a dataframe containing the column <compare>
+       compare: the column to use to separate datasets to be compared
+
+    Yields:
+        (label1, dataset1, label2, dataset2)
+        label1: label of the first dataset (its value of <compare>)
+        dataset1: the first dataset, to be compared to dataset2
+        label2: label of the second dataset (its value of <compare>)
+        dataset2: the second dataset, to be compared to dataset1
+    """
     datasets = data.groupby(compare)
     already_compared = set()
     for label1, dataset1 in datasets:
@@ -16,6 +34,7 @@ def _iter_compare(data, compare):
             if (label2, label1) in already_compared:
                 continue
             if label1 == label2:
+                # do not compare a dataset to itself
                 continue
             already_compared.add((label1, label2))
             yield label1, dataset1, label2, dataset2
