@@ -250,8 +250,7 @@ class Analysis:
             'verdict': self.verdict,
             'doc': self.doc,
         }
-        for key, value in fields.items():
-            current_fields[key] = value
+        current_fields.update(fields)
         return self.__class__(**current_fields)
 
 
