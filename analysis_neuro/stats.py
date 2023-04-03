@@ -192,7 +192,6 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
     """
 
     def vector_binomtest(sampleprob, trials, probability):
-        print(sampleprob, trials, probability)
         return [np.nan if any(np.isnan(np.float32([s, n, p]))) else
                 stats.binomtest(int(s * n), int(n), p).pvalue
                 for s, n, p in zip(sampleprob, trials, probability)]
