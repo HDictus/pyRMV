@@ -31,7 +31,7 @@ schuz_density_1989 = Analysis(
     So instead we use a mean squared error to quantify the mismatch.
     We cannot render a verdict on the result, only assign a score.
     """,
-    observations=pd.read_csv(DATADIR.joinpath("schuz_neuron_density_1989.csv"), index_col=0),
+    observations=pd.read_csv(DATADIR.joinpath("schuz_neuron_density_1989.csv")),
     measurement=terms.CELL_DENSITY,
     plotter=sns.barplot,
     stats=stats.squared_error,

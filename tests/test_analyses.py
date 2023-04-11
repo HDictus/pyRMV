@@ -6,6 +6,20 @@ from analysis_neuro import terminology as terms
 import pandas as pd
 
 
+def test_schuz_density():
+    class MockModel:
+
+        label = 'mock'
+
+        def cell_density(self, params):
+            return params.assign(**{terms.CELL_DENSITY: 100000})
+
+    # just tests the validation runs
+    res = ana.schuz_density_1989(MockModel())
+    assert res['stats']
+    assert terms.SQERROR in list(res['stats'].values())[0]
+
+
 def test_jiang_connprob():
     """
     sort of just test that it runs. Temporary.
