@@ -30,61 +30,69 @@ The following features are provided to aid in the construction of standardized v
  - a library of existing model validations `analysis_neuro.analyses`
 
 Usage
-====
+=====
 
 A new validation can be defined using the Analysis class
 
-```
-from analysis_neuro import Analysis, stats, plots
-new_validation_name = Analysis(
-   observations=pd.read_csv("path/to/experimental/data.csv"),
-   measurement=terms.CONNECITON_PROBABILITY, # the real-world property we are interested in
-   plotter=plots.crossplot, # visualize the comparison with a crossplot
-   stats=stats.binom_test, # use a binomial test to check whether the model's estimate matches the observed value
-   verdict=stats.PValueThreshold(0.05)) # regard the validation as failed if the p-value is below 0.05
-```
+..code-block::
+
+    from analysis_neuro import Analysis, stats, plots
+    new_validation_name = Analysis(
+       observations=pd.read_csv("path/to/experimental/data.csv"),
+       measurement=terms.CONNECITON_PROBABILITY, # the real-world property we are interested in
+       plotter=plots.crossplot, # visualize the comparison with a crossplot
+       stats=stats.binom_test, # use a binomial test to check whether the model's estimate matches the observed value
+       verdict=stats.PValueThreshold(0.05)) # regard the validation as failed if the p-value is below 0.05
+
 
 This validation can then be run on any appropriate model object, e.g.:
 
-```
-from bluebrain_models import BBPCircuit
+..code-block::
 
-validation_report = new_validation_name(BBPCircuit("path/to/circuit/config.json"))
-```
+    from bluebrain_models import BBPCircuit
+
+    validation_report = new_validation_name(BBPCircuit("path/to/circuit/config.json"))
+
 
 
 the standardized data provided must be a DataFrame (in this example loaded from a .csv file) in which each row corresponds to one measured sample, and each column to a variable defined in the `terminology` module. For example:
 
 
++--------------------+-------------------+---------------------+------------------------+------------------------------------+
 | presynaptic region | presynaptic layer | postsynaptic region | connection probability | max retinotopic_distance (degrees) |
++====================+===================+=====================+========================+====================================+
 | VISp               | L23               | VISlm               |                  0.4   |                               30   |
++--------------------+-------------------+---------------------+------------------------+------------------------------------+
 | VISp               | L5                | VISlm               |                  0.1   |                               30   |
++--------------------+-------------------+---------------------+------------------------+------------------------------------+
 
 Where each column header is in terminology directly (e.g `terms.CONNECTION_PROBABILITY`) or a combination (`terms.PRESYNAPTIC + terms.REGION`).
 
 If no existing terminology is defined for a relevant variable, the user should define it by adding it to the module.
 
-```
-# (inside analysis_neuro/terminology.py)
-CONNECTION_PROBABILITY = Term(
-    "connection probability",
-    "The probability for a random pair of cells in a pathway to have at least one synapse between them")
+..code-block::
 
-measurements[CONNECTION_PROBABILITY] = {'method_name': 'connection_probability'}
-```
+    # (inside analysis_neuro/terminology.py)
+    CONNECTION_PROBABILITY = Term(
+         "connection probability",
+         "The probability for a random pair of cells in a pathway to have at least one synapse between them")
+
+    measurements[CONNECTION_PROBABILITY] = {'method_name': 'connection_probability'}
+
 
 TODO: we plan to make the latter step unnecessary in the future.
 
 
 The model object should define a method for the desired measurement:
-```
-class MyModel:
-   ...
-   def connection_probability(self, parameters): # see 'method_name' above
-       connprob = ......
+..code-block::
+
+    class MyModel:
        ...
-       return parameters.assign(**{terms.CONNECTION_PROBABILITY: connprob})
-```
+       def connection_probability(self, parameters): # see 'method_name' above
+           connprob = ......
+           ...
+           return parameters.assign(**{terms.CONNECTION_PROBABILITY: connprob})
+
 Where parameters will be a standardized dataframe containing the parameters of the measurement (e.g. brain region, pre and post synaptic cell parameters, intersomatic distance), one row for each unique parameter combination. The return value is of the same format, with one row per measurement sample.
 
 
