@@ -22,7 +22,6 @@ setup(
         "Tracker": "https://bbpteam.epfl.ch/project/issues/browse/MMBVISCX-19",
         "Source": "https://bbpgitlab.epfl.ch/circuits/personal/analysis-neuro",
     },
-    url="http://bluebrain.epfl.ch",
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
