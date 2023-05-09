@@ -52,7 +52,17 @@ from bluebrain_models import BBPCircuit
 validation_report = new_validation_name(BBPCircuit("path/to/circuit/config.json"))
 ```
 
-the standardized data provided must be a DataFrame (in this example loaded from a .csv file) in which each row corresponds to one measured sample, and each column to a variable defined in the `terminology` module. If no existing terminology is defined for a relevant variable, the user should define it by adding it to the module.
+
+the standardized data provided must be a DataFrame (in this example loaded from a .csv file) in which each row corresponds to one measured sample, and each column to a variable defined in the `terminology` module. For example:
+
+
+| presynaptic region | presynaptic layer | postsynaptic region | connection probability | max retinotopic_distance (degrees) |
+| VISp               | L23               | VISlm               |                  0.4   |                               30   |
+| VISp               | L5                | VISlm               |                  0.1   |                               30   |
+
+Where each column header is in terminology directly (e.g `terms.CONNECTION_PROBABILITY`) or a combination (`terms.PRESYNAPTIC + terms.REGION`).
+
+If no existing terminology is defined for a relevant variable, the user should define it by adding it to the module.
 
 ```
 # (inside analysis_neuro/terminology.py)
