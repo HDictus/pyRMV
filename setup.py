@@ -15,6 +15,7 @@ setup(
     description="collection of analyses and validations for neuroscience",
     license="MIT",
     python_requires=">=3.6",
+    url="https://bbpteam.epfl.ch/documentation/projects/analysis-neuro/latest/index.html",
     install_requires=["numpy", "pandas", "seaborn", "scipy", "mock", "importlib-resources"],
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     project_urls={

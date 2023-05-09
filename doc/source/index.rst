@@ -4,22 +4,78 @@ Analysis-neuro (actual name TBD)
 
 
 Purpose
--------
+=======
 
-This is the library where we store analyses and validations of neuroscientific models.
-Through the use of a separation between model implementation and scientific analysis, analysis code can be reused on past, future, and non-bluebrain models without modification.
-This repository is for the analysis code: all model-specific code should go in bluebrain-models 
+Different computational models, whether subsequent iterations of the same model or fundamentally different models, are ultimately intended to explain and predict observable phenomena.
+Whether validating a model's ability to do so, or extracting novel insights from a model, the precise procedure will often depend on the model.
+For us this means that from one version of a model to the next, evaluating whether previous results still hold on the new model often requires manually rewriting code, editing config files, and so forth.
+This is error prone and takes up time that is better spent adding new capacities to the model or constructing new analyses.
 
-Any reusable abstractions or tools to make creating new analyses easier can also be created here.
+When it comes to comparing different modeling approaches the difference is even more stark, and new models are often only validated against a miniscule subset of the observations they seek to explain because of it.
+
+This library aims to be a growing standardized library of neuroscientific validations.
+All model-specific details are abstracted away so that they can be applied to any model for which they are included in its scope.
+This requires the construction of a Model object which manages the model's implementation details and maps its properties onto scientifically meaningful observables.
+For blue brain circuit models, see the `bluebrain-models` library for an example.
+
+Although the primary purpose of the library is standardizing validations, in principle any analysis involving scientifically meaningful properties can be constructed using it, and re-used across models.
 
 Features
 ========
 
-The terminology module establishes a common terminology used in the dataframes that are used for analysis. the Terms defined there specify a column header and describe the nature of the column contents.
+The following features are provided to aid in the construction of standardized validations:
+ - A module of standardized terminology (analysis_neuro.terminology).
+ - the Analysis class, which can be initialized with standardized experimental data, statistical hypothesis tests and plotter objects and subsequently called on model objects.
+ - statistical hypothesis tests and plotting tools `analysis_neuro.stats`, `analysis_neuro.plots`
+ - a library of existing model validations `analysis_neuro.analyses`
 
-The Analysis class allows the straightforward creation of an analysis by specifying the Term of a the quantity to be measured for the analysis, a set of observations using the terminology to describe the experimental circumstances under which the quantity is to be measured, and any plots or statistical tests desired. The plotting and statistical testing functions follow a fixed format and can be either selected from the plots and stats submodules, or created as needed. Once an analysis is initialized it is a callable and can be called on a model object which implements the necessary measurement methods, generating a dict report containing measurements, documentation, plots, and the results of the statistical tests.
+Usage
+====
 
-Note that the terminology, and by extension the observations describe the measurement as performed on a real animal, and so do not reference any model-specific elements and can therefoe be used to describe the validation conditions of any model which has them in its scope.
+A new validation can be defined using the Analysis class
+
+```
+from analysis_neuro import Analysis, stats, plots
+new_validation_name = Analysis(
+   observations=pd.read_csv("path/to/experimental/data.csv"),
+   measurement=terms.CONNECITON_PROBABILITY, # the real-world property we are interested in
+   plotter=plots.crossplot, # visualize the comparison with a crossplot
+   stats=stats.binom_test, # use a binomial test to check whether the model's estimate matches the observed value
+   verdict=stats.PValueThreshold(0.05)) # regard the validation as failed if the p-value is below 0.05
+```
+
+This validation can then be run on any appropriate model object, e.g.:
+
+```
+from bluebrain_models import BBPCircuit
+
+validation_report = new_validation_name(BBPCircuit("path/to/circuit/config.json"))
+```
+
+the standardized data provided must be a DataFrame (in this example loaded from a .csv file) in which each row corresponds to one measured sample, and each column to a variable defined in the `terminology` module. If no existing terminology is defined for a relevant variable, the user should define it by adding it to the module.
+
+```
+# (inside analysis_neuro/terminology.py)
+CONNECTION_PROBABILITY = Term(
+    "connection probability",
+    "The probability for a random pair of cells in a pathway to have at least one synapse between them")
+
+measurements[CONNECTION_PROBABILITY] = {'method_name': 'connection_probability'}
+```
+
+TODO: we plan to make the latter step unnecessary in the future.
+
+
+The model object should define a method for the desired measurement:
+```
+class MyModel:
+   ...
+   def connection_probability(self, parameters): # see 'method_name' above
+       connprob = ......
+       ...
+       return parameters.assign(**{terms.CONNECTION_PROBABILITY: connprob})
+```
+Where parameters will be a standardized dataframe containing the parameters of the measurement (e.g. brain region, pre and post synaptic cell parameters, intersomatic distance), one row for each unique parameter combination. The return value is of the same format, with one row per measurement sample.
 
 
 Contributing
@@ -36,7 +92,6 @@ After a review process and any necessary changed your improvements will be accep
 Testing strategy
 ----------------
 
-We rely on two levels of tests: the first is for whole analyses run on 'mock' models which provide fake data. This works best for analyses that test a hypothesis: provide data that you know will pass the hypothesis test in once case and test that the analysis does so, and pass data that you know will fail the hypothesis test and test that the analysis does so.
+We rely on two levels of tests: the first is for whole analyses run on 'mock' models which provide fake data. This works best for analyses that test a hypothesis: provide data that you know will pass the hypothesis test in one case and test that the analysis does so, and pass data that you know will fail the hypothesis test and test that the analysis does so.
 
 The second is unit tests for any reusable or sufficiently complex abstractions created.
-
