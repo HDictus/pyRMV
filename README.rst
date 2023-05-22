@@ -56,7 +56,7 @@ It can be defined with the ``Analysis`` (note that the plotter and several terms
 
 In this case, observations will be a dataframe of the form:
 
-+===========================+==================+=======+=======+
++---------------------------+------------------+-------+-------+
 | Ca concentration(mol/mm3) | % depolarization | layer | mtype |
 +===========================+==================+=======+=======+
 |                 0.1       |               0  | L4    | PC    |
