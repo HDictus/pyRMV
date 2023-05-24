@@ -134,6 +134,8 @@ siegle_osi_2019 = Analysis(
     measurement=terms.ORIENTATION_SELECTIVITY,
     observations=osi,
     plotter=_histogram_siegle,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
 )
 
 

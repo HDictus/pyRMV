@@ -72,6 +72,7 @@ def test_jiang_intersomatic():
 
 
 def test_siegle_osi():
+
     class MockModel:
 
         label='mock'
@@ -80,17 +81,33 @@ def test_siegle_osi():
             return pd.DataFrame([
                 dict(**row, **{terms.ORIENTATION_SELECTIVITY: num})
                 for _, row in params.iterrows()
-                for num in np.linspace(0, 1, 5)])
+                for num in np.random.uniform(0, 1, size=300)
+            ])
 
-    results = ana.siegle_osi_2019(MockModel())
-    mockmeasurements = results['measurements'][
-        results['measurements'][terms.DATASET] == 'mock'
-    ]
-    print(mockmeasurements)
-    assert np.all(
-        mockmeasurements[terms.ORIENTATION_SELECTIVITY] == np.concatenate(
-            [np.linspace(0, 1, 5)] * 2))
+    class Perfect:
 
+        label = 'perfect'
+
+        def orientation_selectivity(self, params):
+            return ana.siegle_osi_2019.observations.drop(columns=[terms.DATASET, terms.CITATION])
+
+    results = ana.siegle_osi_2019(MockModel(), Perfect())
+
+    assert results['verdict'][
+        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
+        " for Siegle2019 and mock is the same"
+    ] == "Fail"
+    
+    assert results['verdict'][
+        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
+        " for Siegle2019 and perfect is the same"
+    ] == "Pass"
+
+    assert results['verdict'][
+        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
+        " for mock and perfect is the same"
+    ] == "Fail"
+        
 
 def test_pala_peterson_conprob_2015():
     class MockModel:

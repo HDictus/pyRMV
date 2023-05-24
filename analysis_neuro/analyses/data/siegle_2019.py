@@ -9,8 +9,7 @@ from analysis_neuro import terminology as terms
 
 
 # tuples are required for the data in seigle et al. Set them here after loading.
-osi = pd.read_csv(files('analysis_neuro.analyses.data').joinpath('siegle_osi_2019.csv'),
-                  index_col=0)
+osi = pd.read_csv(files('analysis_neuro.analyses.data').joinpath('siegle_osi_2019.csv'))
 osi[terms.STIM_ORIENTATION] = [
     (0, 45, 90, 135, 180, 225, 270, 315) for i in range(osi.shape[0])
 ]
