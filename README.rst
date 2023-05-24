@@ -35,22 +35,24 @@ Usage
 An example analysis could be a calcium-depolarization scan in which we visualize the mean firing rates of different cell populations under different levels of depolarizing noise and calcium concentration.
 It can be defined with the ``Analysis`` (note that the plotter and several terms are not yet defined).
 
-```
-def no_stuck_cells(data, **kw):
-    """Verify that all cells fire at sufficient depolarization and ca concentration"""
-    smallest_rates = data.groupby([terms.CA_CONCENTRATION, terms.PERCENT_DEPOLARIZATION]).min()
-    hypothesis = "At some level of depolarization and calcium concentration all neurons fire"
-    verdict = "Confirmed" if np.any(smallest_rates > 0) else "Unconfirmed"
-    return {hypothesis: verdict}
+.. code-block::
+   
+   from analysis_neuro import Analysis, plots, terms
 
-    
-ca_dep_scan_l4PC = Analysis(
-    observations=ca_scan_parameters_df, # contains info such as Ca concentration, cell groups to measure. see below
-    measurement=terms.FIRING_RATE, # the real-world property to extract from the model
-    plotter=plots.HeatMap(horizontal=terms.CA_CONCENTRATION, vertical=terms.PERCENT_DEPOLARIZATION),
-    # plot the desired measurement with a heatmap across calcium concentration and percent depolarization
-    verdict=no_stuck_cells)
-```
+    def no_stuck_cells(data, **kw):
+        """Verify that all cells fire at sufficient depolarization and ca concentration"""
+        smallest_rates = data.groupby([terms.CA_CONCENTRATION, terms.PERCENT_DEPOLARIZATION]).min()
+        hypothesis = "At some level of depolarization and calcium concentration all neurons fire"
+        verdict = "Confirmed" if np.any(smallest_rates > 0) else "Unconfirmed"
+        return {hypothesis: verdict}
+
+    ca_dep_scan_l4PC = Analysis(
+       observations=ca_scan_parameters_df, # contains info such as Ca concentration, cell groups to measure. see below
+        measurement=terms.FIRING_RATE, # the real-world property to extract from the model
+        plotter=plots.HeatMap(horizontal=terms.CA_CONCENTRATION, vertical=terms.PERCENT_DEPOLARIZATION),
+        # plot the desired measurement with a heatmap across calcium concentration and percent depolarization
+        verdict=no_stuck_cells)
+
 
 In this case, observations will be a dataframe of the form:
 
