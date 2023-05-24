@@ -161,8 +161,8 @@ class PooledPValueThreshold:
         for hypothesis, data in hypotheses.items():
             pvalue = data[terms.PVALUE]
             bonferroni_threshold = self.threshold / data.shape[0]
-            fail = (pvalue <= bonferroni_threshold).any()
-            verdicts[hypothesis] = "Fail" if fail else "Pass"
+            passed = (pvalue > bonferroni_threshold).all()
+            verdicts[hypothesis] = "Pass" if passed else "Fail"
         return verdicts
 
 
@@ -286,4 +286,42 @@ def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], co
         p_value = to_applyon.reset_index().groupby(independent).apply(log_ttest, label1, label2)
         hypothesis = f'the population mean of {dependent} is the same for {label1} and {label2}'
         hypotheses[hypothesis] = p_value.reset_index().rename(columns={0: terms.PVALUE})
+    return hypotheses
+
+
+def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
+    """Run the mann-whitney u test for the specified data.
+
+    Arguments:
+        data: A pandas dataframe containing the measured values. one column per variable
+              and one row per sample
+        dependent: the dependent variable, the value to compare across
+        independent: the independent variables. Perfrom a separate comparison for each unique
+            combination of these
+        compare: variable to compare values between.
+
+    Hypothesis:
+        The dependent variable follows the same distribution for both compared populations
+    """
+    hypotheses = {}
+    for label1, data1, label2, data2 in _iter_compare(data, compare):
+        hypothesis = (
+            f"The underlying distribution of {dependent}"
+            f" for {label1} and {label2} is the same")
+        data2.set_index(independent, inplace=True)
+
+        out_list = []
+
+        for independent_values, grouped1 in data1.groupby(independent):
+            if not isinstance(independent_values, tuple):
+                independent_values = (independent_values, )
+            grouped2 = data2.loc[independent_values]
+            out_list.append({
+                **dict(zip(independent, independent_values)),
+                terms.PVALUE: stats.mannwhitneyu(
+                    grouped1[dependent].values, grouped2[dependent].values).pvalue
+            })
+            print(out_list[-1])
+        hypotheses[hypothesis] = pd.DataFrame(out_list)
+
     return hypotheses

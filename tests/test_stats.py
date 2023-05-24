@@ -204,6 +204,17 @@ def test_PooledPValueThreshold():
     verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
     assert verdicts["some hypothesis"] == "Fail"
 
+    hypotheses = {
+        "some hypothesis": pd.DataFrame(
+            {
+                "a": [1, 2, 3, 4],
+                terms.PVALUE: [np.nan, 0.5, 0.1, 0.1],
+            }
+        )
+    }
+    verdicts = stats.PooledPValueThreshold(0.1)(hypotheses)
+    assert verdicts["some hypothesis"] == "Fail"
+
 
 def test_binom_test_no_sample_size():
     data_no_samp = pd.DataFrame(
@@ -344,6 +355,7 @@ def test_is_lognormal():
     pd.testing.assert_frame_equal(result['msr is lognormally distributed for a'], bexp)
     
 
+# TODO: lognorm ttest will fail if both do not have the same number of samples... test and fix
 def test_lognorm_ttest():
     nums = np.random.uniform(0, 100, size=(1000))
     data = pd.DataFrame(
@@ -361,3 +373,47 @@ def test_lognorm_ttest():
     pd.testing.assert_frame_equal(
         result['the population mean of msr is the same for a and b'],
         expectation)
+
+def test_mannwhitney():
+    data = pd.DataFrame({
+        terms.DATASET: ['a'] * 1000 + ['b'] * 1000 + ['c'] * 1000,
+        'a parameter': (['c'] * 500 + ['d'] * 500) * 3,
+        'measured': (
+            list(range(1000))
+            + list(range(20, 1020))
+            + list(range(10, 1010)))}
+    )
+    
+    results = stats.mann_whitney_u(data, compare=terms.DATASET,
+                                   dependent='measured',
+                                   independent=['a parameter'])
+    stats_frame = results[
+        "The underlying distribution of measured for a and b is the same"]
+    pd.testing.assert_frame_equal(
+        pd.DataFrame({
+            "a parameter": ['c', 'd'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(20, 520)).pvalue,
+                            scipy.stats.mannwhitneyu(range(500, 1000), range(520, 1020)).pvalue]}),
+        stats_frame)
+    stats_frame = results[
+        "The underlying distribution of measured for a and c is the same"]
+    pd.testing.assert_frame_equal(
+        pd.DataFrame({
+            "a parameter": ['c', 'd'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(10, 510)).pvalue,
+                            scipy.stats.mannwhitneyu(range(500, 1000), range(510, 1010)).pvalue]}),
+        stats_frame)
+
+    stats_frame = results[
+        "The underlying distribution of measured for b and c is the same"]
+    pd.testing.assert_frame_equal(
+        pd.DataFrame({
+            "a parameter": ['c', 'd'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(range(20, 520), range(10, 510)).pvalue,
+                            scipy.stats.mannwhitneyu(range(520, 1020), range(510, 1010)).pvalue]}),
+        stats_frame)
+
+
+# TODO: test the case where there are no varying independent variables!
+# e.g. single measurement
+

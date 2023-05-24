@@ -156,10 +156,12 @@ class Analysis:
     def __call__(self, *models):
         """Run this analysis instance on a model."""
         to_concat = [self.measure(model) for model in models]
+
         # if observations represents experimental values, we want to
         # include those in the dataframe
         if self.measurement in self.observations:
             to_concat = [self.observations] + to_concat
+
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
