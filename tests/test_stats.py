@@ -375,14 +375,39 @@ def test_lognorm_ttest():
         expectation)
 
 def test_mannwhitney():
-    data = pd.DataFrame({
-        terms.DATASET: ['a'] * 1000 + ['b'] * 1000 + ['c'] * 1000,
-        'a parameter': (['c'] * 500 + ['d'] * 500) * 3,
-        'measured': (
-            list(range(1000))
-            + list(range(20, 1020))
-            + list(range(10, 1010)))}
-    )
+    # just totally random data to use
+    values_a_d = np.random.uniform(0, 500, size=500)
+    values_a_e = np.random.uniform(500, 1000, size=500)
+    values_b_d = np.random.uniform(20, 520, size=500)
+    values_b_e = np.random.uniform(520, 1020, size=500)
+    values_c_d = np.random.uniform(10, 510, size=500)
+    values_c_e = np.random.uniform(510, 1000, size=500)
+
+    data = pd.concat([
+        pd.DataFrame({
+            terms.DATASET: 'a',
+            'a parameter': 'd',
+            'measured': values_a_d}),
+        pd.DataFrame({
+            terms.DATASET: 'a',
+            'a parameter': 'e',
+            'measured': values_a_e}),
+        pd.DataFrame({
+            terms.DATASET: 'b',
+            'a parameter': 'd',
+            'measured': values_b_d}),
+        pd.DataFrame({
+            terms.DATASET: 'b',
+            'a parameter': 'e',
+            'measured': values_b_e}),
+        pd.DataFrame({
+            terms.DATASET: 'c',
+            'a parameter': 'd',
+            'measured': values_c_d}),
+        pd.DataFrame({
+            terms.DATASET: 'c',
+            'a parameter': 'e',
+            'measured': values_c_e})], axis=0)
     
     results = stats.mann_whitney_u(data, compare=terms.DATASET,
                                    dependent='measured',
@@ -391,26 +416,26 @@ def test_mannwhitney():
         "The underlying distribution of measured for a and b is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(20, 520)).pvalue,
-                            scipy.stats.mannwhitneyu(range(500, 1000), range(520, 1020)).pvalue]}),
+            "a parameter": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_a_d, values_b_d).pvalue,
+                           scipy.stats.mannwhitneyu(values_a_e, values_b_e).pvalue]}),
         stats_frame)
     stats_frame = results[
         "The underlying distribution of measured for a and c is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(10, 510)).pvalue,
-                            scipy.stats.mannwhitneyu(range(500, 1000), range(510, 1010)).pvalue]}),
+            "a parameter": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_a_d, values_c_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_a_e, values_c_e).pvalue]}),
         stats_frame)
 
     stats_frame = results[
         "The underlying distribution of measured for b and c is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(20, 520), range(10, 510)).pvalue,
-                            scipy.stats.mannwhitneyu(range(520, 1020), range(510, 1010)).pvalue]}),
+            "a parameter": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_b_d, values_c_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_b_e, values_c_e).pvalue]}),
         stats_frame)
 
 
