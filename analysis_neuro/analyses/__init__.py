@@ -138,6 +138,15 @@ siegle_osi_2019 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
+siegle_spontaneous_2019 = Analysis(
+    doc="""
+    We compare to the firing rate distribution for blank gray stimuli
+    observed in Siegle et al. 2019""",
+    measurement=terms.FIRING_RATE,
+    observations=pd.read_csv(DATADIR / "siegle-spontaneous-2019.csv"),
+    plotter=_histogram_siegle,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05))
 
 pala_peterson_conprob_2015 = Analysis(
     doc="""

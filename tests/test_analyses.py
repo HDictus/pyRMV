@@ -107,7 +107,45 @@ def test_siegle_osi():
         f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
         " for mock and perfect is the same"
     ] == "Fail"
-        
+
+
+def test_siegle_spontaneous():
+
+    class MockModel:
+
+        label='mock'
+
+        def firing_rate(self, params):
+            return pd.DataFrame([
+                dict(**row, **{terms.FIRING_RATE: num})
+                for _, row in params.iterrows()
+                for num in np.random.uniform(0, 1, size=300)
+            ])
+
+    class Perfect:
+
+        label = 'perfect'
+
+        def firing_rate(self, params):
+            return ana.siegle_spontaneous_2019.observations.drop(columns=[terms.DATASET, terms.CITATION])
+
+    results = ana.siegle_spontaneous_2019(MockModel(), Perfect())
+
+    assert results['verdict'][
+        f"The underlying distribution of {terms.FIRING_RATE}"
+        " for Siegle2019 and mock is the same"
+    ] == "Fail"
+    
+    assert results['verdict'][
+        f"The underlying distribution of {terms.FIRING_RATE}"
+        " for Siegle2019 and perfect is the same"
+    ] == "Pass"
+
+    assert results['verdict'][
+        f"The underlying distribution of {terms.FIRING_RATE}"
+        " for mock and perfect is the same"
+    ] == "Fail"
+
 
 def test_pala_peterson_conprob_2015():
     class MockModel:
