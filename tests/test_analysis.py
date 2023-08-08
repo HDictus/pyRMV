@@ -311,8 +311,8 @@ def test_raises_error_invalid_measurement():
         )
     assert (
         "Provided measurement 'lololo' is not defined in"
-        " analysis_neuro.measurements.measurements"
     ) in str(te.value)
+    assert "analysis_neuro.measurements.measurements" in str(te.value)
 
 
 # TODO: test case where observatioons have measurement but not label
