@@ -158,7 +158,15 @@ SAMPLE_SIZE = Term(
     ),
 )
 
-# TODO: should have a more generic "STIMULUS" term which can include combined kinds of stimulation
+
+STIMULUS = Term(
+    "stimulus",
+    description="Set of stimuli shown to a subject. Add stimuli to analysis_neuro.stimuli "
+    "and refer to their name with this parameter. For example, if an animal is shown the allen"
+    " institute's brain observatory drifting gratings stimulus this may be "
+    " \"brain_observatory 1.1drifting gratings\""
+)
+
 VISUAL_STIMULUS = Term(
     "visual stimulus type",
     description="The type of visual stimulus used in an experiment. "
