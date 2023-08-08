@@ -15,7 +15,6 @@ from analysis_neuro import Analysis
 from analysis_neuro import terminology as terms
 from analysis_neuro import stats, plots
 import analysis_neuro.analyses.data.jiang_distances as jiangd
-from analysis_neuro.analyses.data.siegle_2019 import osi
 
 
 DATADIR = files('analysis_neuro.analyses.data')
@@ -132,7 +131,7 @@ siegle_osi_2019 = Analysis(
     We compare to the levels of orientation selectivity observed in
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
-    observations=osi,
+    observations=pd.read_csv(DATADIR / "siegle-osi-2019.csv"),
     plotter=_histogram_siegle,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05)
