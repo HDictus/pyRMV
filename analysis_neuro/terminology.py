@@ -276,18 +276,6 @@ MAX = Term(
 )
 
 
-measurements = {
-    CELL_DENSITY: {"method name": "cell_density"},
-    CELL_COUNT: {"method name": "cell_count"},
-    CONNECTION_PROBABILITY: {"method name": "connection_probability"},
-    SYNAPSES_PER_CONNECTION: {'method name': 'synapses_per_connection'},
-    NUM_SYNAPSES: {'method name': 'num_synapses'},
-    INTERSOMATIC_DISTANCE: {"method name": "intersomatic_distance"},
-    ORIENTATION_SELECTIVITY: {"method name": "orientation_selectivity"},
-    FIRING_RATE: {"method name": "firing_rate"},
-}
-
-
 def describe(*terms):
     """Describe the given terms, or all terms if nothing passed."""
     if len(terms) == 0:

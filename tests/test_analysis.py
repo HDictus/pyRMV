@@ -2,9 +2,9 @@ import pandas as pd
 import pytest as pyt
 import warnings
 from mock import MagicMock
-from analysis_neuro import Analysis, terms, TerminologyError, measure
+from analysis_neuro import Analysis, terms, TerminologyError, measurements
 
-terms.measurements["measured thing"] = {"method name": "thing"}
+measurements.measurements["measured thing"] = {"method name": "thing"}
 
 
 class MockModel:
@@ -311,7 +311,7 @@ def test_raises_error_invalid_measurement():
         )
     assert (
         "Provided measurement 'lololo' is not defined in"
-        " analysis_neuro.terminology.measurements."
+        " analysis_neuro.measurements.measurements"
     ) in str(te.value)
 
 

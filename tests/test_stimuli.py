@@ -16,12 +16,3 @@ def test_retrieve_all_brain_observatory():
         allvalues,
         pd.concat([dg_base.assign(other='a'),
                    dg_base.assign(other='b')], axis=0))
-
-
-
-def test_subsets_specific_parameters():
-    assert False
-
-
-def test_ignores_optimal_parameters():
-    assert False

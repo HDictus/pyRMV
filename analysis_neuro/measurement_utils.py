@@ -6,16 +6,17 @@ import pandas as pd
 
 from .exceptions import TerminologyError
 from . import terminology as terms
+from . import measurements
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
 
-def validate_measurement(measurement):
+def validate_measurement(measurement, measurements_library=measurements.measurements):
     """Check that <measurement> is a valid measurement."""
-    if measurement not in terms.measurements:
+    if measurement not in measurements_library:
         raise TerminologyError(
             f"Provided measurement '{measurement}' is not defined in "
-            "analysis_neuro.terminology.measurements."
+            "analysis_neuro.measurements.measurements"
         )
 
 
@@ -42,7 +43,7 @@ def validate_measured(measured_data, measurement, parameters):
         )
 
         raise ValueError(
-            f"The measurement method {terms.measurements[measurement]['method name']} must return"
+            f"The measurement method {measurements.measurements[measurement]['method name']} must return"
             " a pandas DataFrame containing the parameters and measurements.\n"
             f"e.g. \n: {fake_example_measurement}\n\n"
             f"Recieved instead:\n{measured_data}\n\n"
@@ -69,6 +70,7 @@ def validate_observations(observations):
         examplepath = thispath / "analyses" / "data" / "schuz_neuron_density_1989.csv"
 
         raise ValueError(
+            f"invalid observations {observations}\n\n"
             "observations must be a pandas.DataFrame of the form:\n"
             f"|parameter1|parameter2|...|measured_quantity|{terms.DATASET}|\n"
             "|value     | value    |...|measured value   | <some name>   |\n"
@@ -95,21 +97,21 @@ def validate_observations(observations):
                 )
 
 
-def measure(model, measurement, parameters):
+def measure(model, measurement, parameters, measurements_library=measurements.measurements):
     """Measure the quantity measurement from a model.
 
     Arguments:
         model: a class implementing a method measuring measurement
         measurement: string representing a measurement type.
             should be one of the terms represented in
-            analysis_neuro.terminology.measurements
+            analysis_neuro.measurements
         parameters: a DataFrame describing the parameters of the
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
     """
-    validate_measurement(measurement)
+    validate_measurement(measurement, measurements_library)
     validate_observations(parameters)
-    method = terms.measurements[measurement]["method name"]
+    method = measurements_library[measurement]["method name"]
     measured = getattr(model, method)(parameters)
     validate_measured(measured, measurement, parameters)
     return measured
