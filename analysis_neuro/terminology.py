@@ -158,25 +158,44 @@ SAMPLE_SIZE = Term(
     ),
 )
 
+# TODO: should have a more generic "STIMULUS" term which can include combined kinds of stimulation
 VISUAL_STIMULUS = Term(
     "visual stimulus type",
-    description="The type of visual stimulus used in an experiment, e.g. drifting grating",
+    description="The type of visual stimulus used in an experiment. "
+    "See stimuli.py for stimuli associated with different datasets.",
 )
-STIMULUS_AZIMUTH = Term(
+# TODO: these terms suck
+ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
-    description="The width of the visual stimulus used in degrees on the azimuth plane",
+    description="A tuple: the range of horizontal angles that the stimulus covers in the visual field",
 )
-STIMULUS_ELEVATION = Term(
+ANGLE_ELEVATION = Term(
     "stimulus height (degrees)",
-    description="The width of the visual stimulus used in degrees on the elevation plane",
+    description="A tule: the range of vertical angles that the stimulus covers in the visual field.",
 )
 FRAME_RATE = Term(
     "stimulus framerate (Hz)", description="The framerate of the simulus used, in Hertz"
 )
-DRIFT_SPEED = Term(
-    "simulus drift speed (degrees/s)",
-    description="The speed at which a visual stimulus drifts across the visual field",
-)
+SPATIAL_FREQUENCY = Term(
+    "spatial frequency (cycles / degree)",
+    description="for a spatially periodic stimulus in the visual field this represents the "
+    "number of cycles that occur per degree moved in the visual field.")
+CONTRAST = Term(
+    "visual contrast",
+    description="Contrast of a visual stimulus, a number between 0 and 1."
+    " with 1.0 the darkest parts of the stimulus"
+    " are completely black, and the lightest parts completely white.")
+
+TEMPORAL_FREQUENCY = Term(
+    "temporal frequency (Hz)",
+    description="For a periodic stimulus this represents the number of cycles occurring"
+    " per unit time. "
+    "For a drifting gratings stimulus for instance, the temporal frequency will be "
+    " the spatial frequency times the drift speed. "
+    "If instead of a number this is set to 'optimal', it means that the measurement is "
+    "performed for several temporal frequencies and only the temporal frequency with maximal "
+    "response is used to calculate the measured variable")
+
 START_TIME = Term(
     "start time (ms)",
     description="The time at which the stimulus commences, preceded by a blank stimulus",
