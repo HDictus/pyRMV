@@ -20,7 +20,6 @@ stimuli = {
 def get(parameters):
     """Create a dataframe of all stimulus conditions for STIMULUS."""
     out = []
-    other_columns = [c for c in parameters.columns if c != terms.STIMULUS]
     for i, row in parameters.iterrows():
-        out.append(stimuli[row[terms.STIMULUS]].assign(**row[other_columns]))
+        out.append(stimuli[row[terms.STIMULUS]].assign(**row))
     return pd.concat(out)

@@ -14,5 +14,11 @@ def test_retrieve_all_brain_observatory():
 
     pd.testing.assert_frame_equal(
         allvalues,
-        pd.concat([dg_base.assign(other='a'),
-                   dg_base.assign(other='b')], axis=0))
+        pd.concat(
+            [dg_base.assign(
+                **{terms.STIMULUS: stimuli.allen_brain_observatory.drifting_gratings}
+                , other='a'),
+             dg_base.assign(
+                 **{terms.STIMULUS: stimuli.allen_brain_observatory.drifting_gratings},
+                 other='b')],
+            axis=0))

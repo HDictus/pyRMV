@@ -5,8 +5,11 @@ from pathlib import Path
 import pandas as pd
 
 from .exceptions import TerminologyError
+from functools import partial
+import logging
 from . import terminology as terms
 from . import measurements
+
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -16,8 +19,7 @@ def validate_measurement(measurement, measurements_library=measurements.measurem
     if measurement not in measurements_library:
         raise TerminologyError(
             f"Provided measurement '{measurement}' is not defined in "
-            "analysis_neuro.measurements.measurements"
-        )
+            "the measurements library (default analysis_neuro.measurements.measurements")
 
 
 def validate_measured(measured_data, measurement, parameters):
@@ -97,6 +99,22 @@ def validate_observations(observations):
                 )
 
 
+def _measurement_method(model, measurement, measurements_library):
+    method_name = measurements_library[measurement]['method name']
+    if hasattr(model, method_name):
+        return getattr(model, method_name)
+
+    for key, value in measurements_library[measurement].items():
+        if key == 'method name':
+            continue
+        if all(_measurement_method(model, other, measurements_library) for other in key):
+            logging.debug(f"Using method {value} to measure {measurement} from {model} using {key}")
+            return partial(value, model, measurements_library=measurements_library)
+    return None
+
+
+# TODO: maybe at this point measurements_library should be a class of objects
+# which has a measure method and can be subclassed / initialized for specifics?
 def measure(model, measurement, parameters, measurements_library=measurements.measurements):
     """Measure the quantity measurement from a model.
 
@@ -111,8 +129,11 @@ def measure(model, measurement, parameters, measurements_library=measurements.me
     """
     validate_measurement(measurement, measurements_library)
     validate_observations(parameters)
-    method = measurements_library[measurement]["method name"]
-    measured = getattr(model, method)(parameters)
+    measurement_method = _measurement_method(model, measurement, measurements_library)
+    if measurement_method is None:
+        raise TypeError(
+            f"The model does not have the functionality needed to measure {measurement}.")
+    measured = measurement_method(parameters)
     validate_measured(measured, measurement, parameters)
     return measured
 
