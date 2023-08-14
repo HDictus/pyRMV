@@ -1,4 +1,4 @@
-from analysis_neuro.measurement_utils import measure
+from analysis_neuro.measurement_utils import measure, extract_parameters
 import pandas as pd
 
 
@@ -61,3 +61,24 @@ def test_measure_on_basis_of_others():
         MockModelWithDens(), density, params,
         measurements_library=measurements_library)
     assert dens[density].values[0] == 100
+
+
+def test_extract_parameters():
+    measurement = pd.DataFrame({
+        'param a': [1, 1, 2, 2, 3],
+        'param b': [1, 2, 1, 1, 2],
+        'measured': [1, 2, 3, 4, 5]})
+
+    # measurement and duplicate parameter sets should be removed
+    pd.testing.assert_frame_equal(
+        extract_parameters(measurement, 'measured'),
+        pd.DataFrame({
+            'param a': [1, 1, 2, 3],
+            'param b': [1, 2, 1, 2]}))
+
+    # can work without measurement
+    pd.testing.assert_frame_equal(
+        extract_parameters(measurement[['param a', 'param b']]),
+        pd.DataFrame({
+            'param a': [1, 1, 2, 3],
+            'param b': [1, 2, 1, 2]}))
