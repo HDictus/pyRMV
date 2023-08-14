@@ -22,3 +22,10 @@ def test_retrieve_all_brain_observatory():
                  **{terms.STIMULUS: stimuli.allen_brain_observatory.drifting_gratings},
                  other='b')],
             axis=0))
+
+    # test retrieval does not overwrite
+    allvalues = stimuli.get(
+        pd.DataFrame(
+            {terms.STIMULUS: stimuli.allen_brain_observatory.drifting_gratings,
+             terms.TEMPORAL_FREQUENCY: [2]}))
+    assert all(allvalues[terms.TEMPORAL_FREQUENCY].values == dg_base[terms.TEMPORAL_FREQUENCY].values)

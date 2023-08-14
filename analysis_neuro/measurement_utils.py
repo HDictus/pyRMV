@@ -138,7 +138,7 @@ def measure(model, measurement, parameters, measurements_library=measurements.me
     return measured
 
 
-def extract_parameters(observations, measurement):
+def extract_parameters(observations, measurement=None):
     """Identify the measurement parameters from experimental observations.
 
     Excludes the column of measured values and any parameters describing
@@ -152,9 +152,9 @@ def extract_parameters(observations, measurement):
        measurement: a string indicating the column which corresponds to the
            measured quantity. will be excluded from the parameters.
     """
-    exclude_from_parameters = (
-        [measurement] + DATA_TERMS + [terms.STD + measurement, terms.SAMPLE_SIZE]
-    )
+    exclude_from_parameters = DATA_TERMS + [terms.STD + measurement, terms.SAMPLE_SIZE]
+    if measurement is not None:
+        exclude_from_parameters += [measurement]
     paramcols = [col for col in observations if col not in exclude_from_parameters]
 
     def _multicolumn_unique(dframe, cols):

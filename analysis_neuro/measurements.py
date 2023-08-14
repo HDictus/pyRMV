@@ -10,6 +10,12 @@ def _calculate_osi(df):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
+def _filter_params(measured, params):
+    mutual_cols = [c for c in params if c in measured]
+    index = [tuple(v) if len(v) > 1 else v[0] for v in params[mutual_cols].values]
+    return measured.set_index(mutual_cols).loc[index].reset_index()
+
+
 # yeah this really should be an object
 # TODO: also, this is inflexible: say we have a measurement on the basis of CA fluoresence instead... it will still defail to firing rate the way it is listed here
 # I think we need to have a single function in the dict: this will either call the method, or
@@ -18,6 +24,7 @@ def osi_firing_rate(model, parameters, measurements_library):
     all_stimuli = measurement_utils.extract_parameters(stimuli.get(parameters))
     firing_rate = measurement_utils.measure(
         model, terms.FIRING_RATE, all_stimuli, measurements_library)
+    firing_rate = _filter_params(firing_rate, parameters)
     osi = firing_rate.groupby(list(parameters.columns) + [terms.CELL_ID]).apply(_calculate_osi)
     return osi.rename(terms.ORIENTATION_SELECTIVITY).reset_index()
 
