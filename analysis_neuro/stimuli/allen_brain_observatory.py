@@ -15,6 +15,7 @@ gray = ALLEN_BRAIN_OBSERVATORY + 'gray'
 # if model and analysis both have method, analysis ignores own
 # PROBLEM: what if model hase general-purpose measurement method but should really use more specific one.
 
+# TODO: this isn't quite accurate
 stimuli = {
     drifting_gratings: pd.DataFrame([
         {terms.VISUAL_STIMULUS: 'sinusoidal grating', # TODO: should be some sort of lazy-loaded video?
