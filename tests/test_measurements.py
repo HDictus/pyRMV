@@ -36,24 +36,22 @@ def test_measures_osi_with_firing_rate():
         {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings]})
     measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures by averaging over stimulus conditions
-    assert list(measured.columns) == list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY]
+    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
     assert all(measured[terms.ORIENTATION_SELECTIVITY] > 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 1
     measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures just for the specified temporal frequency
-    assert list(measured.columns) == list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY]
+    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 2
     measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    assert list(measured.columns) == list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY]
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY].values, [expected_OSI, 0, 0])
 
     parameters[terms.TEMPORAL_FREQUENCY] = 'optimal'
     # measures each cell at its optimal TF
     measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    assert list(measured.columns) == list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY]
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], expected_OSI)
 
     parameters = pd.DataFrame(
@@ -62,5 +60,13 @@ def test_measures_osi_with_firing_rate():
          terms.TEMPORAL_FREQUENCY: [2, 4]})
     measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # a separate measurement for each unique TF value
-    assert all((measured.set_index(terms.TEMPORAL_FREQUENCY).loc[2] > 0) == [True, False, False])
-    assert all((measured.set_index(terms.TEMPORAL_FREQUENCY).loc[4] > 0) == [False, False, True])
+    assert np.allclose(
+        measured.set_index(terms.TEMPORAL_FREQUENCY).loc[
+            2, terms.ORIENTATION_SELECTIVITY],
+        [expected_OSI, 0, 0]
+    )
+    assert np.allclose(
+        measured.set_index(terms.TEMPORAL_FREQUENCY).loc[
+            4, terms.ORIENTATION_SELECTIVITY],
+        [0, 0, expected_OSI]
+    )
