@@ -1,7 +1,15 @@
+"""Methods for measuring properties.
+
+All methods can be overwritten by a model. Those implemented here serve as defaults
+That allow the computation of one measurement type from another.
+
+For example, a method here may implement calculating density based on mass and volume.
+"""
+import numpy as np
+import pandas as pd
 from analysis_neuro import terms
 from analysis_neuro import measurement_utils
 from analysis_neuro import stimuli
-import numpy as np
 
 
 def _calculate_osi(df):
@@ -10,23 +18,55 @@ def _calculate_osi(df):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
-def _filter_params(measured, params):
-    mutual_cols = [c for c in params if c in measured]
-    index = [tuple(v) if len(v) > 1 else v[0] for v in params[mutual_cols].values]
-    return measured.set_index(mutual_cols).loc[index].reset_index()
-
-
 # yeah this really should be an object
 # TODO: also, this is inflexible: say we have a measurement on the basis of CA fluoresence instead... it will still defail to firing rate the way it is listed here
 # I think we need to have a single function in the dict: this will either call the method, or
 #    combine other methods. Maximum flexibility
 def osi_firing_rate(model, parameters, measurements_library):
-    all_stimuli = measurement_utils.extract_parameters(stimuli.get(parameters))
-    firing_rate = measurement_utils.measure(
-        model, terms.FIRING_RATE, all_stimuli, measurements_library)
-    firing_rate = _filter_params(firing_rate, parameters)
-    osi = firing_rate.groupby(list(parameters.columns) + [terms.CELL_ID]).apply(_calculate_osi)
-    return osi.rename(terms.ORIENTATION_SELECTIVITY).reset_index()
+    """Measure orientation selectivity using firing rates."""   
+    # we loop through the parameters at the moment.
+    # there may be a more efficient way to do this with batch processing
+    # but I haven't come up with it
+    out = []
+    for i, row in parameters.iterrows():
+        stimuli_shown = stimuli.stimuli[row[terms.STIMULUS]]
+        columns_both = [
+            c for c in parameters.columns if c in stimuli_shown
+            and row[c] not in ['optimal']
+            ]
+        if len(columns_both) > 0:
+            stimuli_shown = stimuli_shown.set_index(columns_both).loc[
+                row[columns_both]].reset_index()
+        firing_rate = measurement_utils.measure(
+            model, terms.FIRING_RATE, 
+            stimuli_shown, measurements_library
+            )
+        # if temporal frequency is set to optimal, we select a different
+        # temporal frequency for each cell. Specifically, the one to which
+        # it responds most strongly
+        tf_optimal = (
+            terms.TEMPORAL_FREQUENCY in parameters.columns
+            and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
+            )
+        if tf_optimal:
+            conditionwise_rates = firing_rate.groupby(
+            [c for c in firing_rate if c!=terms.FIRING_RATE])[
+                        terms.FIRING_RATE].mean().reset_index()
+            optimal_tf = conditionwise_rates.set_index(
+                terms.TEMPORAL_FREQUENCY).groupby(
+                terms.CELL_ID)[terms.FIRING_RATE].idxmax()
+            firing_rate = firing_rate.set_index([
+                terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
+                    zip(optimal_tf.index, optimal_tf.values)
+                ].reset_index()
+        selectivity = firing_rate.groupby(
+            terms.CELL_ID).apply(_calculate_osi)\
+                .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
+                .assign(**row)
+
+        out.append(selectivity)
+
+    return pd.concat(out, axis=0)
 
 
 measurements = {
