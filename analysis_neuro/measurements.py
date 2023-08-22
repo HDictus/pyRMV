@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from analysis_neuro import terms
 from analysis_neuro import measurement_utils
-from analysis_neuro import stimuli
 
 
 def _calculate_osi(df):
@@ -29,7 +28,7 @@ def osi_firing_rate(model, parameters, measurements_library):
     # but I haven't come up with it
     out = []
     for i, row in parameters.iterrows():
-        stimuli_shown = stimuli.stimuli[row[terms.STIMULUS]]
+        stimuli_shown = row[terms.STIMULUS].df
         columns_both = [
             c for c in parameters.columns if c in stimuli_shown
             and row[c] not in ['optimal']

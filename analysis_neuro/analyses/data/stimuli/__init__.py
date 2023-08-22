@@ -9,7 +9,3 @@ import pandas as pd
 from analysis_neuro import terms
 from . import allen_brain_observatory
 
-
-stimuli = {
-    **allen_brain_observatory.stimuli
-}
