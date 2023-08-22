@@ -8,6 +8,7 @@ from . import terminology as terms
 from .measurement_utils import (
     validate_measurement,
     validate_observations,
+    format_observations,
     measure,
     extract_parameters
 )
@@ -78,6 +79,7 @@ class Analysis:
         validate_measurement(measurement)
         self.measurement = measurement
 
+        observations = format_observations(observations)
         validate_observations(observations)
         self.observations = observations
 

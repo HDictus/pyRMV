@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import analysis_neuro.measurements as measurements
 import analysis_neuro.measurement_utils as measurement_utils
-from analysis_neuro import stimuli
+from analysis_neuro.analyses.data import stimuli
 
 
 def test_measures_osi_with_firing_rate():
