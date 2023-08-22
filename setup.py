@@ -16,7 +16,16 @@ setup(
     license="MIT",
     python_requires=">=3.6",
     url="https://bbpteam.epfl.ch/documentation/projects/analysis-neuro/latest/index.html",
-    install_requires=["numpy", "pandas", "seaborn", "scipy", "mock", "importlib-resources", "pytest"],
+    install_requires=[
+        "numpy", 
+        "pandas",
+        "seaborn", 
+        "scipy", 
+        "mock", 
+        "importlib-resources", 
+        "pytest",
+        "dataframe-pointer",
+        "lazy"],
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/browse/MMBVISCX-19",

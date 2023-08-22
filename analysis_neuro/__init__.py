@@ -4,3 +4,4 @@ from . import terminology as terms
 from .exceptions import TerminologyError, Assumption
 from .measurement_utils import DATA_TERMS, measure, extract_parameters
 from .analysis import Analysis
+import dataframe_pointer as _

@@ -9,7 +9,6 @@ from functools import partial
 import logging
 from . import terminology as terms
 from . import measurements
-from analysis_neuro import df_holder
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -63,25 +62,6 @@ def validate_measured(measured_data, measurement, parameters):
             "it does not include all the parameters. "
             "It can be hard to tell measurements apart without them"
         )
-
-
-def format_observations(observations):
-    """Format a dataframe to address any problematic data types.
-
-    Elements which are DataFrames are converted into dataframe holders,
-    The DataFrame can be accessed with their .df attribute.
-    
-    Returns a new dataframe, the old one is unmodified.
-    """
-    observations = observations.copy()
-    for column in observations:
-        if observations[column].dtype != object:
-            continue
-        for i, value in observations[column].items():
-            if not isinstance(value, pd.DataFrame):
-                continue
-            observations.loc[i, column] = df_holder.create_dataframe_holder(value)
-    return observations
 
 
 def validate_observations(observations):
@@ -152,7 +132,6 @@ def measure(model, measurement, parameters, measurements_library=measurements.me
             analysis_neuro.terminology to ensure consistency.
     """
     validate_measurement(measurement, measurements_library)
-    parameters = format_observations(parameters)
     validate_observations(parameters)
     measurement_method = _measurement_method(model, measurement, measurements_library)
     if measurement_method is None:
