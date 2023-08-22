@@ -3,6 +3,7 @@ import inspect
 from collections.abc import Callable
 
 import pandas as pd
+from lazy import lazy
 
 from . import terminology as terms
 from .measurement_utils import (
@@ -11,7 +12,7 @@ from .measurement_utils import (
     measure,
     extract_parameters
 )
-from lazy import lazy
+
 
 
 def _join_columns(dataframe):

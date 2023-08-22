@@ -1,5 +1,6 @@
-from analysis_neuro import terms
+"""Stimuli used in the Allen Brain Observatory experiments."""
 import pandas as pd
+from analysis_neuro import terms
 
 
 drifting_gratings = pd.DataFrame([
@@ -19,4 +20,3 @@ gray = pd.DataFrame({
         terms.VISUAL_STIMULUS: 'gray',
         terms.ANGLE_AZIMUTH: (-120, 120),
         terms.ANGLE_ELEVATION: (-60, 60)}).pointer()
-

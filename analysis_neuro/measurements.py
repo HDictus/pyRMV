@@ -11,9 +11,10 @@ from analysis_neuro import terms
 from analysis_neuro import measurement_utils
 
 
-def _calculate_osi(df):
-    rates = df[terms.FIRING_RATE]
-    orientations = df[terms.STIM_ORIENTATION]
+# TODO: osi can be defined wrt any kind of response. Generalize
+def _calculate_osi(dataframe):
+    rates = dataframe[terms.FIRING_RATE]
+    orientations = dataframe[terms.STIM_ORIENTATION]
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
@@ -27,7 +28,7 @@ def osi_firing_rate(model, parameters, measurements_library):
     # there may be a more efficient way to do this with batch processing
     # but I haven't come up with it
     out = []
-    for i, row in parameters.iterrows():
+    for _, row in parameters.iterrows():
         stimuli_shown = row[terms.STIMULUS].df
         columns_both = [
             c for c in parameters.columns if c in stimuli_shown
@@ -37,7 +38,7 @@ def osi_firing_rate(model, parameters, measurements_library):
             stimuli_shown = stimuli_shown.set_index(columns_both).loc[
                 row[columns_both]].reset_index()
         firing_rate = measurement_utils.measure(
-            model, terms.FIRING_RATE, 
+            model, terms.FIRING_RATE,
             stimuli_shown, measurements_library
             )
         # if temporal frequency is set to optimal, we select a different
