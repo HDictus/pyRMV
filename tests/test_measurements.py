@@ -1,7 +1,6 @@
-from analysis_neuro import terms
 import pandas as pd
 import numpy as np
-import analysis_neuro.measurements as measurements
+from analysis_neuro import terms
 import analysis_neuro.measurement_utils as measurement_utils
 from analysis_neuro.analyses.data import stimuli
 
@@ -19,7 +18,7 @@ def test_measures_osi_with_firing_rate():
             pref_tf = [2, 8, 4]
             pref_ori = [0, 90, 270]
             out = []
-            for i, row in parameters.iterrows():
+            for _, row in parameters.iterrows():
                 for nrn, tf, ori in zip(nrns, pref_tf, pref_ori):
                     if row[terms.TEMPORAL_FREQUENCY] == tf and row[terms.STIM_ORIENTATION] == ori:
                         out.append({terms.FIRING_RATE: 2, terms.CELL_ID: nrn, **row})
