@@ -8,10 +8,10 @@ from . import terminology as terms
 from .measurement_utils import (
     validate_measurement,
     validate_observations,
-    format_observations,
     measure,
     extract_parameters
 )
+from lazy import lazy
 
 
 def _join_columns(dataframe):
@@ -79,7 +79,7 @@ class Analysis:
         validate_measurement(measurement)
         self.measurement = measurement
 
-        observations = format_observations(observations)
+
         validate_observations(observations)
         self.observations = observations
 
@@ -130,12 +130,12 @@ class Analysis:
         measured[terms.DATASET] = model.label
         return measured
 
-    @property
+    @lazy
     def parameters(self):
         """Determine validation parameters from provided observations."""
         return extract_parameters(self.observations, self.measurement)
 
-    @property
+    @lazy
     def varying_parameters(self):
         """Parameters which are not constants."""
         return [
