@@ -13,13 +13,19 @@ def test_measures_osi_with_firing_rate():
             """Each neuron will have a rate of 1 if either temporal frequency or orientation are non-optimal.
             Else a 2.
             This way, each neuron is orientation-selective only at optimal tf
+            
+            If terms.MTYPE is 'PC' then only the rates of first neuron are returned.
             """
             nrns = [0, 1, 2]
             pref_tf = [2, 8, 4]
             pref_ori = [0, 90, 270]
             out = []
             for _, row in parameters.iterrows():
-                for nrn, tf, ori in zip(nrns, pref_tf, pref_ori):
+                if terms.MTYPE in row and (row[terms.MTYPE] == 'PC'):
+                    nrns_loc = [0]
+                else:
+                    nrns_loc = nrns
+                for nrn, tf, ori in zip(nrns_loc, pref_tf, pref_ori):
                     if row[terms.TEMPORAL_FREQUENCY] == tf and row[terms.STIM_ORIENTATION] == ori:
                         out.append({terms.FIRING_RATE: 2, terms.CELL_ID: nrn, **row})
                     else:
@@ -69,3 +75,12 @@ def test_measures_osi_with_firing_rate():
             4, terms.ORIENTATION_SELECTIVITY],
         [0, 0, expected_OSI]
     )
+
+    # check that other parameters are passed to firing rate as well!
+    
+    parameters = pd.DataFrame(
+        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings],
+         terms.MTYPE: 'PC'})
+    measured = measurement_utils.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
+
+    assert list(measured[terms.CELL_ID]) == [0]

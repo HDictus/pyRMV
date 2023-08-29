@@ -37,6 +37,9 @@ def osi_firing_rate(model, parameters, measurements_library):
         if len(columns_both) > 0:
             stimuli_shown = stimuli_shown.set_index(columns_both).loc[
                 row[columns_both]].reset_index()
+        other_parameters = [c for c in parameters.columns if row[c] not in ['optimal']]
+        stimuli_shown = stimuli_shown.assign(**row[other_parameters])
+
         firing_rate = measurement_utils.measure(
             model, terms.FIRING_RATE,
             stimuli_shown, measurements_library
