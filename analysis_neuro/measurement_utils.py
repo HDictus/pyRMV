@@ -163,6 +163,6 @@ def extract_parameters(observations, measurement=None):
 
     def _multicolumn_unique(dframe, cols):
         """Return the unique combinations of cols in dframe."""
-        return dframe[cols].groupby(cols).sum().reset_index()
+        return dframe[cols].groupby(cols, dropna=False).sum().reset_index()
 
     return _multicolumn_unique(observations, paramcols)
