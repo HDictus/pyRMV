@@ -369,7 +369,8 @@ def test_uses_copy_of_observations():
     """
     df = pd.DataFrame({
         'da': [1, 2, 3],
-        terms.CELL_DENSITY: [1, 2 , 3]
+        terms.CELL_DENSITY: [1, 2 , 3],
+        terms.DATASET: 'a'
     })
     ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
     anadf = ana.observations
@@ -377,3 +378,13 @@ def test_uses_copy_of_observations():
     assert all(df['da'] == [1, 2, 3])
     df['da'] = 3
     assert all(ana.observations['da'] == [1, 2, 3])
+  
+  
+def test_defaults_dataset():
+
+    df = pd.DataFrame({
+        'da': [1, 2, 3],
+        terms.CELL_DENSITY: [1, 2 , 3]
+    })
+    ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
+    assert all(ana.observations[terms.DATASET] == 'experiment')
