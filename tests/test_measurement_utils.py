@@ -82,3 +82,16 @@ def test_extract_parameters():
         pd.DataFrame({
             'param a': [1, 1, 2, 3],
             'param b': [1, 2, 1, 2]}))
+
+    # doesn't drop na values
+    df = pd.DataFrame({
+        'a': [1, 2, None, None, None],
+        'b': ['b', 'c', 'd', 'e', 'e'],
+    })
+    pd.testing.assert_frame_equal(
+        extract_parameters(df),
+        pd.DataFrame({
+            'a': [1, 2, None, None],
+            'b': ['b', 'c', 'd', 'e']
+        })
+    )
