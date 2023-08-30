@@ -80,7 +80,7 @@ class Analysis:
         self.measurement = measurement
 
         validate_observations(observations)
-        self.observations = observations
+        self._observations = observations.copy()
 
         if not (
             _check_callable(plotter, ["x", "y", "hue"])
@@ -114,6 +114,10 @@ class Analysis:
             )
         self.verdict = verdict
         self.doc = doc
+
+    @property
+    def observations(self):
+        return self._observations.copy()
 
     def measure(self, model):
         """Measure the required measurements on model.
@@ -162,7 +166,6 @@ class Analysis:
         # include those in the dataframe
         if self.measurement in self.observations:
             to_concat = [self.observations] + to_concat
-
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)

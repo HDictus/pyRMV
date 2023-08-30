@@ -360,3 +360,20 @@ def test_measure_checks_valid_return_format():
             observations=pd.DataFrame({terms.LAYER: ["L1"], terms.REGION: ["VISp"]}),
             measurement=terms.CELL_DENSITY,
         )(ReturnsIncompleteParams())
+
+
+def test_uses_copy_of_observations():
+    """When testing stuff out, it is possible to accidentally mutate observations.
+    
+    This leads to some hard to track down bugs in testing code. Instead, everything should be a copy.
+    """
+    df = pd.DataFrame({
+        'da': [1, 2, 3],
+        terms.CELL_DENSITY: [1, 2 , 3]
+    })
+    ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
+    anadf = ana.observations
+    anadf['da'] = 4
+    assert all(df['da'] == [1, 2, 3])
+    df['da'] = 3
+    assert all(ana.observations['da'] == [1, 2, 3])
