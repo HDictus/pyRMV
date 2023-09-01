@@ -232,6 +232,14 @@ STIM_ORIENTATION = Term(
     ),
 )
 
+FRACTION_INNERVATED = Term(
+    "Fraction innervated",
+    description=(
+        "The fraction of cells in the postsynaptic population which recieve"
+        " at least one synapse from the presynaptic population."
+    )
+)
+
 CONNECTION_PROBABILITY = Term(
     "connection probability",
     description=(

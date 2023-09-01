@@ -217,3 +217,32 @@ def test_mtype_to_mtype_connectivity():
         mock2.label = 'amock'
         
         results = ana.mtype_to_mtype_connectivity(mock, mock2)
+
+def test_ji_innervation_2016():
+    
+    class BadModel:
+        
+        label = 'bad'
+        
+        def fraction_innervated(self, parameters):
+            return parameters.assign(**{
+                terms.FRACTION_INNERVATED: 0.2})
+
+    class PerfectModel:
+        
+        label = 'perfect'
+        
+        def fraction_innervated(self, parameters):
+            return ana.ji_innervation_2016.observations
+
+    report = ana.ji_innervation_2016(BadModel(), PerfectModel())
+    verdict = report['verdict']
+    for hypothesis, value in verdict.items():
+        if 'bad' in hypothesis:
+            assert value == 'Fail'
+            continue
+        if 'perfect' in hypothesis:
+            assert value == 'Pass'
+
+    assert len(report['figures']) > 0
+    

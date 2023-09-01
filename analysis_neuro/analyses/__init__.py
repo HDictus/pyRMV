@@ -19,6 +19,18 @@ import analysis_neuro.analyses.data.jiang_distances as jiangd
 
 DATADIR = files('analysis_neuro.analyses.data')
 
+def wide_barplot(x, y, hue):
+    fig, ax = plt.subplots(figsize=(20, 5))
+    return sns.barplot(x=x, y=y, hue=hue, ax=ax)
+
+ji_innervation_2016 = Analysis(
+    observations=pd.read_csv(DATADIR.joinpath("ji_innervation_2016.csv"), index_col=0),
+    measurement=terms.FRACTION_INNERVATED,
+    # plotter=sns.barplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05),
+    plotter=wide_barplot
+)
 
 schuz_density_1989 = Analysis(
     doc="""
