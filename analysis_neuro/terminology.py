@@ -175,11 +175,13 @@ VISUAL_STIMULUS = Term(
 # TODO: these terms suck
 ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
-    description="A tuple: the range of horizontal angles that the stimulus covers in the visual field",
+    description=("A tuple: the range of horizontal angles that the stimulus covers"
+                 " in the visual field"),
 )
 ANGLE_ELEVATION = Term(
     "stimulus height (degrees)",
-    description="A tule: the range of vertical angles that the stimulus covers in the visual field.",
+    description=("A tuple: the range of vertical angles that the stimulus covers"
+                 " in the visual field.")
 )
 FRAME_RATE = Term(
     "stimulus framerate (Hz)", description="The framerate of the simulus used, in Hertz"

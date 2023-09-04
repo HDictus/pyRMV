@@ -23,7 +23,7 @@ def _calculate_osi(dataframe):
 # I think we need to have a single function in the dict: this will either call the method, or
 #    combine other methods. Maximum flexibility
 def osi_firing_rate(model, parameters, measurements_library):
-    """Measure orientation selectivity using firing rates."""   
+    """Measure orientation selectivity using firing rates."""
     # we loop through the parameters at the moment.
     # there may be a more efficient way to do this with batch processing
     # but I haven't come up with it
@@ -33,7 +33,7 @@ def osi_firing_rate(model, parameters, measurements_library):
         columns_both = [
             c for c in parameters.columns if c in stimuli_shown
             and row[c] not in ['optimal']
-            ]
+        ]
         if len(columns_both) > 0:
             stimuli_shown = stimuli_shown.set_index(columns_both).loc[
                 row[columns_both]].reset_index()
@@ -43,18 +43,18 @@ def osi_firing_rate(model, parameters, measurements_library):
         firing_rate = measurement_utils.measure(
             model, terms.FIRING_RATE,
             stimuli_shown, measurements_library
-            )
+        )
         # if temporal frequency is set to optimal, we select a different
         # temporal frequency for each cell. Specifically, the one to which
         # it responds most strongly
         tf_optimal = (
             terms.TEMPORAL_FREQUENCY in parameters.columns
             and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
-            )
+        )
         if tf_optimal:
             conditionwise_rates = firing_rate.groupby(
-            [c for c in firing_rate if c!=terms.FIRING_RATE])[
-                        terms.FIRING_RATE].mean().reset_index()
+                [c for c in firing_rate if c!= terms.FIRING_RATE])[
+                    terms.FIRING_RATE].mean().reset_index()
             optimal_tf = conditionwise_rates.set_index(
                 terms.TEMPORAL_FREQUENCY).groupby(
                 terms.CELL_ID)[terms.FIRING_RATE].idxmax()

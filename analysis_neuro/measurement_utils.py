@@ -13,6 +13,7 @@ from . import measurements
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
 
+# pylint: disable=dangerous-default-value
 def validate_measurement(measurement, measurements_library=measurements.measurements):
     """Check that <measurement> is a valid measurement."""
     if measurement not in measurements_library:
@@ -44,8 +45,8 @@ def validate_measured(measured_data, measurement, parameters):
         )
 
         raise ValueError(
-            f"The measurement method {measurements.measurements[measurement]['method name']} must return"
-            " a pandas DataFrame containing the parameters and measurements.\n"
+            f"The measurement method {measurements.measurements[measurement]['method name']}"
+            " must return a pandas DataFrame containing the parameters and measurements.\n"
             f"e.g. \n: {fake_example_measurement}\n\n"
             f"Recieved instead:\n{measured_data}\n\n"
             f"The problem with that is that {msg}."
@@ -96,7 +97,6 @@ def validate_observations(observations):
                 warnings.warn(
                     f"Column header '{column}' is not defined in analysis_neuro.terminology"
                 )
-        
 
 
 def _measurement_method(model, measurement, measurements_library):
