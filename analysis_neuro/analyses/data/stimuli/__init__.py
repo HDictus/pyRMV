@@ -8,4 +8,3 @@ We may later use this module to download e.g. stimulus movies from their source
 import pandas as pd
 from analysis_neuro import terms
 from . import allen_brain_observatory
-

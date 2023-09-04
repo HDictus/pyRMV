@@ -14,7 +14,6 @@ from .measurement_utils import (
 )
 
 
-
 def _join_columns(dataframe):
     """Combine the columns of dataframe into a single series."""
     series_name = ", ".join(dataframe.columns)
@@ -79,7 +78,6 @@ class Analysis:
         """Initialize an Analysis from various components."""
         validate_measurement(measurement)
         self.measurement = measurement
-
 
         validate_observations(observations)
         self.observations = observations
