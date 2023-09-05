@@ -5,7 +5,7 @@ from collections.abc import Callable
 import pandas as pd
 from lazy import lazy
 
-from . import terminology as terms
+import analysis_neuro.terminology as terms
 from .measurements import (
     validate_measurement,
     validate_observations,

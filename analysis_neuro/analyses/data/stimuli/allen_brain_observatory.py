@@ -1,6 +1,6 @@
 """Stimuli used in the Allen Brain Observatory experiments."""
 import pandas as pd
-from analysis_neuro import terms
+import analysis_neuro.terminology as terms
 
 
 drifting_gratings = pd.DataFrame([
