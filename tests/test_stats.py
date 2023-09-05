@@ -376,66 +376,66 @@ def test_lognorm_ttest():
 
 def test_mannwhitney():
     # just totally random data to use
-    values_a_d = np.random.uniform(0, 500, size=500)
-    values_a_e = np.random.uniform(500, 1000, size=500)
-    values_b_d = np.random.uniform(20, 520, size=500)
-    values_b_e = np.random.uniform(520, 1020, size=500)
-    values_c_d = np.random.uniform(10, 510, size=500)
-    values_c_e = np.random.uniform(510, 1000, size=500)
+    values_experiment_d = np.random.uniform(0, 500, size=500)
+    values_experiment_e = np.random.uniform(500, 1000, size=500)
+    values_model1_d = np.random.uniform(20, 520, size=500)
+    values_model1_e = np.random.uniform(520, 1020, size=500)
+    values_model2_d = np.random.uniform(10, 510, size=500)
+    values_model2_e = np.random.uniform(510, 1000, size=500)
 
     data = pd.concat([
         pd.DataFrame({
-            terms.DATASET: 'a',
-            'a parameter': 'd',
-            'measured': values_a_d}),
+            terms.DATASET: 'experiment',
+            'independent var': 'd',
+            'measured': values_experiment_d}),
         pd.DataFrame({
-            terms.DATASET: 'a',
-            'a parameter': 'e',
-            'measured': values_a_e}),
+            terms.DATASET: 'experiment',
+            'independent var': 'e',
+            'measured': values_experiment_e}),
         pd.DataFrame({
-            terms.DATASET: 'b',
-            'a parameter': 'd',
-            'measured': values_b_d}),
+            terms.DATASET: 'model1',
+            'independent var': 'd',
+            'measured': values_model1_d}),
         pd.DataFrame({
-            terms.DATASET: 'b',
-            'a parameter': 'e',
-            'measured': values_b_e}),
+            terms.DATASET: 'model1',
+            'independent var': 'e',
+            'measured': values_model1_e}),
         pd.DataFrame({
-            terms.DATASET: 'c',
-            'a parameter': 'd',
-            'measured': values_c_d}),
+            terms.DATASET: 'model2',
+            'independent var': 'd',
+            'measured': values_model2_d}),
         pd.DataFrame({
-            terms.DATASET: 'c',
-            'a parameter': 'e',
-            'measured': values_c_e})], axis=0)
-    
+            terms.DATASET: 'model2',
+            'independent var': 'e',
+            'measured': values_model2_e})], axis=0)
+
     results = stats.mann_whitney_u(data, compare=terms.DATASET,
                                    dependent='measured',
-                                   independent=['a parameter'])
+                                   independent=['independent var'])
     stats_frame = results[
-        "The underlying distribution of measured for a and b is the same"]
+        "The underlying distribution of measured for experiment and model1 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_a_d, values_b_d).pvalue,
-                           scipy.stats.mannwhitneyu(values_a_e, values_b_e).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue,
+                           scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue]}),
         stats_frame)
     stats_frame = results[
-        "The underlying distribution of measured for a and c is the same"]
+        "The underlying distribution of measured for experiment and model2 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_a_d, values_c_d).pvalue,
-                            scipy.stats.mannwhitneyu(values_a_e, values_c_e).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model2_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_experiment_e, values_model2_e).pvalue]}),
         stats_frame)
 
     stats_frame = results[
-        "The underlying distribution of measured for b and c is the same"]
+        "The underlying distribution of measured for model1 and model2 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_b_d, values_c_d).pvalue,
-                            scipy.stats.mannwhitneyu(values_b_e, values_c_e).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_model1_d, values_model2_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
         stats_frame)
 
 
