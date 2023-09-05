@@ -1,12 +1,12 @@
 """Tools for extracting measurements from models."""
 import warnings
 from pathlib import Path
+from functools import partial
+import logging
 
 import pandas as pd
 
 from .exceptions import TerminologyError
-from functools import partial
-import logging
 from . import terminology as terms
 from . import measurements
 
@@ -108,7 +108,9 @@ def _measurement_method(model, measurement, measurements_library):
         if key == 'method name':
             continue
         if all(_measurement_method(model, other, measurements_library) for other in key):
-            logging.debug(f"Using method {value} to measure {measurement} from {model} using {key}")
+            logging.debug(
+                "Using method %s to measure %s from %s using %s", 
+                value, measurement, model, key)
             return partial(value, model, measurements_library=measurements_library)
     return None
 
