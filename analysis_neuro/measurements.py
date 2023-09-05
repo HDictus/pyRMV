@@ -95,7 +95,7 @@ def validate_measurement(measurement, measurements_library=measurements):
             "the measurements library (default analysis_neuro.measurements.measurements")
 
 
-def validate_measured(measured_data, measurement, parameters, measurements=measurements):
+def validate_measured(measured_data, measurement, parameters):
     """Check that measured data are of the right form.
 
     Run this on the output of a model's measurement method to
