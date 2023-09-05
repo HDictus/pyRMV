@@ -6,7 +6,7 @@ import pandas as pd
 from lazy import lazy
 
 from . import terminology as terms
-from .measurement_utils import (
+from .measurements import (
     validate_measurement,
     validate_observations,
     measure,
