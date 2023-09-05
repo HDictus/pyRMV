@@ -109,7 +109,7 @@ def _measurement_method(model, measurement, measurements_library):
             continue
         if all(_measurement_method(model, other, measurements_library) for other in key):
             logging.debug(
-                "Using method %s to measure %s from %s using %s", 
+                "Using method %s to measure %s from %s using %s",
                 value, measurement, model, key)
             return partial(value, model, measurements_library=measurements_library)
     return None
