@@ -113,12 +113,6 @@ def _measurement_method(model, measurement, measurements_library):
     return None
 
 
-# TODO: maybe at this point measurements_library should be a class of objects
-# which has a measure method and can be subclassed / initialized for specifics?
-# TODO: predict or predict_measurement would be a more accurate name
-# TODO: my naming scheme also has an entanglement: measurement is used for the
-#  predicted/observed outcomes and also for the property measured
-#  I should rename them.
 def measure(model, measurement, parameters, measurements_library=measurements.measurements):
     """Measure the quantity measurement from a model.
 
@@ -130,6 +124,11 @@ def measure(model, measurement, parameters, measurements_library=measurements.me
         parameters: a DataFrame describing the parameters of the
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
+        measurements_library: a dict describing measurements for each term.
+            Each key is a term describing the measured property, each value
+            is a dict describing the measurement procedure.
+            This dict must contain an entry "method name".
+            See analysis_neuro.measurements for an example
     """
     validate_measurement(measurement, measurements_library)
     validate_observations(parameters)
