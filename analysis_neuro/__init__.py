@@ -1,7 +1,6 @@
 """Package for constructing analyses and validations of neuroscience models."""
+import dataframe_pointer
 from . import plots
 from . import terminology as terms
 from .exceptions import TerminologyError, Assumption
-from .measurement_utils import DATA_TERMS, measure, extract_parameters
 from .analysis import Analysis
-import dataframe_pointer as _

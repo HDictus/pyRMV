@@ -11,7 +11,6 @@ from analysis_neuro import terms
 from analysis_neuro import measurement_utils
 
 
-# TODO: osi can be defined wrt any kind of response. Generalize
 def _calculate_osi(dataframe):
     rates = dataframe[terms.FIRING_RATE]
     orientations = dataframe[terms.STIM_ORIENTATION]

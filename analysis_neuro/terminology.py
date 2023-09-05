@@ -172,7 +172,7 @@ VISUAL_STIMULUS = Term(
     description="The type of visual stimulus used in an experiment. "
     "See stimuli.py for stimuli associated with different datasets.",
 )
-# TODO: these terms suck
+
 ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
     description=("A tuple: the range of horizontal angles that the stimulus covers"

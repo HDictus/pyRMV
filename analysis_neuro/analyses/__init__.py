@@ -1,16 +1,15 @@
 """Collected analyses and validations."""
-from pathlib import Path
-import warnings
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
-
 try:
     from importlib.resources import files
 except ImportError:
     from importlib_resources import files
 import importlib
+
+import warnings
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 
 from analysis_neuro import Analysis
 from analysis_neuro import terminology as terms
@@ -132,7 +131,6 @@ siegle_osi_2019 = Analysis(
     We compare to the levels of orientation selectivity observed in
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
-    # TODO: We should have some sort of lazy loader here for efficiency's sake
     observations=importlib.import_module("analysis_neuro.analyses.data.siegle_2019").osi,
     plotter=_histogram_siegle,
     stats=stats.mann_whitney_u,
