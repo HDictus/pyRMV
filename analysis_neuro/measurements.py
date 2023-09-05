@@ -18,10 +18,6 @@ def _calculate_osi(dataframe):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
-# yeah this really should be an object
-# TODO: also, this is inflexible: say we have a measurement on the basis of CA fluoresence instead... it will still defail to firing rate the way it is listed here
-# I think we need to have a single function in the dict: this will either call the method, or
-#    combine other methods. Maximum flexibility
 def osi_firing_rate(model, parameters, measurements_library):
     """Measure orientation selectivity using firing rates."""
     # we loop through the parameters at the moment.
@@ -53,7 +49,7 @@ def osi_firing_rate(model, parameters, measurements_library):
         )
         if tf_optimal:
             conditionwise_rates = firing_rate.groupby(
-                [c for c in firing_rate if c!= terms.FIRING_RATE])[
+                [c for c in firing_rate if c != terms.FIRING_RATE])[
                     terms.FIRING_RATE].mean().reset_index()
             optimal_tf = conditionwise_rates.set_index(
                 terms.TEMPORAL_FREQUENCY).groupby(
@@ -61,11 +57,11 @@ def osi_firing_rate(model, parameters, measurements_library):
             firing_rate = firing_rate.set_index([
                 terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
                     zip(optimal_tf.index, optimal_tf.values)
-                ].reset_index()
+            ].reset_index()
         selectivity = firing_rate.groupby(
             terms.CELL_ID).apply(_calculate_osi)\
-                .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
-                .assign(**row)
+            .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
+            .assign(**row)
 
         out.append(selectivity)
 
