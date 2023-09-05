@@ -11,7 +11,8 @@ from pathlib import Path
 from functools import partial
 import numpy as np
 import pandas as pd
-from analysis_neuro import terms, TerminologyError
+import analysis_neuro.terminology as terms
+from analysis_neuro.exceptions import TerminologyError
 
 
 def _calculate_osi(dataframe):
