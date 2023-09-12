@@ -27,7 +27,8 @@ def osi_firing_rate(model, parameters, measurements_library):
     # there may be a more efficient way to do this with batch processing
     # but I haven't come up with it
     out = []
-    for _, row in parameters.iterrows():
+    from tqdm import tqdm
+    for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
         stimuli_shown = row[terms.STIMULUS].df
         columns_both = [
             c for c in parameters.columns if c in stimuli_shown
@@ -43,6 +44,8 @@ def osi_firing_rate(model, parameters, measurements_library):
             model, terms.FIRING_RATE,
             stimuli_shown, measurements_library
         )
+        if len(firing_rate) == 0 or not np.any(~np.isnan(firing_rate[terms.FIRING_RATE])):
+            continue
         # if temporal frequency is set to optimal, we select a different
         # temporal frequency for each cell. Specifically, the one to which
         # it responds most strongly
@@ -52,7 +55,8 @@ def osi_firing_rate(model, parameters, measurements_library):
         )
         if tf_optimal:
             conditionwise_rates = firing_rate.groupby(
-                [c for c in firing_rate if c != terms.FIRING_RATE])[
+                [c for c in firing_rate if c not in 
+                 (terms.FIRING_RATE, terms.TRIAL_ID)])[
                     terms.FIRING_RATE].mean().reset_index()
             optimal_tf = conditionwise_rates.set_index(
                 terms.TEMPORAL_FREQUENCY).groupby(
