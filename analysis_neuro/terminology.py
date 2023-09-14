@@ -88,6 +88,7 @@ GENE_EXPRESSION = Term(
     "gene expression",
     description=(
         "Gene that the cell expresses."
+        "For example: PV, Sst, Vip"
     ),
 )
 SPIKING_CLASS = Term(

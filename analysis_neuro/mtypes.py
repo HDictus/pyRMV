@@ -85,7 +85,7 @@ for msc in [
     "CHC",
     "SAC",
 ]:
-    ALIASES[msc] = [mtype for mtype in PRIMITIVES if msc in mtype]
+    ALIASES[msc] = [mtype for mtype in PRIMITIVES if mtype.endswith(msc)]
 
 
 SUPPORTED_MTYPE_LABELS = PRIMITIVES + list(ALIASES.keys())

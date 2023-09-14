@@ -244,5 +244,5 @@ def test_ji_innervation_2016():
         if 'perfect' in hypothesis:
             assert value == 'Pass'
 
-    assert len(report['figures']) > 0
+    assert report['figures']
     
