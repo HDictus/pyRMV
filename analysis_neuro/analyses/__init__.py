@@ -116,7 +116,7 @@ def _histogram_siegle(data, dependent, independent, compare):
     out = {}
     for key, inddata in data.groupby(independent):
         fig = plt.figure()
-        bins = np.linspace(inddata[dependent].min(), inddata[dependent].max(), 13)
+        bins = np.linspace(inddata[dependent].min(), inddata[dependent].max(), 100)
         for label, dataset in inddata.groupby(compare):
             plt.hist(
                 dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
