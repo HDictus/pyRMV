@@ -25,7 +25,8 @@ setup(
         "importlib-resources", 
         "pytest",
         "dataframe-pointer",
-        "lazy"],
+        "lazy",
+        "tqdm"],
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/browse/MMBVISCX-19",
