@@ -302,8 +302,6 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
     Hypothesis:
         The dependent variable follows the same distribution for both compared populations
     """
-    # TODO: add a test for the case where not all entries are present in all datasets.
-    # TODO: can we create a more generalizable abstraction out of that?
     hypotheses = {}
     for label1, data1, label2, data2 in _iter_compare(data, compare):
         hypothesis = (
@@ -316,10 +314,12 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
         for independent_values, grouped1 in data1.groupby(independent):
             if not isinstance(independent_values, tuple):
                 independent_values = (independent_values, )
+
             try:
                 grouped2 = data2.loc[independent_values]
             except KeyError:
                 continue
+
             out_list.append({
                 **dict(zip(independent, independent_values)),
                 terms.PVALUE: stats.mannwhitneyu(
