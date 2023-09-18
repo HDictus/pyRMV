@@ -174,10 +174,10 @@ def test_plots_with_multiple_params():
     plotter = MagicMock()
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            "measured thing": [100, 200, 300, 400, 500, 600],
             terms.DATASET: "blabla",
-            "layer": ["L1", "L23", "L4", "L5", "L6"],
-            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+            "layer": ["L1", "L23", "L4", "L5", "L6", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC", None],
         }
     )
 
@@ -188,17 +188,17 @@ def test_plots_with_multiple_params():
     kwargs = plotter.call_args.kwargs
     pd.testing.assert_series_equal(
         kwargs["y"].reset_index(drop=True),
-        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name="measured thing"),
+        pd.Series([100, 200, 300, 400, 500, 600, 4, 4, 4, 4, 4, 4], name="measured thing"),
     )
     pd.testing.assert_series_equal(
         kwargs["x"].reset_index(drop=True),
         pd.Series(
-            ["L1 NGC", "L23 NGC", "L4 MC", "L5 MC", "L6 LBC"] * 2, name="layer, mtype"
+            ["L1 NGC", "L23 NGC", "L4 MC", "L5 MC", "L6 LBC", "L6"] * 2, name="layer, mtype"
         ),
     )
     pd.testing.assert_series_equal(
         kwargs["hue"].reset_index(drop=True),
-        pd.Series(["blabla"] * 5 + ["4"] * 5, name=terms.DATASET),
+        pd.Series(["blabla"] * 6 + ["4"] * 6, name=terms.DATASET),
     )
 
 

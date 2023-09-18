@@ -17,7 +17,7 @@ from .measurements import (
 def _join_columns(dataframe):
     """Combine the columns of dataframe into a single series."""
     series_name = ", ".join(dataframe.columns)
-    values = [" ".join(str(v) for v in row) for row in dataframe.values]
+    values = [" ".join(str(v) for v in row if not pd.isna(v)) for row in dataframe.values]
     return pd.Series(values, name=series_name)
 
 

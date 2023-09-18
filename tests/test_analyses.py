@@ -245,4 +245,12 @@ def test_ji_innervation_2016():
             assert value == 'Pass'
 
     assert report['figures']
-    
+    ax = report['figures'].get_axes()[0]
+    labels = [l.get_text() for l in ax.get_xticklabels()]
+    assert labels == [
+        "L1", 
+        "L23 PV", "L23 Sst", "L23 Vip", "L23 EXC",
+        "L4 PV", "L4 Sst", "L4 Vip", "L4 EXC",
+        "L5 PV", "L5 Sst", "L5 Vip", "L5 EXC",
+        "L6 PV", "L6 Sst", "L6 Vip", "L6 EXC"
+    ]
