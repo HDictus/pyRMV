@@ -5,7 +5,7 @@ That allow the computation of one measurement type from another.
 
 For example, a method here may implement calculating density based on mass and volume.
 
-Then, any model which has measurement methods for both mass and volume can have 
+Then, any model which has measurement methods for both mass and volume can have
 orientation selectivity implemented for it.
 
 The dict measurements contains measurable properties as keys and a description
@@ -34,7 +34,7 @@ def _calculate_osi(dataframe):
 
 def osi_firing_rate(model, parameters, measurements_library):
     """Measure orientation selectivity on the basis of firing rate.
-    
+
     Arguments:
        model:  an object which can measure terms.FIRING_RATE
        parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
@@ -74,9 +74,9 @@ def osi_firing_rate(model, parameters, measurements_library):
         )
         if tf_optimal:
             conditionwise_rates = firing_rate.groupby(
-                [c for c in firing_rate if c not in 
-                 (terms.FIRING_RATE, terms.TRIAL_ID)])[
-                    terms.FIRING_RATE].mean().reset_index()
+                [c for c in firing_rate
+                 if c not in (terms.FIRING_RATE, terms.TRIAL_ID)])[terms.FIRING_RATE]\
+                     .mean().reset_index()
             optimal_tf = conditionwise_rates.set_index(
                 terms.TEMPORAL_FREQUENCY).groupby(
                 terms.CELL_ID)[terms.FIRING_RATE].idxmax()
