@@ -4,6 +4,14 @@ All methods can be overwritten by a model. Those implemented here serve as defau
 That allow the computation of one measurement type from another.
 
 For example, a method here may implement calculating density based on mass and volume.
+Then, any model which has measurement methods for both mass and volume can have 
+orientation selectivity implemented for it.
+
+The dict measurements contains measurable properties as keys and a description
+of the requirements to measure the property as values.
+The values can specify the name of a method a model has to implement to measure
+that property, and it can specify a method to measure the property on the basis
+of other properties.
 """
 import warnings
 import logging
@@ -22,7 +30,13 @@ def _calculate_osi(dataframe):
 
 
 def osi_firing_rate(model, parameters, measurements_library):
-    """Measure orientation selectivity using firing rates."""
+    """Measure orientation selectivity on the basis of firing rate.
+    
+    Arguments:
+       model:  an object which can measure terms.FIRING_RATE
+       parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
+       measurements_library: dict describing requirements of model objects
+    """
     # we loop through the parameters at the moment.
     # there may be a more efficient way to do this with batch processing
     # but I haven't come up with it
