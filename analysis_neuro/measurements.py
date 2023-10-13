@@ -26,97 +26,33 @@ import analysis_neuro.terminology as terms
 from analysis_neuro.exceptions import TerminologyError
 
 
-def _calculate_osi(dataframe):
-    rates = dataframe[terms.FIRING_RATE]
-    orientations = dataframe[terms.STIM_ORIENTATION]
-    return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
-
-
-def osi_firing_rate(model, parameters, measurements_library):
-    """Measure orientation selectivity on the basis of firing rate.
-
-    Arguments:
-       model:  an object which can measure terms.FIRING_RATE
-       parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
-       measurements_library: dict describing requirements of model objects
-    """
-
-    # we loop through the parameters at the moment.
-    # there may be a more efficient way to do this with batch processing
-    # but I haven't come up with it
-    out = []
-
-    for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
-        stimuli_shown = row[terms.STIMULUS].df
-        columns_both = [
-            c for c in parameters.columns if c in stimuli_shown
-            and row[c] not in ['optimal']
-        ]
-        if len(columns_both) > 0:
-            stimuli_shown = stimuli_shown.set_index(columns_both).loc[
-                row[columns_both]].reset_index()
-        other_parameters = [c for c in parameters.columns if row[c] not in ['optimal']]
-        stimuli_shown = stimuli_shown.assign(**row[other_parameters])
-
-        firing_rate = measure(
-            model, terms.FIRING_RATE,
-            stimuli_shown, measurements_library
-        )
-        if len(firing_rate) == 0 or not np.any(~np.isnan(firing_rate[terms.FIRING_RATE])):
-            continue
-
-        # if temporal frequency is set to optimal, we select a different
-        # temporal frequency for each cell. Specifically, the one to which
-        # it responds most strongly
-        tf_optimal = (
-            terms.TEMPORAL_FREQUENCY in parameters.columns
-            and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
-        )
-        if tf_optimal:
-            conditionwise_rates = firing_rate.groupby(
-                [c for c in firing_rate
-                 if c not in (terms.FIRING_RATE, terms.TRIAL_ID)])[terms.FIRING_RATE]\
-                     .mean().reset_index()
-            optimal_tf = conditionwise_rates.set_index(
-                terms.TEMPORAL_FREQUENCY).groupby(
-                terms.CELL_ID)[terms.FIRING_RATE].idxmax()
-            firing_rate = firing_rate.set_index([
-                terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
-                    zip(optimal_tf.index, optimal_tf.values)
-            ].reset_index()
-        selectivity = firing_rate.groupby(
-            terms.CELL_ID).apply(_calculate_osi)\
-            .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
-            .assign(**row)
-
-        out.append(selectivity)
-
-    return pd.concat(out, axis=0)
-
-
-measurements = {
-    terms.CELL_DENSITY: {"method name": "cell_density"},
-    terms.CELL_COUNT: {"method name": "cell_count"},
-    terms.CONNECTION_PROBABILITY: {"method name": "connection_probability"},
-    terms.SYNAPSES_PER_CONNECTION: {'method name': 'synapses_per_connection'},
-    terms.NUM_SYNAPSES: {'method name': 'num_synapses'},
-    terms.INTERSOMATIC_DISTANCE: {"method name": "intersomatic_distance"},
-    terms.ORIENTATION_SELECTIVITY: {
-        "method name": "orientation_selectivity",
-        (terms.FIRING_RATE,): osi_firing_rate},
-    terms.FIRING_RATE: {"method name": "firing_rate"},
-}
-
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
+_BUILTIN_MEASUREMENTS = {}
 
-# pylint: disable=dangerous-default-value
-def validate_measurement(measurement, measurements_library=measurements):
+def measures(measurement):
+    """A decoratator that declares a given method measures a measurable property."""
+
+    def decorate(method):
+        if measurement in _BUILTIN_MEASUREMENTS:
+            # TODO: it would be better to do this in such a way that multiple builtins can be defined
+            #   and intelligently used based on the methods on the model
+            raise ValueError(f"A builtin measurement for {measurement} has already been defined")
+        _BUILTIN_MEASUREMENTS[measurement] = method
+        return method
+
+    return decorate
+    
+def validate_measurement(measurement):
     """Check that <measurement> is a valid measurement."""
-    if measurement not in measurements_library:
+    # pylint:disable=protected-access
+    try:
+        measurement = terms._ALLTERMS[measurement]
+    except KeyError:
+        raise TerminologyError(f"{measurement} is not a defined Term.")
+    if measurement.measurement_method is None:
         raise TerminologyError(
-            f"Provided measurement '{measurement}' is not defined in "
-            "the measurements library (default analysis_neuro.measurements.measurements")
+            f"{measurement} is not a measurable property, as it does not have an associated measurement_method.")
 
 
 def validate_measured(measured_data, measurement, parameters):
@@ -142,7 +78,7 @@ def validate_measured(measured_data, measurement, parameters):
         )
 
         raise ValueError(
-            f"The measurement method {measurements[measurement]['method name']}"
+            f"The measurement method {measurement.measurement_method}"
             " must return a pandas DataFrame containing the parameters and measurements.\n"
             f"e.g. \n: {fake_example_measurement}\n\n"
             f"Recieved instead:\n{measured_data}\n\n"
@@ -196,23 +132,17 @@ def validate_observations(observations):
                 )
 
 
-def _measurement_method(model, measurement, measurements_library):
-    method_name = measurements_library[measurement]['method name']
+def _measurement_method(model, measurement):
+    measurement = terms._ALLTERMS[measurement]
+    method_name = measurement.measurement_method
     if hasattr(model, method_name):
         return getattr(model, method_name)
-
-    for key, value in measurements_library[measurement].items():
-        if key == 'method name':
-            continue
-        if all(_measurement_method(model, other, measurements_library) for other in key):
-            logging.debug(
-                "Using method %s to measure %s from %s using %s",
-                value, measurement, model, key)
-            return partial(value, model, measurements_library=measurements_library)
+    if measurement in _BUILTIN_MEASUREMENTS:
+        return partial(_BUILTIN_MEASUREMENTS[measurement], model)
     return None
 
 
-def measure(model, measurement, parameters, measurements_library=measurements):
+def measure(model, measurement, parameters):
     """Measure the quantity measurement from a model.
 
     Arguments:
@@ -223,16 +153,10 @@ def measure(model, measurement, parameters, measurements_library=measurements):
         parameters: a DataFrame describing the parameters of the
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
-        measurements_library: a dict describing measurements for each term.
-            Each key is a term describing the measured property, each value
-            Generally only needed for testing purposes.
-            is a dict describing the measurement procedure.
-            This dict must contain an entry "method name".
-            See analysis_neuro.measurements for an example
     """
-    validate_measurement(measurement, measurements_library)
+    validate_measurement(measurement)
     validate_observations(parameters)
-    measurement_method = _measurement_method(model, measurement, measurements_library)
+    measurement_method = _measurement_method(model, measurement)
     if measurement_method is None:
         raise TypeError(
             f"The model does not have the functionality needed to measure {measurement}.")
@@ -265,3 +189,71 @@ def extract_parameters(observations, measurement=None):
         return dframe[cols].groupby(cols, dropna=False).sum().reset_index()
 
     return _multicolumn_unique(observations, paramcols)
+
+
+def _calculate_osi(dataframe):
+    rates = dataframe[terms.FIRING_RATE]
+    orientations = dataframe[terms.STIM_ORIENTATION]
+    return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
+
+
+@measures(terms.ORIENTATION_SELECTIVITY)
+def osi_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
+    """Measure orientation selectivity on the basis of firing rate.
+
+    Arguments:
+       model:  an object which can measure terms.FIRING_RATE measurements_library
+       parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
+    """
+
+    # we loop through the parameters at the moment.
+    # there may be a more efficient way to do this with batch processing
+    # but I haven't come up with it
+    out = []
+
+    for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
+        stimuli_shown = row[terms.STIMULUS].df
+        columns_both = [
+            c for c in parameters.columns if c in stimuli_shown
+            and row[c] not in ['optimal']
+        ]
+        if len(columns_both) > 0:
+            stimuli_shown = stimuli_shown.set_index(columns_both).loc[
+                row[columns_both]].reset_index()
+        other_parameters = [c for c in parameters.columns if row[c] not in ['optimal']]
+        stimuli_shown = stimuli_shown.assign(**row[other_parameters])
+
+        response = measure(
+            model, response_measurement,
+            stimuli_shown
+        )
+        if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
+            continue
+
+        # if temporal frequency is set to optimal, we select a different
+        # temporal frequency for each cell. Specifically, the one to which
+        # it responds most strongly
+        tf_optimal = (
+            terms.TEMPORAL_FREQUENCY in parameters.columns
+            and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
+        )
+        if tf_optimal:
+            conditionwise_rates = response.groupby(
+                [c for c in response
+                 if c not in (response_measurement, terms.TRIAL_ID)])[response_measurement]\
+                     .mean().reset_index()
+            optimal_tf = conditionwise_rates.set_index(
+                terms.TEMPORAL_FREQUENCY).groupby(
+                terms.CELL_ID)[response_measurement].idxmax()
+            response = response.set_index([
+                terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
+                    zip(optimal_tf.index, optimal_tf.values)
+            ].reset_index()
+        selectivity = response.groupby(
+            terms.CELL_ID).apply(_calculate_osi)\
+            .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
+            .assign(**row)
+
+        out.append(selectivity)
+
+    return pd.concat(out, axis=0)

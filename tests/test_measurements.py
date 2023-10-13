@@ -88,7 +88,11 @@ def test_measures_osi_with_firing_rate():
 
 def test_measures_with_method():
 
-    density = 'density (kg/m^3)'
+    density = terms.Term(
+        'density (kg/m^3)',
+        '',
+        measurement_method='density')
+ 
     params = pd.DataFrame({'_': [0, 0]})
 
     class MockModelWithDens:
@@ -97,16 +101,15 @@ def test_measures_with_method():
             return parameters.assign(**{density: 100})
 
     dens = test_module.measure(
-        MockModelWithDens(), density, params,
-        measurements_library={density: {'method name': 'density'}})
+        MockModelWithDens(), density, params)
     assert dens[density].values[0] == 100
 
 
 def test_measure_on_basis_of_others():
 
-    density = 'density (kgm^-3)'
-    volume = 'volume (m^3)'
-    mass = 'mass (kg)'
+    density = terms.Term('density (kgm^-3)', '', measurement_method='density')
+    volume = terms.Term('volume (m^3)', '', measurement_method='volume')
+    mass = terms.Term('mass (kg)', '', measurement_method='mass')
 
     class MockModel:
 
@@ -116,23 +119,18 @@ def test_measure_on_basis_of_others():
         def mass(self, parameters):
             return parameters.assign(**{mass: 200})
 
-    def measure_density(model, parameters, measurements_library):
-        v = test_module.measure(model, volume, parameters, measurements_library)
-        m = test_module.measure(model, mass, parameters, measurements_library)
+    # TODO: actually not ideal
+    @test_module.measures(density)
+    def measure_density(model, parameters):
+        v = test_module.measure(model, volume, parameters)
+        m = test_module.measure(model, mass, parameters)
         rho = m[mass] / v[volume]
         return v.drop(columns=[volume]).assign(**{density: rho})
-
-    measurements_library = {
-        volume: {'method name': 'volume'},
-        mass: {'method name': 'mass'},
-        density: {'method name': 'density',
-                  (volume, mass): measure_density}}
 
     params = pd.DataFrame({'_': [0]})
 
     dens = test_module.measure(
-        MockModel(), density, params,
-        measurements_library=measurements_library)
+        MockModel(), density, params)
     assert dens[density].values[0] == 2
 
     # ensure that the model method still gets priority
@@ -142,8 +140,7 @@ def test_measure_on_basis_of_others():
             return parameters.assign(**{density: 100})
 
     dens = test_module.measure(
-        MockModelWithDens(), density, params,
-        measurements_library=measurements_library)
+        MockModelWithDens(), density, params,)
     assert dens[density].values[0] == 100
 
 

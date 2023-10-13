@@ -28,15 +28,18 @@ class Term(str):
         """
         return super().__new__(cls, term)
 
-    def __init__(self, term, description="No description provided"):
+    def __init__(self, term, description="No description provided", measurement_method=None):
         """Define a new term.
 
         Arguments:
             term: short label
             description: description of the term
+            measurement_method: name of the method used to measure the property this term represents
+                only needed if this term represents a measurable property.
         """
         _ALLTERMS[term] = self
         self.description = description
+        self.measurement_method = measurement_method
         super().__init__()
 
     def describe(self):
@@ -92,12 +95,16 @@ SPIKING_CLASS = Term(
 )
 
 CELL_DENSITY = Term(
-    "cell density ($cells/mm^3$)", description="Number of cells per cubic millimetre"
+    "cell density ($cells/mm^3$)", description="Number of cells per cubic millimetre",
+    measurement_method='cell_density'
 )
-CELL_COUNT = Term("cell count", description="Total number of cells")
+CELL_COUNT = Term(
+    "cell count", description="Total number of cells",
+    measurement_method='cell_count')
 REGION_VOLUME = Term(
     "volume ($mm^3$)",
     description="Volume of the measured parts of the brain in cubic millimetres",
+    measurement_method='region_volume'
 )
 
 
@@ -231,18 +238,22 @@ CONNECTION_PROBABILITY = Term(
         "The probability that any specific cell in the presynaptic population "
         "is connected to any random cell in the postsynaptic population"
     ),
+    measurement_method="connection_probability"
 )
 INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"),
+    measurement_method="intersomatic_distance"
 )
 SYNAPSES_PER_CONNECTION = Term(
     "synapses per connection",
-    description=("The number of synapses between a pair of connected cells")
+    description=("The number of synapses between a pair of connected cells"),
+    measurement_method="synapses_per_connection"
 )
 NUM_SYNAPSES = Term(
     "Number of synapses",
-    description="The total number of synapses along a pathway"
+    description="The total number of synapses along a pathway",
+    measurement_method="num_synapses"
 )
 
 ORIENTATION_SELECTIVITY = Term(
@@ -251,10 +262,12 @@ ORIENTATION_SELECTIVITY = Term(
         "The level of selectivity a neuron has for particular stimulus orientations under "
         "the experimental conditions"
     ),
+    measurement_method="orientation_selectivity"
 )
 FIRING_RATE = Term(
     "firing rate (Hz)",
     description=("Rate of firing under the experimental conditions, in Hertz"),
+    measurement_method="firing_rate"
 )
 
 PRESYNAPTIC = Term(

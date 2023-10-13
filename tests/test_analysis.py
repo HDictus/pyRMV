@@ -4,7 +4,8 @@ import warnings
 from mock import MagicMock
 from analysis_neuro import Analysis, terms, TerminologyError, measurements
 
-measurements.measurements["measured thing"] = {"method name": "thing"}
+
+measured_thing = terms.Term("measured thing", measurement_method="thing")
 
 
 class MockModel:
@@ -310,9 +311,8 @@ def test_raises_error_invalid_measurement():
             measurement="lololo",
         )
     assert (
-        "Provided measurement 'lololo' is not defined in"
+        "lololo is not a defined Term."
     ) in str(te.value)
-    assert "analysis_neuro.measurements.measurements" in str(te.value)
 
 
 # TODO: test case where observatioons have measurement but not label
