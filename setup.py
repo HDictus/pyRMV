@@ -19,7 +19,7 @@ setup(
     install_requires=[
         "numpy", 
         "pandas",
-        "seaborn", 
+        "seaborn==0.12.2", 
         "scipy", 
         "mock", 
         "importlib-resources", 
