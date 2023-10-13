@@ -33,7 +33,7 @@ def test_measures_osi_with_firing_rate():
             return pd.DataFrame(out)
         
         def orientation_selectivity(self, parameters):
-           return test_module.osi_firing_rate(self, parameters)
+           return test_module.orientation_selectivity(self, parameters)
 
     rates = np.array([1, 1, 1, 2, 1, 1, 1, 1])
     oris = np.array([0, 45, 90, 135, 180, 225, 270, 315])

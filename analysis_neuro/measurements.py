@@ -16,9 +16,7 @@ of other properties.
 
 """
 import warnings
-import logging
 from pathlib import Path
-from functools import partial
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -28,17 +26,17 @@ from analysis_neuro.exceptions import TerminologyError
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
-    
+
 def validate_measurement(measurement):
     """Check that <measurement> is a valid measurement."""
-    # pylint:disable=protected-access
     try:
-        measurement = terms._ALLTERMS[measurement]
-    except KeyError:
-        raise TerminologyError(f"{measurement} is not a defined Term.")
+        measurement = terms.ALL_TERMS[measurement]
+    except KeyError as exc:
+        raise TerminologyError(f"{measurement} is not a defined Term.") from exc
     if measurement.measurement_method is None:
         raise TerminologyError(
-            f"{measurement} is not a measurable property, as it does not have an associated measurement_method.")
+            f"{measurement} is not a measurable property, "
+            "as it does not have an associated measurement_method.")
 
 
 def validate_measured(measured_data, measurement, parameters):
@@ -103,13 +101,13 @@ def validate_observations(observations):
     for column in observations.columns:
         if not isinstance(column, str):
             raise ValueError("column headers must be strings")
-        if column not in terms._ALLTERMS:
+        if column not in terms.ALL_TERMS:
             # check if it is a prefix-postfix combo
             is_valid_prefixed = False
-            for term in terms._ALLTERMS:
+            for term in terms.ALL_TERMS:
                 if term.endswith(" "):
                     # if it is prefixed and the postfix term exists
-                    if column.startswith(term) and column[len(term):] in terms._ALLTERMS:
+                    if column.startswith(term) and column[len(term):] in terms.ALL_TERMS:
                         is_valid_prefixed = True
                         break
             if not is_valid_prefixed:
@@ -119,7 +117,7 @@ def validate_observations(observations):
 
 
 def _measurement_method(model, measurement):
-    measurement = terms._ALLTERMS[measurement]
+    measurement = terms.ALL_TERMS[measurement]
     method_name = measurement.measurement_method
     if hasattr(model, method_name):
         return getattr(model, method_name)
@@ -181,14 +179,15 @@ def _calculate_osi(dataframe):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
-def osi_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
-    """Measure orientation selectivity on the basis of firing rate.
+def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
+    """Measure orientation selectivity on the basis of some response property (e.g. Firing rate).
 
     Arguments:
-       model:  an object which can measure terms.FIRING_RATE measurements_library
+       model: an object which can measure the response_measurement
        parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
+       response_measurement: (default: FIRING_RATE) the response property from which
+           to calculate orientation selectivity.
     """
-
     # we loop through the parameters at the moment.
     # there may be a more efficient way to do this with batch processing
     # but I haven't come up with it
@@ -224,7 +223,7 @@ def osi_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
             conditionwise_rates = response.groupby(
                 [c for c in response
                  if c not in (response_measurement, terms.TRIAL_ID)])[response_measurement]\
-                     .mean().reset_index()
+                .mean().reset_index()
             optimal_tf = conditionwise_rates.set_index(
                 terms.TEMPORAL_FREQUENCY).groupby(
                 terms.CELL_ID)[response_measurement].idxmax()

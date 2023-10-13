@@ -13,7 +13,7 @@ e.g. terminology.measurements[terminology.CONNECTION_PROBABILITY]
 """
 
 
-_ALLTERMS = {}
+ALL_TERMS = {}
 
 
 class Term(str):
@@ -37,7 +37,7 @@ class Term(str):
             measurement_method: name of the method used to measure the property this term represents
                 only needed if this term represents a measurable property.
         """
-        _ALLTERMS[term] = self
+        ALL_TERMS[term] = self
         self.description = description
         self.measurement_method = measurement_method
         super().__init__()
@@ -294,5 +294,5 @@ MAX = Term(
 def describe(*terms):
     """Describe the given terms, or all terms if nothing passed."""
     if len(terms) == 0:
-        terms = _ALLTERMS.keys()
-    return "\n\n".join([_ALLTERMS[term].describe() for term in terms])
+        terms = ALL_TERMS.keys()
+    return "\n\n".join([ALL_TERMS[term].describe() for term in terms])

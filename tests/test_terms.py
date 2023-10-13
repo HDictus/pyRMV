@@ -1,4 +1,4 @@
-from analysis_neuro.terminology import Term
+from analysis_neuro.terminology import Term, ALL_TERMS
 
 
 def test_terms_added_together_makes_string():
@@ -13,3 +13,7 @@ def test_terms_added_together_combines_description():
     combined = preterm + postterm
     assert "pre of post" in combined.description
     assert postterm.description in combined.description
+
+def test_terms_added_to_ALL_TERMS():
+    termobj = Term('thingy')
+    assert ALL_TERMS['thingy'] is termobj
