@@ -28,20 +28,6 @@ from analysis_neuro.exceptions import TerminologyError
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
-_BUILTIN_MEASUREMENTS = {}
-
-def measures(measurement):
-    """A decoratator that declares a given method measures a measurable property."""
-
-    def decorate(method):
-        if measurement in _BUILTIN_MEASUREMENTS:
-            # TODO: it would be better to do this in such a way that multiple builtins can be defined
-            #   and intelligently used based on the methods on the model
-            raise ValueError(f"A builtin measurement for {measurement} has already been defined")
-        _BUILTIN_MEASUREMENTS[measurement] = method
-        return method
-
-    return decorate
     
 def validate_measurement(measurement):
     """Check that <measurement> is a valid measurement."""
@@ -137,8 +123,6 @@ def _measurement_method(model, measurement):
     method_name = measurement.measurement_method
     if hasattr(model, method_name):
         return getattr(model, method_name)
-    if measurement in _BUILTIN_MEASUREMENTS:
-        return partial(_BUILTIN_MEASUREMENTS[measurement], model)
     return None
 
 
@@ -197,7 +181,6 @@ def _calculate_osi(dataframe):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
-@measures(terms.ORIENTATION_SELECTIVITY)
 def osi_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
     """Measure orientation selectivity on the basis of firing rate.
 

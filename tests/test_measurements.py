@@ -31,6 +31,9 @@ def test_measures_osi_with_firing_rate():
                     else:
                         out.append({terms.FIRING_RATE: 1, terms.CELL_ID: nrn, **row})
             return pd.DataFrame(out)
+        
+        def orientation_selectivity(self, parameters):
+           return test_module.osi_firing_rate(self, parameters)
 
     rates = np.array([1, 1, 1, 2, 1, 1, 1, 1])
     oris = np.array([0, 45, 90, 135, 180, 225, 270, 315])
@@ -102,45 +105,6 @@ def test_measures_with_method():
 
     dens = test_module.measure(
         MockModelWithDens(), density, params)
-    assert dens[density].values[0] == 100
-
-
-def test_measure_on_basis_of_others():
-
-    density = terms.Term('density (kgm^-3)', '', measurement_method='density')
-    volume = terms.Term('volume (m^3)', '', measurement_method='volume')
-    mass = terms.Term('mass (kg)', '', measurement_method='mass')
-
-    class MockModel:
-
-        def volume(self, parameters):
-            return parameters.assign(**{volume: 100})
-
-        def mass(self, parameters):
-            return parameters.assign(**{mass: 200})
-
-    # TODO: actually not ideal
-    @test_module.measures(density)
-    def measure_density(model, parameters):
-        v = test_module.measure(model, volume, parameters)
-        m = test_module.measure(model, mass, parameters)
-        rho = m[mass] / v[volume]
-        return v.drop(columns=[volume]).assign(**{density: rho})
-
-    params = pd.DataFrame({'_': [0]})
-
-    dens = test_module.measure(
-        MockModel(), density, params)
-    assert dens[density].values[0] == 2
-
-    # ensure that the model method still gets priority
-    class MockModelWithDens:
-
-        def density(self, parameters):
-            return parameters.assign(**{density: 100})
-
-    dens = test_module.measure(
-        MockModelWithDens(), density, params,)
     assert dens[density].values[0] == 100
 
 
