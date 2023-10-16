@@ -375,42 +375,67 @@ def test_lognorm_ttest():
         expectation)
 
 def test_mannwhitney():
-    data = pd.DataFrame({
-        terms.DATASET: ['a'] * 1000 + ['b'] * 1000 + ['c'] * 1000,
-        'a parameter': (['c'] * 500 + ['d'] * 500) * 3,
-        'measured': (
-            list(range(1000))
-            + list(range(20, 1020))
-            + list(range(10, 1010)))}
-    )
-    
+    # just totally random data to use
+    values_experiment_d = np.random.uniform(0, 500, size=500)
+    values_experiment_e = np.random.uniform(500, 1000, size=500)
+    values_model1_d = np.random.uniform(20, 520, size=500)
+    values_model1_e = np.random.uniform(520, 1020, size=500)
+    values_model2_d = np.random.uniform(10, 510, size=500)
+    values_model2_e = np.random.uniform(510, 1000, size=500)
+
+    data = pd.concat([
+        pd.DataFrame({
+            terms.DATASET: 'experiment',
+            'independent var': 'd',
+            'measured': values_experiment_d}),
+        pd.DataFrame({
+            terms.DATASET: 'experiment',
+            'independent var': 'e',
+            'measured': values_experiment_e}),
+        pd.DataFrame({
+            terms.DATASET: 'model1',
+            'independent var': 'd',
+            'measured': values_model1_d}),
+        pd.DataFrame({
+            terms.DATASET: 'model1',
+            'independent var': 'e',
+            'measured': values_model1_e}),
+        pd.DataFrame({
+            terms.DATASET: 'model2',
+            'independent var': 'd',
+            'measured': values_model2_d}),
+        pd.DataFrame({
+            terms.DATASET: 'model2',
+            'independent var': 'e',
+            'measured': values_model2_e})], axis=0)
+
     results = stats.mann_whitney_u(data, compare=terms.DATASET,
                                    dependent='measured',
-                                   independent=['a parameter'])
+                                   independent=['independent var'])
     stats_frame = results[
-        "The underlying distribution of measured for a and b is the same"]
+        "The underlying distribution of measured for experiment and model1 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(20, 520)).pvalue,
-                            scipy.stats.mannwhitneyu(range(500, 1000), range(520, 1020)).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue,
+                           scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue]}),
         stats_frame)
     stats_frame = results[
-        "The underlying distribution of measured for a and c is the same"]
+        "The underlying distribution of measured for experiment and model2 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(500), range(10, 510)).pvalue,
-                            scipy.stats.mannwhitneyu(range(500, 1000), range(510, 1010)).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model2_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_experiment_e, values_model2_e).pvalue]}),
         stats_frame)
 
     stats_frame = results[
-        "The underlying distribution of measured for b and c is the same"]
+        "The underlying distribution of measured for model1 and model2 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
-            "a parameter": ['c', 'd'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(range(20, 520), range(10, 510)).pvalue,
-                            scipy.stats.mannwhitneyu(range(520, 1020), range(510, 1010)).pvalue]}),
+            "independent var": ['d', 'e'],
+            terms.PVALUE: [scipy.stats.mannwhitneyu(values_model1_d, values_model2_d).pvalue,
+                            scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
         stats_frame)
 
 

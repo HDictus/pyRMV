@@ -314,18 +314,26 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
         for independent_values, grouped1 in data1.groupby(independent):
             if not isinstance(independent_values, tuple):
                 independent_values = (independent_values, )
+<<<<<<< HEAD
 
             try:
                 grouped2 = data2.loc[independent_values]
             except KeyError:
                 continue
 
+=======
+            grouped2 = data2.loc[independent_values]
+>>>>>>> master
             out_list.append({
                 **dict(zip(independent, independent_values)),
                 terms.PVALUE: stats.mannwhitneyu(
                     grouped1[dependent].values, grouped2[dependent].values).pvalue
             })
+<<<<<<< HEAD
 
+=======
+            print(out_list[-1])
+>>>>>>> master
         hypotheses[hypothesis] = pd.DataFrame(out_list)
 
     return hypotheses
