@@ -83,7 +83,7 @@ class Analysis:
         self._observations = observations.copy()
         if terms.DATASET not in self._observations:
             self._observations[terms.DATASET] = 'experiment'
-            
+
         if not (
             _check_callable(plotter, ["x", "y", "hue"])
             or _check_callable(plotter, ["data", "dependent", "independent", "compare"])
