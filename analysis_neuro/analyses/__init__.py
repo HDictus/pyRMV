@@ -21,7 +21,7 @@ DATADIR = files('analysis_neuro.analyses.data')
 
 
 def _wide_barplot(x, y, hue):
-    fig, ax = plt.subplots(figsize=(20, 5))
+    _, ax = plt.subplots(figsize=(20, 5))
     return sns.barplot(x=x, y=y, hue=hue, ax=ax)
 
 
