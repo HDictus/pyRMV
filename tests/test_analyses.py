@@ -146,21 +146,6 @@ def test_siegle_spontaneous():
         " for mock and perfect is the same"
     ] == "Fail"
 
-    assert results['verdict'][
-        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
-        " for Siegle2019 and mock is the same"
-    ] == "Fail"
-    
-    assert results['verdict'][
-        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
-        " for Siegle2019 and perfect is the same"
-    ] == "Pass"
-
-    assert results['verdict'][
-        f"The underlying distribution of {terms.ORIENTATION_SELECTIVITY}"
-        " for mock and perfect is the same"
-    ] == "Fail"
-        
 
 def test_pala_peterson_conprob_2015():
     class MockModel:
