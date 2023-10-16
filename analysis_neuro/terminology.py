@@ -238,7 +238,8 @@ FRACTION_INNERVATED = Term(
     description=(
         "The fraction of cells in the postsynaptic population which recieve"
         " at least one synapse from the presynaptic population."
-    )
+    ),
+    measurement_method="fraction_innervated"
 )
 
 CONNECTION_PROBABILITY = Term(
