@@ -215,6 +215,7 @@ cossell_correlation_psp_2015 = Analysis(
          #   we also need similar abstractions for the specific data processing
          #   methods: like their method for inferring spike times from Ca+...
          terms.STIMULUS: 'natural-images',
+         terms.DATASET: 'Cossell et al. 2015',
          terms.INCLUDE_UNCONNECTED: True
          }),
     measurement=[terms.RESPONSE_CORRELATION, terms.PSP_AMPLITUDE],
@@ -224,6 +225,20 @@ cossell_correlation_psp_2015 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
+cossell_connprob_corr_2015 = Analysis(
+    measurement=terms.CONNECTION_PROBABILITY,
+    observations=pd.DataFrame({
+        terms.MIN + terms.RESPONSE_CORRELATION: [-0.1, 0, 0.1, 0.2, 0.3],
+        terms.MAX + terms.RESPONSE_CORRELATION: [0, 0.1, 0.2, 0.3, 0.4],
+        terms.CONNECTION_PROBABILITY: [16/179, 37/279, 12/40, 5/14, 5/8],
+        terms.SAMPLE_SIZE: [179, 279, 40, 14, 8],
+        terms.COLUMN_RADIUS: 125,
+        **cossell_correlation_psp_2015.observations.drop(columns=terms.INCLUDE_UNCONNECTED).iloc[0]
+    }),
+    plotter=sns.barplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
 
 
 def mtype_to_mtype_connprob(*models, radius=125):
