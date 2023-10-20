@@ -74,6 +74,9 @@ class Analysis:
         plotter=None,
         verdict=None,
         doc=None,
+        dependent=None,
+        independent=None,
+        compare=terms.DATASET
     ):
         """Initialize an Analysis from various components."""
         validate_measurement(measurement)
@@ -114,6 +117,9 @@ class Analysis:
             )
         self.verdict = verdict
         self.doc = doc
+        self._dependent = dependent
+        self._independent = independent
+        self.compare = compare
 
     def measure(self, model):
         """Measure the required measurements on model.
@@ -143,15 +149,29 @@ class Analysis:
             if len(self.parameters[col].unique()) > 1
         ]
 
+    @property
+    def dependent(self):
+        if self._dependent is None:
+            return self.measurement
+        return self._dependent
+    
+    # TODO: should we test that these things are passed?
+    #   or are the tests with real analyses enough?
+    @property
+    def independent(self):
+        if self._independent is None:
+            return self.varying_parameters
+        return self._independent       
+
     def statistical_tests(self, measurements):
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
         return self.stats(
             data=measurements,
-            dependent=self.measurement,
-            independent=self.varying_parameters,
-            compare=terms.DATASET,
+            dependent=self.dependent,
+            independent=self.independent,
+            compare=self.compare,
         )
 
     def __call__(self, *models):
@@ -160,7 +180,11 @@ class Analysis:
 
         # if observations represents experimental values, we want to
         # include those in the dataframe
-        if self.measurement in self.observations:
+        if isinstance(self.measurement, str):
+            measurements = [self.measurement]
+        else:
+            measurements = self.measurement
+        if all(msr in self.observations.columns for msr in measurements):
             to_concat = [self.observations] + to_concat
 
         measurements = pd.concat(to_concat)
@@ -174,18 +198,18 @@ class Analysis:
         }
         if self.plotter is not None:
             if _check_callable(self.plotter, ["x", "y", "hue"]):
-                dependent = measurements[self.measurement]
-                independent = _join_columns(measurements[self.varying_parameters])
-                compare = measurements[terms.DATASET]
+                dependent = measurements[self.dependent]
+                independent = _join_columns(measurements[self.independent])
+                compare = measurements[self.compare]
                 figure = self.plotter(
                     x=independent, y=dependent, hue=compare
                 ).get_figure()
             else:
                 figure = self.plotter(
                     data=measurements,
-                    dependent=self.measurement,
-                    independent=self.varying_parameters,
-                    compare=terms.DATASET,
+                    dependent=self.dependent,
+                    independent=self.independent,
+                    compare=self.compare,
                 )
             report["figures"] = figure
 
@@ -200,6 +224,12 @@ class Analysis:
             'stats': self.stats,
             'verdict': self.verdict,
             'doc': self.doc,
+            'dependent': self._dependent,
+            'independent': self._independent,
+            'compare': self.compare
         }
+        # TODO: this is something we should indeed test.
+        #   can we automate it more: e.g. that it mutates each argument one by one
+        #   and checks it is conserved?
         current_fields.update(fields)
         return self.__class__(**current_fields)

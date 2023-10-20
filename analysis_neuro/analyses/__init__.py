@@ -158,6 +158,73 @@ pala_peterson_conprob_2015 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
+# TODO: this shows again how things could be simplified by just expecting
+#   people to reproduce a specific measurement
+#   then a tool can be used to extract these kinds of measurements from fundamental pairs
+def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
+    """Check whether 50% of psp strength is in 7% most correlated pairs"""
+    hypotheses = {}
+    n_pairs = 179 + 279 + 40 + 14 + 8
+    sevenpct = int(np.floor(n_pairs * 0.07))
+    n_samples = 1000
+    # presently we assume only one set of parameters
+    for label, data_for_dataset in data.groupby(compare):
+        hypothesis = (
+            f"The observation that the 7% pairs with highest {independent} account for 50% of {dependent} "
+            f"could be made from the dataset {label}."
+        )
+        fraction_accounted = []
+        for i in range(n_samples):
+            sample = np.random.choice(np.arange(len(data_for_dataset)), size=n_pairs)
+            sample_data = data_for_dataset.iloc[sample].sort_values(independent, ascending=False)
+            top7pct = sample_data.iloc[:sevenpct]
+            fraction = top7pct[dependent].sum() / sample_data[dependent].sum()
+            fraction_accounted.append(fraction)
+        fraction_accounted = np.array(fraction_accounted)
+        meanfrac = np.mean(fraction_accounted)
+        if meanfrac <= 0.5:
+            pvalue = np.mean(fraction_accounted >= 0.5)
+        else:
+            pvalue = np.mean(fraction_accounted <= 0.5)
+        hypotheses[hypothesis] = pd.DataFrame({terms.PVALUE: [pvalue]})
+    return hypotheses
+
+
+cossell_correlation_psp_2015 = Analysis(
+    doc="""
+    Cossell et al. 2015 showed that the size of the PSP from a given excitatory connection
+    in L23 of mouse visual cortex is strongly determined by the response correlation
+    between these cells in response to natural stimuli.
+    We do not directly compare to their experimental data, as this is not available.
+    Rather, we check if their observation that the 7% most correlated pairs
+    account for 50% of total psp strength
+    """,
+    # TODO : we really ought to do better than modeling all slicing with a column
+    #   at the very least, that modeling should go inside the model
+    observations=pd.DataFrame(
+        {terms.REGION: 'VISp',
+         terms.LAYER: 'L23',
+         terms.SYNAPSE_CLASS: ['EXC'],
+         terms.COLUMN_RADIUS: 125,
+         # TODO: we need a more precise way to specify stimuli
+         #   for instance, it should be clear and explicit that
+         #   there were 1s gray screen intervals and 1800 images shown 0.4s each
+         #   however, for now it is inconvenient given that we show images more rapidly
+         #   we need a proper visual stimulus abstraction I guess...
+         #   perhaps a class, or callable
+         #   we also need similar abstractions for the specific data processing
+         #   methods: like their method for inferring spike times from Ca+...
+         terms.STIMULUS: 'natural-images',
+         terms.INCLUDE_UNCONNECTED: True
+         }),
+    measurement=[terms.RESPONSE_CORRELATION, terms.PSP_AMPLITUDE],
+    dependent=terms.PSP_AMPLITUDE,
+    independent=terms.RESPONSE_CORRELATION,
+    stats=_cossell_respcorr,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+
 
 def mtype_to_mtype_connprob(*models, radius=125):
     """Visualize the connection probabilty between all mtypes for one or more models.

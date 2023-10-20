@@ -29,6 +29,10 @@ DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.T
 
 def validate_measurement(measurement):
     """Check that <measurement> is a valid measurement."""
+    if isinstance(measurement, list):
+        for m in measurement:
+            validate_measurement(m)
+        return
     try:
         measurement = terms.ALL_TERMS[measurement]
     except KeyError as exc:
@@ -136,6 +140,14 @@ def measure(model, measurement, parameters):
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
     """
+    if isinstance(measurement, list):
+        first = measure(model, measurement[0], parameters)
+        for m in measurement[1:]:
+            first[m] = measure(model, m, parameters)[m]
+        # TODO: unreliable, error-prone
+        # maybe should expect model to provide sensible indexing?
+        return first
+        
     validate_measurement(measurement)
     validate_observations(parameters)
     measurement_method = _measurement_method(model, measurement)

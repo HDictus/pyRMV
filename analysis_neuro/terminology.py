@@ -256,6 +256,23 @@ NUM_SYNAPSES = Term(
     measurement_method="num_synapses"
 )
 
+PSP_AMPLITUDE = Term(
+    "PSP amplitude (mV)",
+    description="The size of the change in potential of a post-synaptic cell when the presynaptic cell is stimulated",
+    measurement_method='psp_amplitude'
+)
+
+RESPONSE_CORRELATION = Term(
+    "response correlation",
+    description="pearson correlation in the responses of a pair of cells.",
+    measurement_method='response_correlation'
+)
+
+INCLUDE_UNCONNECTED = Term(
+    "include unconnected",
+    description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement."
+)
+
 ORIENTATION_SELECTIVITY = Term(
     "orientation selectivity index",
     description=(
