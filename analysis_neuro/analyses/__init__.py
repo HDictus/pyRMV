@@ -240,6 +240,24 @@ cossell_connprob_corr_2015 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
+lee_connprob_2016 = Analysis(
+    measurement=terms.CONNECTION_PROBABILITY,
+    observations=pd.DataFrame({
+        terms.DATASET: "Lee et al. 2016",
+        terms.MIN + terms.ORIENTATION_PREFERENCE_DIFFERENCE: [0, 22.5, 45, 67.5],
+        terms.MAX + terms.ORIENTATION_PREFERENCE_DIFFERENCE: [22.5, 45, 67.5, 90],
+        terms.REGION: 'VISp',
+        terms.LAYER: 'L23',
+        terms.SYNAPSE_CLASS: 'EXC',
+        terms.COLUMN_RADIUS: 150,
+        terms.SAMPLE_SIZE: [506, 458, 496, 520],
+        terms.CONNECTION_PROBABILITY: [10/506, 11/458, 4/496, 4/520]}
+    ),
+    plotter=sns.barplot,
+    # TODO: we may want a new, additional test that check the strength of th relationship between diff and connprob
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
 
 def mtype_to_mtype_connprob(*models, radius=125):
     """Visualize the connection probabilty between all mtypes for one or more models.

@@ -273,6 +273,11 @@ INCLUDE_UNCONNECTED = Term(
     description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement."
 )
 
+ORIENTATION_PREFERENCE_DIFFERENCE = Term(
+    "$\Delta$ preferred orientation",
+    description ="The angular difference in preferred orientation between pairs of cells" 
+)
+
 ORIENTATION_SELECTIVITY = Term(
     "orientation selectivity index",
     description=(

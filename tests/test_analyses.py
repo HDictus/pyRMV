@@ -303,3 +303,30 @@ def test_cossell_connprob_corr_2015():
             assert value == 'Fail'
         else:
             assert value == 'Pass'
+            
+
+def test_lee_connprob_2016():
+    
+    class BadModel:
+        
+        label = 'bad'
+        
+        def connection_probability(self, params):
+            return params.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
+        
+    class PerfectModel:
+        
+        label = 'perfect'
+        
+        def connection_probability(self, params):
+            return ana.lee_connprob_2016.observations.drop(columns=terms.DATASET)
+        
+    results = ana.lee_connprob_2016(BadModel(), PerfectModel())
+    print(results)
+    assert len(results['verdict'].keys()) == 3
+    for hyp, value in results['verdict'].items():
+        if 'bad' in hyp:
+            assert value == 'Fail'
+        else:
+            assert value == 'Pass'
+            
