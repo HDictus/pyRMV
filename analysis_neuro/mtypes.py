@@ -66,7 +66,7 @@ PRIMITIVES = [
 
 ALIASES = {
     "PC": ["UPC", "TPC", "IPC", "BPC", "HPC"],
-    "TPC:"  ["TPC:A", "TPC:B", "TPC:C"]
+    "TPC":  ["TPC:A", "TPC:B", "TPC:C"]
 }
 for msc in [
     "UPC",
