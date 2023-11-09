@@ -66,8 +66,10 @@ PRIMITIVES = [
 
 ALIASES = {
     "PC": ["UPC", "TPC", "IPC", "BPC", "HPC"],
-    "TPC": [mtype for mtype in PRIMITIVES if mtype.split("_")[-1] == "TPC"]\
+    "TPC": (
+        [mtype for mtype in PRIMITIVES if mtype.split("_")[-1] == "TPC"]
         + ["TPC:A", "TPC:B", "TPC:C"]
+        )
 }
 for msc in [
     "UPC",
