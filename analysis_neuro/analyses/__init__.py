@@ -20,8 +20,8 @@ import analysis_neuro.analyses.data.jiang_distances as jiangd
 DATADIR = files('analysis_neuro.analyses.data')
 
 
-def _wide_barplot(x, y, hue):
-    _, ax = plt.subplots(figsize=(20, 5))
+def _wide_barplot(x, y, hue, figsize=(20, 5)):
+    _, ax = plt.subplots(figsize=figsize)
     return sns.barplot(x=x, y=y, hue=hue, ax=ax)
 
 

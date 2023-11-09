@@ -245,6 +245,7 @@ def test_ji_innervation_2016():
             assert value == 'Pass'
 
     assert report['figures']
+    # Check that the axis labels are intelligible and not a mess of Nones
     ax = report['figures'].get_axes()[0]
     labels = [l.get_text() for l in ax.get_xticklabels()]
     assert labels == [

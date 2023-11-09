@@ -363,21 +363,33 @@ def test_measure_checks_valid_return_format():
 
 
 def test_uses_copy_of_observations():
-    """When testing stuff out, it is possible to accidentally mutate observations.
+    """When testing stuff out, it is possible to accidentally mutate the observations
+    dataframe of an Analysis.
     
-    This leads to some hard to track down bugs in testing code. Instead, everything should be a copy.
+    If the same dataframe instance that is mutated is used by the analysis, 
+    this leads to some hard to track down bugs in testing code.
+    To avoid this, we should make sure that the observations property of an Analysis
+    is a copy.
+    
+    Similarly, if a dataframe is used to initialize an analysis and subsequently changed
+    this can lead to unexpected behavior by the analysis. 
+    So we also check that the .observations of the analysis are not affected
+    when we modify the original dataframe
     """
     df = pd.DataFrame({
-        'da': [1, 2, 3],
+        'a parameter': [1, 2, 3],
         terms.CELL_DENSITY: [1, 2 , 3],
-        terms.DATASET: 'a'
+        terms.DATASET: 'label'
     })
     ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
-    anadf = ana.observations
-    anadf['da'] = 4
-    assert all(df['da'] == [1, 2, 3])
-    df['da'] = 3
-    assert all(ana.observations['da'] == [1, 2, 3])
+    obscopy = ana.observations
+    obscopy['a parameter'] = 4
+    # the original dataframe should be unchanged
+    assert all(df['a parameter'] == [1, 2, 3])
+    # when we change the original dataframe
+    df['a parameter'] = 3
+    # the analysis' observations should be unchanged
+    assert all(ana.observations['a parameter'] == [1, 2, 3])
   
   
 def test_defaults_dataset():
