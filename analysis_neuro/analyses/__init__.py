@@ -259,6 +259,32 @@ lee_connprob_2016 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
+
+def _histogram_with_cossell_digitized(data, dependent, independent, compare):
+    cossell_digitized = pd.read_csv(DATADIR.joinpath("cossell_response_correlation_2015.csv")).values
+    cossell_digitized[:, 1] /= np.trapz(cossell_digitized[:, 1], cossell_digitized[:, 0])
+    fig = plt.figure()
+    # assumes no independent
+    for label, dataset in data.groupby(compare):
+        plt.hist(dataset[dependent], alpha=0.4, label=label, density=True)
+    plt.plot(cossell_digitized[:, 0], cossell_digitized[:, 1], label='Cossell et al. 2015 (digitized)')
+    plt.legend()
+    return {'hist': plt.figure}
+
+
+cossell_response_correlation_2015 = Analysis(
+    observations=pd.DataFrame({
+        terms.LAYER: "L23",
+        terms.REGION: "VISp",
+        terms.MTYPE: "PC",
+        terms.COLUMN_RADIUS: [125],
+        terms.STIMULUS: 'natural-images',
+        terms.DATASET: 'Cossell et al. 2015',
+    }),
+    measurement=terms.RESPONSE_CORRELATION,
+    plotter=_histogram_with_cossell_digitized
+)
+
 def mtype_to_mtype_connprob(*models, radius=125):
     """Visualize the connection probabilty between all mtypes for one or more models.
 
