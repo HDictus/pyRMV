@@ -91,7 +91,7 @@ for msc in [
     "SAC",
 ]:
     ALIASES[msc] = [mtype for mtype in PRIMITIVES if mtype.split("_")[-1] == msc]
-
+ALIASES['NGC'] += ['L1_NGC-DA', 'L1_NGC-SA']
 
 SUPPORTED_MTYPE_LABELS = PRIMITIVES + list(ALIASES.keys())
 
