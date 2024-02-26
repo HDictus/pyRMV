@@ -190,6 +190,15 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
     return hypotheses
 
 
+def _cossell_scatter(data, dependent, independent, compare):
+    out = {}
+    for label, dataset in data.groupby(compare):
+        fig = plt.figure()
+        plt.scatter(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE])
+        out[label] = fig
+    return out
+    
+
 cossell_correlation_psp_2015 = Analysis(
     doc="""
     Cossell et al. 2015 showed that the size of the PSP from a given excitatory connection
@@ -197,7 +206,7 @@ cossell_correlation_psp_2015 = Analysis(
     between these cells in response to natural stimuli.
     We do not directly compare to their experimental data, as this is not available.
     Rather, we check if their observation that the 7% most correlated pairs
-    account for 50% of total psp strength
+    account for 50% of total psp strength is reproduced.
     """,
     # TODO : we really ought to do better than modeling all slicing with a column
     #   at the very least, that modeling should go inside the model
@@ -222,6 +231,7 @@ cossell_correlation_psp_2015 = Analysis(
     dependent=terms.PSP_AMPLITUDE,
     independent=terms.RESPONSE_CORRELATION,
     stats=_cossell_respcorr,
+    plotter=_cossell_scatter,
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
@@ -254,7 +264,7 @@ lee_connprob_2016 = Analysis(
         terms.CONNECTION_PROBABILITY: [10/506, 11/458, 4/496, 4/520]}
     ),
     plotter=sns.barplot,
-    # TODO: we may want a new, additional test that check the strength of th relationship between diff and connprob
+    # TODO: we may want a new, additional test that check the strength of th relationship between diff and connprob. Or is that a separate validation altogether?
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05)
 )
@@ -269,7 +279,7 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
         plt.hist(dataset[dependent], alpha=0.4, label=label, density=True)
     plt.plot(cossell_digitized[:, 0], cossell_digitized[:, 1], label='Cossell et al. 2015 (digitized)')
     plt.legend()
-    return {'hist': plt.figure}
+    return {'hist': fig}
 
 
 cossell_response_correlation_2015 = Analysis(
