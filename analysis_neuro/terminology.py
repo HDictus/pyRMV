@@ -292,6 +292,29 @@ FIRING_RATE = Term(
     measurement_method="firing_rate"
 )
 
+SURROUND_SUPPRESSION_INDEX = Term(
+    "surround suppression index",
+    description=(
+        "The extent to which a neuron's response is suppressed as a stimulus increases"
+        " beyond its preferred size."
+        " Defined as $\frac{R_{pref} - R_{large}}{R_{pref}}$"
+        " where $R_{pref}$ is the response to the stimulus size that evokes the"
+        " greatest response and $R_{large}$ is the response to the largest stimulus"
+        " in the stimulus set."
+        ),
+    measurement_method="surround_suppression_index"
+)
+
+MEAN = Term(
+    "mean ",
+    description=(
+        "A prefix to indicate that the mean has been taken for some property."
+        " For instance, in a dataset where the individual firing rates of neurons"
+        " are not reported but only the mean of some populations, you would"
+        " provide `terms.MEAN + terms.FIRING_RATE` in the `observations` dataframe."
+    )
+)
+
 PRESYNAPTIC = Term(
     "Presynaptic ",
     description=("Prefix to apply for specifying presynaptic"
