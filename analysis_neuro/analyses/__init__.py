@@ -187,6 +187,9 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
         else:
             pvalue = np.mean(fraction_accounted <= 0.5)
         hypotheses[hypothesis] = pd.DataFrame({terms.PVALUE: [pvalue]})
+        # TODO: better way to handle this - verdicts should go coupled with tests
+        #   so that you can have tests with different statistics
+        print(label, meanfrac)
     return hypotheses
 
 
@@ -194,7 +197,10 @@ def _cossell_scatter(data, dependent, independent, compare):
     out = {}
     for label, dataset in data.groupby(compare):
         fig = plt.figure()
-        plt.scatter(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE])
+        plt.scatter(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], alpha=0.1)
+        points = np.linspace(-1, 1, 100)
+        a, b, c  = np.polyfit(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE])
+        plt.plot(points, a * points**2 + b * points + c, color='black')
         out[label] = fig
     return out
     
