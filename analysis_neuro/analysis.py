@@ -1,6 +1,7 @@
 """Analysis class for composition of analyses and validations."""
 import inspect
 from collections.abc import Callable
+from multiprocessing import Pool
 
 import pandas as pd
 from lazy import lazy
@@ -17,7 +18,7 @@ from .measurements import (
 def _join_columns(dataframe):
     """Combine the columns of dataframe into a single series."""
     series_name = ", ".join(dataframe.columns)
-    values = [" ".join(str(v) for v in row) for row in dataframe.values]
+    values = [" ".join(str(v) for v in row if not pd.isna(v)) for row in dataframe.values]
     return pd.Series(values, name=series_name)
 
 
@@ -38,6 +39,9 @@ def _check_callable(obj, args):
             return False
     return True
 
+
+def _measure_multi(params):
+    return measure(*params)
 
 class Analysis:
     """An object for defining analyses.
@@ -83,7 +87,9 @@ class Analysis:
         self.measurement = measurement
 
         validate_observations(observations)
-        self.observations = observations
+        self._observations = observations.copy()
+        if terms.DATASET not in self._observations:
+            self._observations[terms.DATASET] = 'experiment'
 
         if not (
             _check_callable(plotter, ["x", "y", "hue"])
@@ -98,12 +104,14 @@ class Analysis:
 
         self.plotter = plotter
 
-        if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
+        # TODO: what if a list
+        """if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
             raise ValueError(
                 "stats must be a callable of the form:\n"
                 "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
                 "where hypothesis is a string describing the hypothesis tested"
             )
+        """
 
         self.stats = stats
         if not _check_callable(verdict, ["stats"]):
@@ -120,6 +128,11 @@ class Analysis:
         self._dependent = dependent
         self._independent = independent
         self.compare = compare
+
+    @property
+    def observations(self):
+        """Experimental observations to compare to."""
+        return self._observations.copy()
 
     def measure(self, model):
         """Measure the required measurements on model.
@@ -167,26 +180,44 @@ class Analysis:
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
-        return self.stats(
-            data=measurements,
-            dependent=self.dependent,
-            independent=self.independent,
-            compare=self.compare,
-        )
+        # TODO: add test case for multiple stats
+        # TODO: make stats easier to work with - hypotheses make for nice reports
+        #   but are awkward as hell to use
+        stats = self.stats
+        if not isinstance(stats, list):
+            stats = [stats]
+        
+        stat_output = {}
+        for stat in stats:
+            stat_output = {
+                **stat_output,
+                **stat(
+                    data=measurements,
+                    dependent=self.dependent,
+                    independent=self.independent,
+                    compare=self.compare,
+                )}
+        return stat_output
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
         to_concat = [self.measure(model) for model in models]
+        #to_concat = list(Pool(len(models)).map(
+        #    _measure_multi, [(model, self.measurement, self.parameters) for model in models]))
+    
 
-        # if observations represents experimental values, we want to
-        # include those in the dataframe
         if isinstance(self.measurement, str):
             measurements = [self.measurement]
         else:
             measurements = self.measurement
-        if all(msr in self.observations.columns for msr in measurements):
+        
+        if all(msr in self.observations.columns
+               or terms.MEAN + msr in self.observations.columns
+               for msr in measurements
+        ):
+            # if observations represents experimental values, we want to
+            # include those in the dataframe
             to_concat = [self.observations] + to_concat
-
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
@@ -197,24 +228,29 @@ class Analysis:
             "verdict": verdict,
         }
         if self.plotter is not None:
-            if _check_callable(self.plotter, ["x", "y", "hue"]):
-                dependent = measurements[self.dependent]
-                independent = _join_columns(measurements[self.independent])
-                compare = measurements[self.compare]
-                figure = self.plotter(
-                    x=independent, y=dependent, hue=compare
-                ).get_figure()
-            else:
-                figure = self.plotter(
-                    data=measurements,
-                    dependent=self.dependent,
-                    independent=self.independent,
-                    compare=self.compare,
-                )
+            figure = self.plot(measurements)
             report["figures"] = figure
 
         return report
 
+    def plot(self, measurements):
+        if _check_callable(self.plotter, ["x", "y", "hue"]):
+            dependent = measurements[self.dependent]
+            independent = _join_columns(measurements[self.independent])
+            compare = measurements[self.compare]
+            # TODO: this loses us the labels. maybe we ought to address the issue at its root?
+            return self.plotter(
+                x=independent.values, y=dependent.values, hue=compare.values
+            ).get_figure()
+
+        return self.plotter(
+            data=measurements,
+            dependent=self.dependent,
+            independent=self.independent,
+            compare=self.compare,
+        )
+                
+                
     def with_fields(self, **fields):
         """Duplicate this analysis, overwriting some fields."""
         current_fields = {

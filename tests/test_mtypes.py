@@ -22,3 +22,4 @@ def test_resolve():
         "L6_UPC",
     }
     assert mtypes.resolve("NBC") == {"L23_NBC", "L4_NBC", "L5_NBC", "L6_NBC"}
+    assert mtypes.resolve("BP") == {"L23_BP", "L4_BP", "L5_BP", "L6_BP"}

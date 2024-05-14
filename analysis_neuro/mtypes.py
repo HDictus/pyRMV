@@ -66,11 +66,16 @@ PRIMITIVES = [
 
 ALIASES = {
     "PC": ["UPC", "TPC", "IPC", "BPC", "HPC"],
+    "TPC": (
+        [mtype for mtype in PRIMITIVES if mtype.split("_")[-1] == "TPC"]
+        + ["TPC:A", "TPC:B", "TPC:C"]
+    )
 }
-
 for msc in [
     "UPC",
-    "TPC",
+    "TPC:A",
+    "TPC:B",
+    "TPC:C",
     "IPC",
     "NBC",
     "LBC",
@@ -85,8 +90,8 @@ for msc in [
     "CHC",
     "SAC",
 ]:
-    ALIASES[msc] = [mtype for mtype in PRIMITIVES if msc in mtype]
-
+    ALIASES[msc] = [mtype for mtype in PRIMITIVES if mtype.split("_")[-1] == msc]
+ALIASES['NGC'] += ['L1_NGC-DA', 'L1_NGC-SA']
 
 SUPPORTED_MTYPE_LABELS = PRIMITIVES + list(ALIASES.keys())
 

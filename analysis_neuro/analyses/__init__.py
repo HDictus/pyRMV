@@ -20,6 +20,76 @@ import analysis_neuro.analyses.data.jiang_distances as jiangd
 DATADIR = files('analysis_neuro.analyses.data')
 
 
+def _wide_barplot(x, y, hue):
+    _, ax = plt.subplots(figsize=(len(np.unique(x)) * len(np.unique(hue)) / 3, 5))
+    return sns.barplot(x=x, y=y, hue=hue, ax=ax)
+
+
+ji_innervation_2016 = Analysis(
+    observations=pd.read_csv(DATADIR.joinpath("ji_innervation_2016.csv"), index_col=0),
+    measurement=terms.FRACTION_INNERVATED,
+    # plotter=sns.barplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05),
+    plotter=_wide_barplot
+)
+
+ji_relative_2016 = Analysis(
+    measurement=terms.RELATIVE_EXCITATION,
+    # TODO: actually fix
+    observations=pd.read_csv(DATADIR.joinpath("ji_relative_2016.csv"), index_col=0),
+    plotter=_wide_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+# TODO: a generalizeable plotter
+def hist(data, dependent, independent, compare):
+    figs = {}
+    if len(independent) == 0:
+        independent = np.zeros(len(data))
+    for indvars, alldata in data.groupby(independent):
+        f = plt.figure()
+        bins = np.linspace(np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), 100)
+        plt.title(str(indvars))
+        for label, dataset in alldata.groupby(compare):
+            plt.hist(dataset[dependent], density=True, label=label, bins=bins, alpha=0.5)
+        ymax = plt.gca().get_ylim()[1]
+        plt.gca().set_prop_cycle(None)
+        means = alldata.groupby(compare)[dependent].mean()
+        for mean in means:
+            plt.vlines(mean, ymin=0, ymax=ymax, linestyle='dashed')
+        figs[str(indvars)] = f
+        plt.xlabel(dependent)
+        if terms.MEAN + dependent in alldata:
+            plt.vlines(alldata[terms.MEAN + dependent].unique(), ymin=0, ymax=ymax, color='gray', linestyle='dashed', label='experimental mean')
+        plt.legend()
+    return figs
+# def _plot_lien(data, dependent, independent, compare):
+#     experiment = data[terms.DATASET] == "Lien2018"
+#     expected = data[experiment][terms.MEAN + terms.FRACTION_EXCITATION_PER_CONNECTION].iloc[0]
+#     fig, ax = plt.subplots()
+#     #for label, depvalues in data[~experiment].groupby(terms.DATASET)[dependent]:
+#     #    sns.kdeplot(depvalues, label=label, ax=ax)
+#     sns.kdeplot(data[~experiment], x=dependent, hue=terms.DATASET)
+#     plt.vlines(expected, ymin=0, ymax=30, color='k', label="Lien2018")
+#     return {'histogram': fig}
+        
+lien_fraction_excitation_2018 = Analysis(
+    observations=pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.REGION: "VISp",
+        terms.POSTSYNAPTIC +terms.SYNAPSE_CLASS: "EXC",
+        terms.PRESYNAPTIC + terms.REGION: "LGd",
+        terms.MEAN + terms.FRACTION_EXCITATION_PER_CONNECTION: [0.012],
+        terms.SAMPLE_SIZE: 14,
+        terms.DATASET: 'Lien2018'
+    }),
+    measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
+    stats=stats.bootstrap_mean,
+    plotter=hist,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
 schuz_density_1989 = Analysis(
     doc="""
     We evaluate the similarity of the total neuron density in the primary

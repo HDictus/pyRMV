@@ -174,10 +174,10 @@ def test_plots_with_multiple_params():
     plotter = MagicMock()
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            "measured thing": [100, 200, 300, 400, 500, 600],
             terms.DATASET: "blabla",
-            "layer": ["L1", "L23", "L4", "L5", "L6"],
-            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+            "layer": ["L1", "L23", "L4", "L5", "L6", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC", None],
         }
     )
 
@@ -188,17 +188,17 @@ def test_plots_with_multiple_params():
     kwargs = plotter.call_args.kwargs
     pd.testing.assert_series_equal(
         kwargs["y"].reset_index(drop=True),
-        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name="measured thing"),
+        pd.Series([100, 200, 300, 400, 500, 600, 4, 4, 4, 4, 4, 4], name="measured thing"),
     )
     pd.testing.assert_series_equal(
         kwargs["x"].reset_index(drop=True),
         pd.Series(
-            ["L1 NGC", "L23 NGC", "L4 MC", "L5 MC", "L6 LBC"] * 2, name="layer, mtype"
+            ["L1 NGC", "L23 NGC", "L4 MC", "L5 MC", "L6 LBC", "L6"] * 2, name="layer, mtype"
         ),
     )
     pd.testing.assert_series_equal(
         kwargs["hue"].reset_index(drop=True),
-        pd.Series(["blabla"] * 5 + ["4"] * 5, name=terms.DATASET),
+        pd.Series(["blabla"] * 6 + ["4"] * 6, name=terms.DATASET),
     )
 
 
@@ -360,3 +360,43 @@ def test_measure_checks_valid_return_format():
             observations=pd.DataFrame({terms.LAYER: ["L1"], terms.REGION: ["VISp"]}),
             measurement=terms.CELL_DENSITY,
         )(ReturnsIncompleteParams())
+
+
+def test_uses_copy_of_observations():
+    """When testing stuff out, it is possible to accidentally mutate the observations
+    dataframe of an Analysis.
+    
+    If the same dataframe instance that is mutated is used by the analysis, 
+    this leads to some hard to track down bugs in testing code.
+    To avoid this, we should make sure that the observations property of an Analysis
+    is a copy.
+    
+    Similarly, if a dataframe is used to initialize an analysis and subsequently changed
+    this can lead to unexpected behavior by the analysis. 
+    So we also check that the .observations of the analysis are not affected
+    when we modify the original dataframe
+    """
+    df = pd.DataFrame({
+        'a parameter': [1, 2, 3],
+        terms.CELL_DENSITY: [1, 2 , 3],
+        terms.DATASET: 'label'
+    })
+    ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
+    obscopy = ana.observations
+    obscopy['a parameter'] = 4
+    # the original dataframe should be unchanged
+    assert all(df['a parameter'] == [1, 2, 3])
+    # when we change the original dataframe
+    df['a parameter'] = 3
+    # the analysis' observations should be unchanged
+    assert all(ana.observations['a parameter'] == [1, 2, 3])
+  
+  
+def test_defaults_dataset():
+
+    df = pd.DataFrame({
+        'da': [1, 2, 3],
+        terms.CELL_DENSITY: [1, 2 , 3]
+    })
+    ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
+    assert all(ana.observations[terms.DATASET] == 'experiment')

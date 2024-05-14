@@ -125,7 +125,9 @@ def _measurement_method(model, measurement):
     method_name = measurement.measurement_method
     if hasattr(model, method_name):
         return getattr(model, method_name)
-    return None
+    raise TypeError(
+        f"The model does not have the functionality needed to measure {measurement}."
+        f" It should define a method named '{method_name}")
 
 
 def measure(model, measurement, parameters):
@@ -151,11 +153,10 @@ def measure(model, measurement, parameters):
     validate_measurement(measurement)
     validate_observations(parameters)
     measurement_method = _measurement_method(model, measurement)
-    if measurement_method is None:
-        raise TypeError(
-            f"The model does not have the functionality needed to measure {measurement}.")
+
     measured = measurement_method(parameters)
     validate_measured(measured, measurement, parameters)
+    measured[terms.DATASET] = model.label
     return measured
 
 
@@ -173,7 +174,8 @@ def extract_parameters(observations, measurement=None):
        measurement: a string indicating the column which corresponds to the
            measured quantity. will be excluded from the parameters.
     """
-    exclude_from_parameters = DATA_TERMS + [terms.STD + measurement, terms.SAMPLE_SIZE]
+    exclude_from_parameters = DATA_TERMS + [
+        terms.STD + measurement, terms.SAMPLE_SIZE, terms.MEAN + measurement]
     if measurement is not None:
         exclude_from_parameters += [measurement]
     paramcols = [col for col in observations if col not in exclude_from_parameters]

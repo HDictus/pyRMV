@@ -88,6 +88,7 @@ GENE_EXPRESSION = Term(
     "gene expression",
     description=(
         "Gene that the cell expresses."
+        "For example: PV, Sst, Vip"
     ),
 )
 SPIKING_CLASS = Term(
@@ -232,6 +233,15 @@ STIM_ORIENTATION = Term(
     ),
 )
 
+FRACTION_INNERVATED = Term(
+    "Fraction innervated",
+    description=(
+        "The fraction of cells in the postsynaptic population which recieve"
+        " at least one synapse from the presynaptic population."
+    ),
+    measurement_method="fraction_innervated"
+)
+
 CONNECTION_PROBABILITY = Term(
     "connection probability",
     description=(
@@ -254,6 +264,22 @@ NUM_SYNAPSES = Term(
     "Number of synapses",
     description="The total number of synapses along a pathway",
     measurement_method="num_synapses"
+)
+FRACTION_EXCITATION_PER_CONNECTION = Term(
+    "Fraction excitation (per connection)",
+    description="The fraction that each connection contributes to the total excitation along a pathway",
+    measurement_method="fraction_excitation_per_connection"
+)
+
+TOTAL_EXCITATION = Term(
+    'total excitation',
+    description="Total excitatory current from a presynaptic population into postsynaptic neurons",
+    measurement_method="total_excitation"
+)
+RELATIVE_EXCITATION = Term(
+   "relative excitation",
+   "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
+   measurement_method="relative_excitation"
 )
 
 PSP_AMPLITUDE = Term(
@@ -286,6 +312,13 @@ ORIENTATION_SELECTIVITY = Term(
     ),
     measurement_method="orientation_selectivity"
 )
+
+RF_AREA = Term(
+    "receptive field area (degrees)",
+    description=(
+        "the area occupied by a cell's receptive field"),
+    measurement_method='rf_area')
+
 FIRING_RATE = Term(
     "firing rate (Hz)",
     description=("Rate of firing under the experimental conditions, in Hertz"),
@@ -333,6 +366,11 @@ MIN = Term(
 MAX = Term(
     "maximal ",
     description=("Prefix to apply for specifying maximal value"),
+)
+
+MEAN = Term(
+    "mean ",
+    description=("Prefix to apply to specify a mean value")
 )
 
 

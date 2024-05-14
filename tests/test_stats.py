@@ -442,3 +442,26 @@ def test_mannwhitney():
 # TODO: test the case where there are no varying independent variables!
 # e.g. single measurement
 
+def test_bootstrap_mean():
+    dummy_term = terms.Term("dummy measurement")
+    dummy_param = terms.Term("parameter")
+    data = pd.DataFrame({
+        terms.MEAN + dummy_term: [1000] + [None] * 20,
+        terms.SAMPLE_SIZE: [2] + [None] * 20,
+        dummy_term: [None] + [500] * 10 + [1000] * 10,
+        dummy_param: 13,
+        terms.DATASET: ['experiment'] + ['model'] * 20
+    })
+    hypotheses = stats.bootstrap_mean(
+        data, dependent=dummy_term, independent=[], compare=terms.DATASET
+    )
+    # the actual mean of model is 750
+    # the possibilities are 25% of 500, 50% of 750, and 25% of 1000
+    # hence the odds of a mean >= 1000 being observed are 25%
+    pd.testing.assert_frame_equal(
+        hypotheses['The result of experiment could be sampled from the same distribution as model'],
+        pd.DataFrame({
+            terms.PVALUE: [0.25]
+        }),
+        atol=0.3
+    )
