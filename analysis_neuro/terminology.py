@@ -66,11 +66,21 @@ LAYER = Term(
     "layer",
     description="Layer of some brain region as a capitalized acronym: e.g. L1, L23, SP, VPL",
 )
+DEPTH = Term(
+    "depth (um)",
+    description="depth within the brain, in um",
+    measurement_method='depth')
+
 NEURON_OR_GLIA = Term(
     "neuron or glia?",
     description=("Either 'neuron' or 'glia', indicating which of the two broad"
                  " classes of cells to look at"),
 )
+SMIZELL_TYPE = Term(
+    "Schneider-Mizell type",
+    description="Type of the cell according to the classification methodology of @cite:shneider-mizell_cell-type_2023"
+)
+
 MTYPE = Term(
     "mtype",
     description=(
@@ -102,6 +112,18 @@ CELL_DENSITY = Term(
 CELL_COUNT = Term(
     "cell count", description="Total number of cells",
     measurement_method='cell_count')
+CELL_RATIO = Term(
+    "cell ratio",
+    description="Ratio between numbers of two types of cell. Use the terms OF and TO to specify the compared cell types.",
+    measurement_method='cell_ratio')
+
+OF = Term(
+    "of ",
+    description="Prefix to apply to a term to indicate that it specifies the numerator of a ratio (such as CELL_RATIO)")
+TO = Term(
+    "to ",
+    description="Prefix to apply to a term to indicate that it specifies the denominator of a ratio (such as CELL_RATIO)")
+
 REGION_VOLUME = Term(
     "volume ($mm^3$)",
     description="Volume of the measured parts of the brain in cubic millimetres",
