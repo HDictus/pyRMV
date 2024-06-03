@@ -259,7 +259,7 @@ def is_lognormal(data, dependent, independent, compare):
     hypotheses = {}
     for label, dataframe in data.groupby(compare):
         pvals = dataframe.groupby(independent)[dependent].apply(
-            lambda a: stats.normaltest(np.log(a)).pvalue)
+            lambda a: stats.normaltest(np.log(a)).pvalue if len(a) > 8 else np.nan)
         hypotheses[f"{dependent} is lognormally distributed for {label}"] =\
             pvals.reset_index().rename(columns={dependent: terms.PVALUE})
     return hypotheses
