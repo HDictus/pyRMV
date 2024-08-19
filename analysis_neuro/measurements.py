@@ -251,6 +251,7 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
             .assign(**row)
 
         out.append(selectivity)
+        # TODO: we have a new, more efficient, method we can implement
 
     return pd.concat(out, axis=0)
 

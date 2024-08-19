@@ -269,7 +269,7 @@ def _cossell_scatter(data, dependent, independent, compare):
         fig = plt.figure()
         plt.scatter(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], alpha=0.1)
         points = np.linspace(-1, 1, 100)
-        a, b, c  = np.polyfit(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE])
+        a, b, c  = np.polyfit(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2)
         plt.plot(points, a * points**2 + b * points + c, color='black')
         out[label] = fig
     return out
