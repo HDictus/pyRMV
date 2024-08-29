@@ -10,6 +10,8 @@ def test_measures_osi_with_firing_rate():
 
     class MockModel:
 
+        label = 'mock'
+        
         def firing_rate(self, parameters):
             """Each neuron will have a rate of 1 if either temporal frequency or orientation are non-optimal.
             Else a 2.

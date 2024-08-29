@@ -238,9 +238,9 @@ class Analysis:
             dependent = measurements[self.dependent]
             independent = _join_columns(measurements[self.independent])
             compare = measurements[self.compare]
-            # TODO: this loses us the labels. maybe we ought to address the issue at its root?
+
             return self.plotter(
-                x=independent.values, y=dependent.values, hue=compare.values
+                x=independent, y=dependent, hue=compare
             ).get_figure()
 
         return self.plotter(

@@ -193,6 +193,7 @@ def _calculate_osi(dataframe):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
+# TODO: actual calculation procedure should be separated from getting of firing rates
 def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
     """Measure orientation selectivity on the basis of some response property (e.g. Firing rate).
 
@@ -229,6 +230,7 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
         # if temporal frequency is set to optimal, we select a different
         # temporal frequency for each cell. Specifically, the one to which
         # it responds most strongly
+        # TODO: this should be done at the level of firing_rate
         tf_optimal = (
             terms.TEMPORAL_FREQUENCY in parameters.columns
             and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
@@ -245,13 +247,15 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
                 terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
                     zip(optimal_tf.index, optimal_tf.values)
             ].reset_index()
-        selectivity = response.groupby(
-            terms.CELL_ID).apply(_calculate_osi)\
-            .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
-            .assign(**row)
 
-        out.append(selectivity)
-        # TODO: we have a new, more efficient, method we can implement
+        response['scaled'] = response[response_measurement] * np.exp(
+            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION]))
+        grouped_by_cell = response.groupby(terms.CELL_ID)
+        selectivity = np.abs(
+            grouped_by_cell['scaled'].sum()
+            / grouped_by_cell[response_measurement].sum())
+        selectivity.name = terms.ORIENTATION_SELECTIVITY
+        out.append(selectivity.reset_index().assign(**row))
 
     return pd.concat(out, axis=0)
 
