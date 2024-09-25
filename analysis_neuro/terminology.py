@@ -78,6 +78,26 @@ MTYPE = Term(
         " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
+
+
+IMAGED_WIDTH = Term(
+    "width of imaged area (um)",
+    description=(
+        "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
+        "This parameter represents the width of said window.")
+)
+IMAGED_HEIGHT = Term(
+    "height of imaged area (um)",
+    description=(
+        "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
+        "This parameter represents the height of said window.")
+)
+DEPTH = Term(
+    "depth (um)",
+    description="Depth within the brain."
+)
+
+
 SYNAPSE_CLASS = Term(
     "synapse class",
     description=(
