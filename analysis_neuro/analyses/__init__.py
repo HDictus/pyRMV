@@ -51,22 +51,22 @@ schuz_density_1989 = Analysis(
 )
 
 schneider_mizell_density_2023 = Analysis(
-    measurement=an.terms.CELL_DENSITY,
+    measurement=terms.CELL_DENSITY,
     observations=pd.read_csv(DATADIR.joinpath("schneider-mizell-neuron-density.csv")),
     plotter=sns.barplot
 )
 
-schneider_mizell_ratio_2023 = an.Analysis(
-    measurement=an.terms.CELL_RATIO,
+schneider_mizell_ratio_2023 = Analysis(
+    measurement=terms.CELL_RATIO,
     observations=pd.read_csv(DATADIR.joinpath("schneider-mizell-i-ratio.csv")),
     plotter=sns.barplot)
 
 # TODO: need to make sure to preserve the notebooks that extract this.
 #  maybe create download-and-process scripts to generate and cache values on request?
-inh_type_ratios = an.Analysis(
-    measurement=an.terms.CELL_RATIO,
+inh_type_ratios = Analysis(
+    measurement=terms.CELL_RATIO,
     observations=pd.read_csv(DATADIR.joinpath("schneider-mizell-inh-types-ratio.csv"))
-
+)
 
 keller_density_2018 = Analysis(
     observations=pd.read_csv(DATADIR.joinpath("keller_2018.csv")),
