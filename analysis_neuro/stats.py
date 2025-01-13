@@ -330,11 +330,11 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
                 grouped2 = data2.loc[independent_values]
             except KeyError:
                 continue
-
+            # TODO: test nan handling
             out_list.append({
                 **dict(zip(independent, independent_values)),
                 terms.PVALUE: stats.mannwhitneyu(
-                    grouped1[dependent].values, grouped2[dependent].values).pvalue
+                    grouped1[dependent].dropna().values, grouped2[dependent].dropna().values).pvalue
             })
         hypotheses[hypothesis] = pd.DataFrame(out_list)
 
