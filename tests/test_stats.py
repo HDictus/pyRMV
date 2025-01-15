@@ -374,6 +374,9 @@ def test_lognorm_ttest():
         result['the population mean of msr is the same for a and b'],
         expectation)
 
+# TODO: there are several things that each stats function must
+#   be able to handle: NAN values, multiple models
+#   best if those tests can be parameterized and re-used
 def test_mannwhitney():
     # just totally random data to use
     values_experiment_d = np.random.uniform(0, 500, size=500)
@@ -437,6 +440,20 @@ def test_mannwhitney():
             terms.PVALUE: [scipy.stats.mannwhitneyu(values_model1_d, values_model2_d).pvalue,
                             scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
         stats_frame)
+
+    data.loc[data['independent var'] == 'd', 'independent var'] = np.nan
+    results = stats.mann_whitney_u(
+        data,
+        compare=terms.DATASET,
+        dependent='measured',
+        independent=['independent var'])
+
+    # Verify that if some independent variables are NaN, it still compares those rows
+    stats_frame = results[
+        "The underlying distribution of measured for experiment and model1 is the same"]
+    assert np.allclose(stats_frame[terms.PVALUE].values,
+                [scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue,
+                 scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue])
 
 
 # TODO: test the case where there are no varying independent variables!

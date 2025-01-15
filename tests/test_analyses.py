@@ -386,9 +386,7 @@ def test_lee_connprob_2016():
             assert value == 'Fail'
         else:
             assert value == 'Pass'
-            
-def test_cossell_response_correlation_2015():
-    assert False
+
 
 def test_ji_innervation_2016():
     
