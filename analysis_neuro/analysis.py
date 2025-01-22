@@ -103,17 +103,10 @@ class Analysis:
             )
 
         self.plotter = plotter
-
-        # TODO: what if a list
-        """if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
-            raise ValueError(
-                "stats must be a callable of the form:\n"
-                "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
-                "where hypothesis is a string describing the hypothesis tested"
-            )
-        """
-
+        
+        self._check_stats_format(stats)
         self.stats = stats
+
         if not _check_callable(verdict, ["stats"]):
             raise ValueError(
                 "verdict must be a callable of the form:\n"
@@ -128,6 +121,18 @@ class Analysis:
         self._dependent = dependent
         self._independent = independent
         self.compare = compare
+
+    def _check_stats_format(self, stats):
+        if isinstance(stats, list):
+            for statsobj in stats:
+                self._check_stats_format(statsobj)
+            return
+        if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
+            raise ValueError(
+                "stats must be a callable of the form:\n"
+                "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
+                "where hypothesis is a string describing the hypothesis tested"
+            )
 
     @property
     def observations(self):

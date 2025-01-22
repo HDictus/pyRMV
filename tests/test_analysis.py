@@ -229,7 +229,7 @@ def test_plotter_stats_verdict_signatures():
 
 
 def test_runs_statistical_tests():
-    mockresults = MagicMock()
+    mockresults = {'hypothesis': 'data-frame'}
     mockstats = MagicMock(return_value=mockresults)
 
     observations = pd.DataFrame(
@@ -253,10 +253,46 @@ def test_runs_statistical_tests():
         independent=["layer", "mtype"],
         compare=terms.DATASET,
     )
+    
+
+def test_runs_multiple_statistical_tests():
+    mockresults1 = {'hypothesis1': 'data-frame'}
+    mockresults2 = {'hypothesis2': 'data-frame'}
+    mockstats1 = MagicMock(return_value=mockresults1)
+    mockstats2 = MagicMock(return_value=mockresults2)
+
+    observations = pd.DataFrame(
+        {
+            "measured thing": [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "layer": ["L1", "L23", "L4", "L5", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+        }
+    )
+
+    ana = Analysis(
+        observations=observations, measurement="measured thing", stats=[mockstats1, mockstats2]
+    )
+
+    results = ana(MockModel(4))
+    assert results["stats"] == {**mockresults1, **mockresults2}
+    mockstats1.assert_called_with(
+        data=results["measurements"],
+        dependent="measured thing",
+        independent=["layer", "mtype"],
+        compare=terms.DATASET,
+    )
+    mockstats2.assert_called_with(
+        data=results["measurements"],
+        dependent="measured thing",
+        independent=["layer", "mtype"],
+        compare=terms.DATASET,
+    )
+
 
 
 def test_runs_verdict():
-    mockresults = MagicMock()
+    mockresults = {'hypo': 'somedata'}
     mockstats = MagicMock(return_value=mockresults)
     mockverdict = MagicMock(return_value={"hypo": "Pass"})
     observations = pd.DataFrame(
