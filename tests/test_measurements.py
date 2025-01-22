@@ -47,13 +47,15 @@ def test_measures_osi_with_firing_rate():
         {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings]})
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures by averaging over stimulus conditions
-    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
+    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
+    assert set(measured.columns) == expected_columns
     assert all(measured[terms.ORIENTATION_SELECTIVITY] > 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 1
+    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures just for the specified temporal frequency
-    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
+    assert set(measured.columns) == expected_columns
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 2
@@ -102,6 +104,8 @@ def test_measures_with_method():
     params = pd.DataFrame({'_': [0, 0]})
 
     class MockModelWithDens:
+        
+        label = 'mock'
 
         def density(self, parameters):
             return parameters.assign(**{density: 100})
