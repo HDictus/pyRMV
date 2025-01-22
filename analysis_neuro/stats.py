@@ -322,7 +322,7 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
 
         out_list = []
 
-        for independent_values, grouped1 in data1.groupby(independent):
+        for independent_values, grouped1 in data1.groupby(independent, dropna=False):
             if not isinstance(independent_values, tuple):
                 independent_values = (independent_values, )
 

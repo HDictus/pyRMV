@@ -27,7 +27,7 @@ def test_squared_error():
                 "a": [1, 1, 2, 2, 3, 3],
                 "b": [1, 2, 1, 2, 1, 2],
                 "c": [1, 2, 3, 4, 5, 6],
-                terms.SQERROR: [0, 1, 1, 9, 16, 25],
+                terms.SQERROR: [0., 1, 1, 9, 16, 25],
             }
         ),
     )
@@ -441,6 +441,7 @@ def test_mannwhitney():
                             scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
         stats_frame)
 
+    # Verify that if some independent variables are NaN, it still compares those rows
     data.loc[data['independent var'] == 'd', 'independent var'] = np.nan
     results = stats.mann_whitney_u(
         data,
@@ -448,12 +449,11 @@ def test_mannwhitney():
         dependent='measured',
         independent=['independent var'])
 
-    # Verify that if some independent variables are NaN, it still compares those rows
     stats_frame = results[
         "The underlying distribution of measured for experiment and model1 is the same"]
     assert np.allclose(stats_frame[terms.PVALUE].values,
-                [scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue,
-                 scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue])
+                [scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue,
+                 scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue])
 
 
 # TODO: test the case where there are no varying independent variables!
