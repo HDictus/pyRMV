@@ -379,7 +379,7 @@ def test_lee_connprob_2016():
             return ana.lee_connprob_2016.observations.drop(columns=terms.DATASET)
         
     results = ana.lee_connprob_2016(BadModel(), PerfectModel())
-    print(results)
+    assert False
     assert len(results['verdict'].keys()) == 3
     for hyp, value in results['verdict'].items():
         if 'bad' in hyp:
@@ -434,7 +434,10 @@ def test_ji_relative_excitation():
         label = 'bad'
 
         def relative_excitation(self, parameters):
-            return parameters.assign(**{terms.RELATIVE_EXCITATION: 1})
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(pd.DataFrame({terms.RELATIVE_EXCITATION: [1] * 10, **row}))
+            return pd.concat(out)
 
     class PerfectModel():
 

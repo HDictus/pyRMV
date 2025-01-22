@@ -4,3 +4,5 @@ from . import plots
 from . import terminology as terms
 from .exceptions import TerminologyError, Assumption
 from .analysis import Analysis
+from . import mtypes
+from . import analyses
