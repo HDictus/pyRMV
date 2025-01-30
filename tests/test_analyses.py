@@ -379,7 +379,7 @@ def test_lee_connprob_2016():
             return ana.lee_connprob_2016.observations.drop(columns=terms.DATASET)
         
     results = ana.lee_connprob_2016(BadModel(), PerfectModel())
-    assert False
+
     assert len(results['verdict'].keys()) == 3
     for hyp, value in results['verdict'].items():
         if 'bad' in hyp:
