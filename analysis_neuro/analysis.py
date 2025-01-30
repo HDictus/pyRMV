@@ -222,7 +222,8 @@ class Analysis:
         ):
             # if observations represents experimental values, we want to
             # include those in the dataframe
-            to_concat = [self.observations] + to_concat
+            observations = _exclude_obs_only(self.observations, to_concat, self.independent)
+            to_concat = [observations] + to_concat
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
@@ -274,3 +275,21 @@ class Analysis:
         #   and checks it is conserved?
         current_fields.update(fields)
         return self.__class__(**current_fields)
+
+
+def _exclude_obs_only(observations, measured, independent_vars):
+    """Remove observations that are not in measured.
+    
+    Remove all rows from <observations> where the values of <independent_vars>
+    do not occur in any dataset in <measured>.
+    An example of where this matters would be for running a validation in which
+    
+    """
+    if len(independent_vars) == 0:
+        return observations
+    by_ind = observations.set_index(independent_vars)
+    in_none = by_ind.index
+    for msr in measured:
+        msr_by_ind = msr.set_index(independent_vars)
+        in_none = in_none.difference(msr_by_ind.index)
+    return by_ind.drop(index=in_none).reset_index()

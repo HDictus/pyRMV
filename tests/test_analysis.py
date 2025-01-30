@@ -459,9 +459,9 @@ def test_ignores_unmeasured_values():
             
     measured = ana(PartialModel())['measurements']
     pd.testing.assert_frame_equal(
-        measured[['parameter', terms.DATASET]],
+        measured[['parameter', terms.DATASET]].reset_index(drop=True),
         pd.DataFrame({
             'parameter': [1, 1, 3, 3, 1, 3, 3],
-            terms.DATASET: ['experiment'] * 4 + ['partial'] * 3
+            terms.DATASET: ['experiment'] * 4 + ['partial'] * 3,
         })
     )
