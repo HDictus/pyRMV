@@ -76,3 +76,24 @@ def pathway_heatmap(data: pd.DataFrame, dependent: str, independent: List[str], 
     return out
 
 
+def hist(data, dependent, independent, compare):
+    figs = {}
+    if len(independent) == 0:
+        independent = np.zeros(len(data))
+    for indvars, alldata in data.groupby(independent):
+        f = plt.figure()
+        bins = np.linspace(np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), 100)
+        plt.title(str(indvars))
+        for label, dataset in alldata.groupby(compare):
+            plt.hist(dataset[dependent], density=True, label=label, bins=bins, alpha=0.5)
+        ymax = plt.gca().get_ylim()[1]
+        plt.gca().set_prop_cycle(None)
+        means = alldata.groupby(compare)[dependent].mean()
+        for mean in means:
+            plt.vlines(mean, ymin=0, ymax=ymax, linestyle='dashed')
+        figs[str(indvars)] = f
+        plt.xlabel(dependent)
+        if terms.MEAN + dependent in alldata:
+            plt.vlines(alldata[terms.MEAN + dependent].unique(), ymin=0, ymax=ymax, color='gray', linestyle='dashed', label='experimental mean')
+        plt.legend()
+    return figs
