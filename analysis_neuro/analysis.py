@@ -139,6 +139,11 @@ class Analysis:
         """Experimental observations to compare to."""
         return self._observations.copy()
 
+    @property
+    def observations(self):
+        """Experimental observations to compare to."""
+        return self._observations.copy()
+
     def measure(self, model):
         """Measure the required measurements on model.
 
