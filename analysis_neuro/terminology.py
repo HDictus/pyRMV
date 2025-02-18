@@ -12,7 +12,6 @@ e.g. terminology.measurements[terminology.CONNECTION_PROBABILITY]
 -> {'method name': 'connection_probability'}
 """
 
-
 ALL_TERMS = {}
 
 
@@ -28,7 +27,9 @@ class Term(str):
         """
         return super().__new__(cls, term)
 
-    def __init__(self, term, description="No description provided", measurement_method=None):
+    def __init__(
+        self, term, description="No description provided", measurement_method=None
+    ):
         """Define a new term.
 
         Arguments:
@@ -54,9 +55,7 @@ class Term(str):
         return self.__class__(str(self) + str(added), ("\n\n".join(description)))
 
 
-SPECIES = Term(
-    "species",
-    description="The species of any subject(s) experimented on")
+SPECIES = Term("species", description="The species of any subject(s) experimented on")
 
 REGION = Term(
     "region",
@@ -68,8 +67,10 @@ LAYER = Term(
 )
 NEURON_OR_GLIA = Term(
     "neuron or glia?",
-    description=("Either 'neuron' or 'glia', indicating which of the two broad"
-                 " classes of cells to look at"),
+    description=(
+        "Either 'neuron' or 'glia', indicating which of the two broad"
+        " classes of cells to look at"
+    ),
 )
 MTYPE = Term(
     "mtype",
@@ -84,48 +85,46 @@ IMAGED_WIDTH = Term(
     "width of imaged area (um)",
     description=(
         "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
-        "This parameter represents the width of said window.")
+        "This parameter represents the width of said window."
+    ),
 )
 IMAGED_HEIGHT = Term(
     "height of imaged area (um)",
     description=(
         "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
-        "This parameter represents the height of said window.")
+        "This parameter represents the height of said window."
+    ),
 )
-DEPTH = Term(
-    "depth (um)",
-    description="Depth within the brain."
-)
+DEPTH = Term("depth (um)", description="Depth within the brain.")
 
 
 SYNAPSE_CLASS = Term(
     "synapse class",
     description=(
         "The type of synapses a cell forms. Can be EXC, INH or MOD (representing modulatory)."
-        "EXC synapses use glutamate, INH synapses use GABA, and all other synapses are MOD")
+        "EXC synapses use glutamate, INH synapses use GABA, and all other synapses are MOD"
+    ),
 )
 GENE_EXPRESSION = Term(
     "gene expression",
-    description=(
-        "Gene that the cell expresses."
-        "For example: PV, Sst, Vip"
-    ),
+    description=("Gene that the cell expresses." "For example: PV, Sst, Vip"),
 )
 SPIKING_CLASS = Term(
     "spiking class", description=("Spiking class of a neuron, eiher FS or RS")
 )
 
 CELL_DENSITY = Term(
-    "cell density ($cells/mm^3$)", description="Number of cells per cubic millimetre",
-    measurement_method='cell_density'
+    "cell density ($cells/mm^3$)",
+    description="Number of cells per cubic millimetre",
+    measurement_method="cell_density",
 )
 CELL_COUNT = Term(
-    "cell count", description="Total number of cells",
-    measurement_method='cell_count')
+    "cell count", description="Total number of cells", measurement_method="cell_count"
+)
 REGION_VOLUME = Term(
     "volume ($mm^3$)",
     description="Volume of the measured parts of the brain in cubic millimetres",
-    measurement_method='region_volume'
+    measurement_method="region_volume",
 )
 
 
@@ -192,7 +191,7 @@ STIMULUS = Term(
     description="Set of stimuli shown to a subject. Add stimuli to analysis_neuro.stimuli "
     "and refer to their name with this parameter. For example, if an animal is shown the allen"
     " institute's brain observatory drifting gratings stimulus this may be "
-    " \"brain_observatory 1.1drifting gratings\""
+    ' "brain_observatory 1.1drifting gratings"',
 )
 
 VISUAL_STIMULUS = Term(
@@ -203,13 +202,17 @@ VISUAL_STIMULUS = Term(
 
 ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
-    description=("A tuple: the range of horizontal angles that the stimulus covers"
-                 " in the visual field"),
+    description=(
+        "A tuple: the range of horizontal angles that the stimulus covers"
+        " in the visual field"
+    ),
 )
 ANGLE_ELEVATION = Term(
     "stimulus height (degrees)",
-    description=("A tuple: the range of vertical angles that the stimulus covers"
-                 " in the visual field.")
+    description=(
+        "A tuple: the range of vertical angles that the stimulus covers"
+        " in the visual field."
+    ),
 )
 FRAME_RATE = Term(
     "stimulus framerate (Hz)", description="The framerate of the simulus used, in Hertz"
@@ -217,12 +220,14 @@ FRAME_RATE = Term(
 SPATIAL_FREQUENCY = Term(
     "spatial frequency (cycles / degree)",
     description="for a spatially periodic stimulus in the visual field this represents the "
-    "number of cycles that occur per degree moved in the visual field.")
+    "number of cycles that occur per degree moved in the visual field.",
+)
 CONTRAST = Term(
     "visual contrast",
     description="Contrast of a visual stimulus, a number between 0 and 1."
     " with 1.0 the darkest parts of the stimulus"
-    " are completely black, and the lightest parts completely white.")
+    " are completely black, and the lightest parts completely white.",
+)
 
 TEMPORAL_FREQUENCY = Term(
     "temporal frequency (Hz)",
@@ -232,7 +237,8 @@ TEMPORAL_FREQUENCY = Term(
     " the spatial frequency times the drift speed. "
     "If instead of a number this is set to 'optimal', it means that the measurement is "
     "performed for several temporal frequencies and only the temporal frequency with maximal "
-    "response is used to calculate the measured variable")
+    "response is used to calculate the measured variable",
+)
 
 START_TIME = Term(
     "start time (ms)",
@@ -259,7 +265,7 @@ FRACTION_INNERVATED = Term(
         "The fraction of cells in the postsynaptic population which recieve"
         " at least one synapse from the presynaptic population."
     ),
-    measurement_method="fraction_innervated"
+    measurement_method="fraction_innervated",
 )
 
 CONNECTION_PROBABILITY = Term(
@@ -268,60 +274,60 @@ CONNECTION_PROBABILITY = Term(
         "The probability that any specific cell in the presynaptic population "
         "is connected to any random cell in the postsynaptic population"
     ),
-    measurement_method="connection_probability"
+    measurement_method="connection_probability",
 )
 INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"),
-    measurement_method="intersomatic_distance"
+    measurement_method="intersomatic_distance",
 )
 SYNAPSES_PER_CONNECTION = Term(
     "synapses per connection",
     description=("The number of synapses between a pair of connected cells"),
-    measurement_method="synapses_per_connection"
+    measurement_method="synapses_per_connection",
 )
 NUM_SYNAPSES = Term(
     "Number of synapses",
     description="The total number of synapses along a pathway",
-    measurement_method="num_synapses"
+    measurement_method="num_synapses",
 )
 FRACTION_EXCITATION_PER_CONNECTION = Term(
     "Fraction excitation (per connection)",
     description="The fraction that each connection contributes to the total excitation along a pathway",
-    measurement_method="fraction_excitation_per_connection"
+    measurement_method="fraction_excitation_per_connection",
 )
 
 TOTAL_EXCITATION = Term(
-    'total excitation',
+    "total excitation",
     description="Total excitatory current from a presynaptic population into postsynaptic neurons",
-    measurement_method="total_excitation"
+    measurement_method="total_excitation",
 )
 RELATIVE_EXCITATION = Term(
-   "relative excitation",
-   "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
-   measurement_method="relative_excitation"
+    "relative excitation",
+    "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
+    measurement_method="relative_excitation",
 )
 
 PSP_AMPLITUDE = Term(
     "PSP amplitude (mV)",
     description="The size of the change in potential of a post-synaptic cell when the presynaptic cell is stimulated",
-    measurement_method='psp_amplitude'
+    measurement_method="psp_amplitude",
 )
 
 RESPONSE_CORRELATION = Term(
     "response correlation",
     description="pearson correlation in the responses of a pair of cells.",
-    measurement_method='response_correlation'
+    measurement_method="response_correlation",
 )
 
 INCLUDE_UNCONNECTED = Term(
     "include unconnected",
-    description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement."
+    description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement.",
 )
 
 ORIENTATION_PREFERENCE_DIFFERENCE = Term(
     "$\Delta$ preferred orientation",
-    description ="The angular difference in preferred orientation between pairs of cells" 
+    description="The angular difference in preferred orientation between pairs of cells",
 )
 
 ORIENTATION_SELECTIVITY = Term(
@@ -330,19 +336,19 @@ ORIENTATION_SELECTIVITY = Term(
         "The level of selectivity a neuron has for particular stimulus orientations under "
         "the experimental conditions"
     ),
-    measurement_method="orientation_selectivity"
+    measurement_method="orientation_selectivity",
 )
 
 RF_AREA = Term(
     "receptive field area (degrees)",
-    description=(
-        "the area occupied by a cell's receptive field"),
-    measurement_method='rf_area')
+    description=("the area occupied by a cell's receptive field"),
+    measurement_method="rf_area",
+)
 
 FIRING_RATE = Term(
     "firing rate (Hz)",
     description=("Rate of firing under the experimental conditions, in Hertz"),
-    measurement_method="firing_rate"
+    measurement_method="firing_rate",
 )
 
 SURROUND_SUPPRESSION_INDEX = Term(
@@ -354,8 +360,8 @@ SURROUND_SUPPRESSION_INDEX = Term(
         " where $R_{pref}$ is the response to the stimulus size that evokes the"
         " greatest response and $R_{large}$ is the response to the largest stimulus"
         " in the stimulus set."
-        ),
-    measurement_method="surround_suppression_index"
+    ),
+    measurement_method="surround_suppression_index",
 )
 
 MEAN = Term(
@@ -365,18 +371,22 @@ MEAN = Term(
         " For instance, in a dataset where the individual firing rates of neurons"
         " are not reported but only the mean of some populations, you would"
         " provide `terms.MEAN + terms.FIRING_RATE` in the `observations` dataframe."
-    )
+    ),
 )
 
 PRESYNAPTIC = Term(
     "Presynaptic ",
-    description=("Prefix to apply for specifying presynaptic"
-                 " cell populations. e.g. PRESYNAPTIC + MTYPE"),
+    description=(
+        "Prefix to apply for specifying presynaptic"
+        " cell populations. e.g. PRESYNAPTIC + MTYPE"
+    ),
 )
 POSTSYNAPTIC = Term(
     "Postsynaptic ",
-    description=("Prefix to apply for specifying postsynaptic"
-                 " cell populations. e.g. POSTSYNAPTIC + MTYPE"),
+    description=(
+        "Prefix to apply for specifying postsynaptic"
+        " cell populations. e.g. POSTSYNAPTIC + MTYPE"
+    ),
 )
 MIN = Term(
     "minimal ",
@@ -388,10 +398,7 @@ MAX = Term(
     description=("Prefix to apply for specifying maximal value"),
 )
 
-MEAN = Term(
-    "mean ",
-    description=("Prefix to apply to specify a mean value")
-)
+MEAN = Term("mean ", description=("Prefix to apply to specify a mean value"))
 
 
 def describe(*terms):

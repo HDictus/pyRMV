@@ -1,8 +1,8 @@
 """Package for constructing analyses and validations of neuroscience models."""
+
 import dataframe_pointer
-from . import plots
+
+from . import analyses, mtypes, plots
 from . import terminology as terms
-from .exceptions import TerminologyError, Assumption
 from .analysis import Analysis
-from . import mtypes
-from . import analyses
+from .exceptions import Assumption, TerminologyError

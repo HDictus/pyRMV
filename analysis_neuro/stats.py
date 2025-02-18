@@ -1,11 +1,14 @@
 """Tools for statistical hypothesis testing."""
+
 import warnings
 from typing import List
-from scipy import stats
+
 import numpy as np
 import pandas as pd
-from analysis_neuro.exceptions import Assumption
+from scipy import stats
+
 from analysis_neuro import terminology as terms
+from analysis_neuro.exceptions import Assumption
 
 
 def _iter_compare(data: pd.DataFrame, compare: str):
@@ -55,7 +58,7 @@ def squared_error(data, dependent, independent, compare):
         dataset = dataset.copy()
         if dependent not in dataset and terms.MEAN + dependent in dataset:
             dataset[dependent] = dataset[terms.MEAN + dependent]
-        dataset[independent] = dataset[independent].fillna('')
+        dataset[independent] = dataset[independent].fillna("")
         return dataset.groupby(independent)[dependent].mean()
 
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
@@ -171,8 +174,10 @@ class PooledPValueThreshold:
 
 
 def _have_samples(data: pd.DataFrame):
-    return terms.SAMPLE_SIZE in data.columns\
+    return (
+        terms.SAMPLE_SIZE in data.columns
         and not np.isnan(data[terms.SAMPLE_SIZE]).all()
+    )
 
 
 def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: str):
@@ -194,15 +199,22 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
        independent: columns of independent variables
        compare: the column distinguishing the datasets to compare
     """
+
     def vector_binomtest(sampleprob, trials, probability):
-        return [np.nan if any(np.isnan(np.float32([s, n, p]))) else
-                stats.binomtest(int(s * n), int(n), p).pvalue
-                for s, n, p in zip(sampleprob, trials, probability)]
+        return [
+            (
+                np.nan
+                if any(np.isnan(np.float32([s, n, p])))
+                else stats.binomtest(int(s * n), int(n), p).pvalue
+            )
+            for s, n, p in zip(sampleprob, trials, probability)
+        ]
 
     def binomtest(data1, data2, label1, label2):
         assume_1_accurate = np.logical_or(
             np.isnan(data1[terms.SAMPLE_SIZE].values),
-            data1[terms.SAMPLE_SIZE].values > data2[terms.SAMPLE_SIZE].values)
+            data1[terms.SAMPLE_SIZE].values > data2[terms.SAMPLE_SIZE].values,
+        )
         warn_assume_exact(data1[independent][assume_1_accurate], label1)
         warn_assume_exact(data2[independent][~assume_1_accurate], label2)
 
@@ -225,7 +237,8 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
         warnings.warn(
             f"Assuming the values of {dependent} for {label} are the ground truth for {label}"
             f" for the following measurements: {for_params}",
-            Assumption)
+            Assumption,
+        )
 
     hypotheses = {}
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
@@ -252,13 +265,17 @@ def is_lognormal(data, dependent, independent, compare):
     hypotheses = {}
     for label, dataframe in data.groupby(compare):
         pvals = dataframe.groupby(independent)[dependent].apply(
-            lambda a: stats.normaltest(np.log(a)).pvalue if len(a) > 8 else np.nan)
-        hypotheses[f"{dependent} is lognormally distributed for {label}"] =\
+            lambda a: stats.normaltest(np.log(a)).pvalue if len(a) > 8 else np.nan
+        )
+        hypotheses[f"{dependent} is lognormally distributed for {label}"] = (
             pvals.reset_index().rename(columns={dependent: terms.PVALUE})
+        )
     return hypotheses
 
 
-def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
+def lognorm_ttest(
+    data: pd.DataFrame, dependent: str, independent: List[str], compare: str
+):
     """Run a t-test for lognormally distributed values.
 
     Arguments:
@@ -278,7 +295,9 @@ def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], co
     """
 
     def log_ttest(dataframe, label1, label2):
-        return stats.ttest_ind(np.log(dataframe[label1]), np.log(dataframe[label2])).pvalue
+        return stats.ttest_ind(
+            np.log(dataframe[label1]), np.log(dataframe[label2])
+        ).pvalue
 
     hypotheses = {}
     for label1, data1, label2, data2 in _iter_compare(data, compare):
@@ -286,13 +305,21 @@ def lognorm_ttest(data: pd.DataFrame, dependent: str, independent: List[str], co
         data2.set_index(independent, inplace=True)
         to_applyon = data1.rename(columns={dependent: label1})
         to_applyon[label2] = data2[dependent]
-        p_value = to_applyon.reset_index().groupby(independent).apply(log_ttest, label1, label2)
-        hypothesis = f'the population mean of {dependent} is the same for {label1} and {label2}'
+        p_value = (
+            to_applyon.reset_index()
+            .groupby(independent)
+            .apply(log_ttest, label1, label2)
+        )
+        hypothesis = (
+            f"the population mean of {dependent} is the same for {label1} and {label2}"
+        )
         hypotheses[hypothesis] = p_value.reset_index().rename(columns={0: terms.PVALUE})
     return hypotheses
 
 
-def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
+def mann_whitney_u(
+    data: pd.DataFrame, dependent: str, independent: List[str], compare: str
+):
     """Run the mann-whitney u test for the specified data.
 
     Arguments:
@@ -310,34 +337,44 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
     for label1, data1, label2, data2 in _iter_compare(data, compare):
         hypothesis = (
             f"The underlying distribution of {dependent}"
-            f" for {label1} and {label2} is the same")
+            f" for {label1} and {label2} is the same"
+        )
         data2.set_index(independent, inplace=True)
 
         out_list = []
 
         for independent_values, grouped1 in data1.groupby(independent, dropna=False):
             if not isinstance(independent_values, tuple):
-                independent_values = (independent_values, )
+                independent_values = (independent_values,)
 
             try:
                 grouped2 = data2.loc[independent_values]
             except KeyError:
                 continue
 
-            out_list.append({
-                **dict(zip(independent, independent_values)),
-                terms.PVALUE: stats.mannwhitneyu(
-                    grouped1[dependent].dropna().values, grouped2[dependent].dropna().values).pvalue
-            })
+            out_list.append(
+                {
+                    **dict(zip(independent, independent_values)),
+                    terms.PVALUE: stats.mannwhitneyu(
+                        grouped1[dependent].dropna().values,
+                        grouped2[dependent].dropna().values,
+                    ).pvalue,
+                }
+            )
         hypotheses[hypothesis] = pd.DataFrame(out_list)
 
     return hypotheses
 
 
-def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], compare: str,
-                   num_samples=1000):
+def bootstrap_mean(
+    data: pd.DataFrame,
+    dependent: str,
+    independent: List[str],
+    compare: str,
+    num_samples=1000,
+):
     """Test whether a mean value could be sampled from a distribution of values.
-    
+
     For each dataset where the dependent variable has a reported mean value, resample those
     datasets where individual values are reported in order to assess whether the former mean value
     could realistically be measured from the latter.
@@ -349,13 +386,13 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
             will be performed per unique combination of independent variables.
         compare : variable identifying the datasets to be compared.
         num_samples : the number of samples to use
-        
+
     Hypothesis:
-        The value of <dependent> in one dataset could be sampled from the same distribution 
+        The value of <dependent> in one dataset could be sampled from the same distribution
         as the other dataset.
     """
     rng = np.random.default_rng(1)
-    
+
     if not isinstance(independent, list):
         independent = [independent]
 
@@ -364,7 +401,7 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
         data = data.assign(__dummy=0)
     hypotheses = {}
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
-        
+
         if terms.MEAN + dependent not in dataset1:
             grouped = dataset1.groupby(independent)
             means = grouped[dependent].mean()
@@ -374,14 +411,16 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
             dataset1 = pd.concat([means, ssizes], axis=1).reset_index()
         elif np.isnan(dataset1[terms.MEAN + dependent]).all():
             continue
-        mean_values = dataset1.set_index(independent)[[c for c in dataset1 if c not in [dependent, compare] + independent]]
+        mean_values = dataset1.set_index(independent)[
+            [c for c in dataset1 if c not in [dependent, compare] + independent]
+        ]
 
         group_by_independent = dataset2.groupby(independent)
         assert len(mean_values) == len(group_by_independent)
         tests = []
         for group, distr in group_by_independent:
             if not isinstance(group, tuple):
-                group = (group, )
+                group = (group,)
             vals = mean_values.loc[group, [terms.MEAN + dependent, terms.SAMPLE_SIZE]]
 
             if isinstance(vals, pd.DataFrame):
@@ -390,21 +429,24 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
                 mean, size = vals.values
 
             samples = rng.choice(
-                distr[dependent],
-                size=(int(size), num_samples),
-                replace=True
+                distr[dependent], size=(int(size), num_samples), replace=True
             )
             distrmean = distr[dependent].mean()
-            
+
             if mean < distrmean:
-                pvalue = ((samples.mean(axis=0) <= mean).mean())
+                pvalue = (samples.mean(axis=0) <= mean).mean()
             else:
-                pvalue = ((samples.mean(axis=0) >= mean).mean())
-            tests.append({
-                **{ind: val for ind, val in zip(independent, group)},
-                terms.PVALUE: pvalue})
+                pvalue = (samples.mean(axis=0) >= mean).mean()
+            tests.append(
+                {
+                    **{ind: val for ind, val in zip(independent, group)},
+                    terms.PVALUE: pvalue,
+                }
+            )
         df = pd.DataFrame(tests)
-        if '__dummy' in df:
-            del df['__dummy']
-        hypotheses[f'The result of {label1} could be sampled from the same distribution as {label2}'] = df
+        if "__dummy" in df:
+            del df["__dummy"]
+        hypotheses[
+            f"The result of {label1} could be sampled from the same distribution as {label2}"
+        ] = df
     return hypotheses

@@ -1,4 +1,5 @@
 """Analysis class for composition of analyses and validations."""
+
 import inspect
 from collections.abc import Callable
 
@@ -6,18 +7,21 @@ import pandas as pd
 from lazy import lazy
 
 import analysis_neuro.terminology as terms
+
 from .measurements import (
+    extract_parameters,
+    measure,
     validate_measurement,
     validate_observations,
-    measure,
-    extract_parameters
 )
 
 
 def _join_columns(dataframe):
     """Combine the columns of dataframe into a single series."""
     series_name = ", ".join(dataframe.columns)
-    values = [" ".join(str(v) for v in row if not pd.isna(v)) for row in dataframe.values]
+    values = [
+        " ".join(str(v) for v in row if not pd.isna(v)) for row in dataframe.values
+    ]
     return pd.Series(values, name=series_name)
 
 
@@ -76,7 +80,7 @@ class Analysis:
         doc=None,
         dependent=None,
         independent=None,
-        compare=terms.DATASET
+        compare=terms.DATASET,
     ):
         """Initialize an Analysis from various components."""
         validate_measurement(measurement)
@@ -85,7 +89,7 @@ class Analysis:
         validate_observations(observations)
         self._observations = observations.copy()
         if terms.DATASET not in self._observations:
-            self._observations[terms.DATASET] = 'experiment'
+            self._observations[terms.DATASET] = "experiment"
 
         if not (
             _check_callable(plotter, ["x", "y", "hue"])
@@ -99,7 +103,7 @@ class Analysis:
             )
 
         self.plotter = plotter
-        
+
         self._check_stats_format(stats)
         self.stats = stats
 
@@ -173,19 +177,17 @@ class Analysis:
         if self._dependent is None:
             return self.measurement
         return self._dependent
-    
+
     @property
     def independent(self):
         if self._independent is None:
             if self.varying_parameters == []:
                 other_vars = [self.dependent, self.compare]
-                return [
-                    c for c in self.parameters.columns
-                    if c not in other_vars]
+                return [c for c in self.parameters.columns if c not in other_vars]
             return self.varying_parameters
         if isinstance(self._independent, list):
             return self._independent
-        return [self._independent]     
+        return [self._independent]
 
     def statistical_tests(self, measurements):
         """Run the statistical tests for this analysis on some data."""
@@ -194,7 +196,7 @@ class Analysis:
         stats = self.stats
         if not isinstance(stats, list):
             stats = [stats]
-        
+
         stat_output = {}
         for stat in stats:
             stat_output = {
@@ -204,25 +206,29 @@ class Analysis:
                     dependent=self.dependent,
                     independent=self.independent,
                     compare=self.compare,
-                )}
+                ),
+            }
         return stat_output
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
-        to_concat = [self.measure(model) for model in models] 
+        to_concat = [self.measure(model) for model in models]
 
         if isinstance(self.measurement, str):
             measurements = [self.measurement]
         else:
             measurements = self.measurement
-        
-        if all(msr in self.observations.columns
-               or terms.MEAN + msr in self.observations.columns
-               for msr in measurements
+
+        if all(
+            msr in self.observations.columns
+            or terms.MEAN + msr in self.observations.columns
+            for msr in measurements
         ):
             # if observations represents experimental values, we want to
             # include those in the dataframe
-            observations = _exclude_obs_only(self.observations, to_concat, self.independent)
+            observations = _exclude_obs_only(
+                self.observations, to_concat, self.independent
+            )
             to_concat = [observations] + to_concat
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
@@ -245,9 +251,7 @@ class Analysis:
             independent = _join_columns(measurements[self.independent])
             compare = measurements[self.compare]
 
-            return self.plotter(
-                x=independent, y=dependent, hue=compare
-            ).get_figure()
+            return self.plotter(x=independent, y=dependent, hue=compare).get_figure()
 
         return self.plotter(
             data=measurements,
@@ -255,20 +259,19 @@ class Analysis:
             independent=self.independent,
             compare=self.compare,
         )
-                
-                
+
     def with_fields(self, **fields):
         """Duplicate this analysis, overwriting some fields."""
         current_fields = {
-            'measurement': self.measurement,
-            'observations': self.observations,
-            'plotter': self.plotter,
-            'stats': self.stats,
-            'verdict': self.verdict,
-            'doc': self.doc,
-            'dependent': self._dependent,
-            'independent': self._independent,
-            'compare': self.compare
+            "measurement": self.measurement,
+            "observations": self.observations,
+            "plotter": self.plotter,
+            "stats": self.stats,
+            "verdict": self.verdict,
+            "doc": self.doc,
+            "dependent": self._dependent,
+            "independent": self._independent,
+            "compare": self.compare,
         }
         # TODO: this is something we should indeed test.
         #   can we automate it more: e.g. that it mutates each argument one by one
@@ -279,11 +282,11 @@ class Analysis:
 
 def _exclude_obs_only(observations, measured, independent_vars):
     """Remove observations that are not in measured.
-    
+
     Remove all rows from <observations> where the values of <independent_vars>
     do not occur in any dataset in <measured>.
     An example of where this matters would be for running a validation in which
-    
+
     """
     if len(independent_vars) == 0:
         return observations

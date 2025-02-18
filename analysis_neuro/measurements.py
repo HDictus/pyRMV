@@ -15,14 +15,16 @@ that property, and it can specify a method to measure the property on the basis
 of other properties.
 
 """
+
 import warnings
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+
 import analysis_neuro.terminology as terms
 from analysis_neuro.exceptions import TerminologyError
-
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -40,7 +42,8 @@ def validate_measurement(measurement):
     if measurement.measurement_method is None:
         raise TerminologyError(
             f"{measurement} is not a measurable property, "
-            "as it does not have an associated measurement_method.")
+            "as it does not have an associated measurement_method."
+        )
 
 
 def validate_measured(measured_data, measurement, parameters):
@@ -56,6 +59,7 @@ def validate_measured(measured_data, measurement, parameters):
         parameters: a dataframe of parameter values for which
             the measurement was conducted
     """
+
     def _exception(msg):
         fake_example_measurement = pd.DataFrame(
             [
@@ -111,7 +115,10 @@ def validate_observations(observations):
             for term in terms.ALL_TERMS:
                 if term.endswith(" "):
                     # if it is prefixed and the postfix term exists
-                    if column.startswith(term) and column[len(term):] in terms.ALL_TERMS:
+                    if (
+                        column.startswith(term)
+                        and column[len(term) :] in terms.ALL_TERMS
+                    ):
                         is_valid_prefixed = True
                         break
             if not is_valid_prefixed:
@@ -127,7 +134,8 @@ def _measurement_method(model, measurement):
         return getattr(model, method_name)
     raise TypeError(
         f"The model does not have the functionality needed to measure {measurement}."
-        f" It should define a method named '{method_name}")
+        f" It should define a method named '{method_name}"
+    )
 
 
 def measure(model, measurement, parameters):
@@ -149,7 +157,7 @@ def measure(model, measurement, parameters):
         # TODO: unreliable, error-prone
         # maybe should expect model to provide sensible indexing?
         return first
-        
+
     validate_measurement(measurement)
     validate_observations(parameters)
     measurement_method = _measurement_method(model, measurement)
@@ -175,7 +183,10 @@ def extract_parameters(observations, measurement=None):
            measured quantity. will be excluded from the parameters.
     """
     exclude_from_parameters = DATA_TERMS + [
-        terms.STD + measurement, terms.SAMPLE_SIZE, terms.MEAN + measurement]
+        terms.STD + measurement,
+        terms.SAMPLE_SIZE,
+        terms.MEAN + measurement,
+    ]
     if measurement is not None:
         exclude_from_parameters += [measurement]
     paramcols = [col for col in observations if col not in exclude_from_parameters]
@@ -190,7 +201,9 @@ def extract_parameters(observations, measurement=None):
 def _calculate_osi(dataframe):
     rates = dataframe[terms.FIRING_RATE]
     orientations = dataframe[terms.STIM_ORIENTATION]
-    return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
+    return np.abs(
+        np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates)
+    )
 
 
 def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
@@ -210,19 +223,20 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
     for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
         stimuli_shown = row[terms.STIMULUS].df
         columns_both = [
-            c for c in parameters.columns if c in stimuli_shown
-            and row[c] not in ['optimal']
+            c
+            for c in parameters.columns
+            if c in stimuli_shown and row[c] not in ["optimal"]
         ]
         if len(columns_both) > 0:
-            stimuli_shown = stimuli_shown.set_index(columns_both).loc[
-                row[columns_both]].reset_index()
-        other_parameters = [c for c in parameters.columns if row[c] not in ['optimal']]
+            stimuli_shown = (
+                stimuli_shown.set_index(columns_both)
+                .loc[row[columns_both]]
+                .reset_index()
+            )
+        other_parameters = [c for c in parameters.columns if row[c] not in ["optimal"]]
         stimuli_shown = stimuli_shown.assign(**row[other_parameters])
 
-        response = measure(
-            model, response_measurement,
-            stimuli_shown
-        )
+        response = measure(model, response_measurement, stimuli_shown)
         if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
             continue
 
@@ -231,29 +245,40 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
         # it responds most strongly
         tf_optimal = (
             terms.TEMPORAL_FREQUENCY in parameters.columns
-            and row[terms.TEMPORAL_FREQUENCY] == 'optimal'
+            and row[terms.TEMPORAL_FREQUENCY] == "optimal"
         )
         if tf_optimal:
-            conditionwise_rates = response.groupby(
-                [c for c in response
-                 if c not in (response_measurement, terms.TRIAL_ID)])[response_measurement]\
-                .mean().reset_index()
-            optimal_tf = conditionwise_rates.set_index(
-                terms.TEMPORAL_FREQUENCY).groupby(
-                terms.CELL_ID)[response_measurement].idxmax()
-            response = response.set_index([
-                terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
-                    zip(optimal_tf.index, optimal_tf.values)
-            ].reset_index()
+            conditionwise_rates = (
+                response.groupby(
+                    [
+                        c
+                        for c in response
+                        if c not in (response_measurement, terms.TRIAL_ID)
+                    ]
+                )[response_measurement]
+                .mean()
+                .reset_index()
+            )
+            optimal_tf = (
+                conditionwise_rates.set_index(terms.TEMPORAL_FREQUENCY)
+                .groupby(terms.CELL_ID)[response_measurement]
+                .idxmax()
+            )
+            response = (
+                response.set_index([terms.CELL_ID, terms.TEMPORAL_FREQUENCY])
+                .loc[zip(optimal_tf.index, optimal_tf.values)]
+                .reset_index()
+            )
 
-        response['scaled'] = response[response_measurement] * np.exp(
-            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION]))
+        response["scaled"] = response[response_measurement] * np.exp(
+            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION])
+        )
         grouped_by_cell = response.groupby(terms.CELL_ID)
         selectivity = np.abs(
-            grouped_by_cell['scaled'].sum()
-            / grouped_by_cell[response_measurement].sum())
+            grouped_by_cell["scaled"].sum()
+            / grouped_by_cell[response_measurement].sum()
+        )
         selectivity.name = terms.ORIENTATION_SELECTIVITY
         out.append(selectivity.reset_index().assign(**row))
 
     return pd.concat(out, axis=0)
-
