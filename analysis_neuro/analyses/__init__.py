@@ -331,7 +331,6 @@ lee_connprob_2016 = Analysis(
         terms.CONNECTION_PROBABILITY: [10/506, 11/458, 4/496, 4/520]}
     ),
     plotter=sns.barplot,
-    # TODO: we may want a new, additional test that check the strength of th relationship between diff and connprob. Or is that a separate validation altogether?
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05)
 )
