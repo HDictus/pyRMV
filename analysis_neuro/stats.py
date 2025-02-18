@@ -4,7 +4,7 @@ from typing import List
 from scipy import stats
 import numpy as np
 import pandas as pd
-from analysis_neuro import Assumption
+from analysis_neuro.exceptions import Assumption
 from analysis_neuro import terminology as terms
 
 # TODO: all stats objects must be able to handle the case where independent is []

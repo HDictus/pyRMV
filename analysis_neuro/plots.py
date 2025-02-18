@@ -5,6 +5,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from analysis_neuro import terminology as terms
+from analysis_neuro.stats import _iter_compare
 
 
 def crossplot(data, dependent, independent, compare):
@@ -19,20 +20,12 @@ def crossplot(data, dependent, independent, compare):
     figs = {}
     comparevalues = data[compare].unique()
 
-    # if len(comparevalues) < 2:
-    #     raise ValueError(
-    #         "a crossplot only makes sense when comparing data. "
-    #         "It is not defined for less than 2 datasets."
-    #     )
-    # if len(comparevalues) > 2:
-    #     raise NotImplementedError(
-    #         "currently crossplot comparisons between more than 2 "
-    #         "datasets is not implemented, please make a pull request"
-    #     )
-    from analysis_neuro.stats import _iter_compare
+    if len(comparevalues) < 2:
+         raise ValueError(
+             "a crossplot only makes sense when comparing data. "
+             "It is not defined for less than 2 datasets.")
+
     for l1, data1, l2, data2 in _iter_compare(data, compare):
-        # TODO: ensure this is usable for sampled data as well
-        # TODO: add reusable test for plotter that it handles unordered data
         fig, ax = plt.subplots()
         figs[f"{l1}-{l2}"] = fig
         data1 = data1.sort_values(independent)

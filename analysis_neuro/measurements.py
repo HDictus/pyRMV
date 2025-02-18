@@ -193,7 +193,6 @@ def _calculate_osi(dataframe):
     return np.abs(np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates))
 
 
-# TODO: actual calculation procedure should be separated from getting of firing rates
 def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
     """Measure orientation selectivity on the basis of some response property (e.g. Firing rate).
 
@@ -230,7 +229,6 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
         # if temporal frequency is set to optimal, we select a different
         # temporal frequency for each cell. Specifically, the one to which
         # it responds most strongly
-        # TODO: this should be done at the level of firing_rate
         tf_optimal = (
             terms.TEMPORAL_FREQUENCY in parameters.columns
             and row[terms.TEMPORAL_FREQUENCY] == 'optimal'

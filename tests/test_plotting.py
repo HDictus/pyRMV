@@ -31,3 +31,13 @@ def test_pathway_heatmap_adjusts_size():
     assert type(figs['fake']) == plt.Figure
     # 0.25 inches per row is generally enough to see all the labels
     assert tuple(figs['fake'].get_size_inches()) == (75/4, 60/4)
+    
+
+def test_crossplot_handles_multiple_compare():
+    data = pd.DataFrame({
+        'measured': [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        'param': 3,
+        'compare': ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c']
+    })
+    out = plots.crossplot(data, 'measured', ['param'], 'compare')
+    assert len(out) == 3
