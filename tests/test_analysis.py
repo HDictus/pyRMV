@@ -465,3 +465,63 @@ def test_ignores_unmeasured_values():
             terms.DATASET: ['experiment'] * 4 + ['partial'] * 3,
         })
     )
+
+def test_infer_independent_from_non_varying():
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4, 'b': 6,
+            terms.DATASET: ['ah', 'ah'],
+            
+    })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    assert analysis.independent == ['a', 'b']
+
+
+def test_set_dependent_independent_compare():
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4,
+            terms.DATASET: ['ah']
+        })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    assert analysis.independent == ['a']
+    assert analysis.dependent == MEASURED_THING
+    assert analysis.compare == terms.DATASET
+    
+    analysis = Analysis(
+        observations=data,
+        independent=terms.DATASET,
+        dependent='a',
+        compare=MEASURED_THING,
+        measurement=MEASURED_THING
+    )
+    assert analysis.independent == [terms.DATASET]
+    assert analysis.dependent == 'a'
+    assert analysis.compare == MEASURED_THING
+    
+
+@pyt.mark.xfail
+def test_with_fields():
+    """Not sure yet how to nicely test this."""
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4,
+            terms.DATASET: ['ah']
+        })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    fields =['measurement', 
+            'observations',
+            'plotter',
+            'stats',
+            'verdict',
+            'doc',
+            'dependent',
+            'independent',
+            'compare']
+    for field in fields:
+        mockobj = MagicMock()
+        new_ana = analysis.with_fields(**{field: mockobj})
+        assert getattr(new_ana, field) == mockobj

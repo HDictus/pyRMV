@@ -1,7 +1,6 @@
 """Analysis class for composition of analyses and validations."""
 import inspect
 from collections.abc import Callable
-from multiprocessing import Pool
 
 import pandas as pd
 from lazy import lazy
@@ -39,9 +38,6 @@ def _check_callable(obj, args):
             return False
     return True
 
-
-def _measure_multi(params):
-    return measure(*params)
 
 class Analysis:
     """An object for defining analyses.
@@ -178,21 +174,23 @@ class Analysis:
             return self.measurement
         return self._dependent
     
-    # TODO: should we test that these things are passed?
-    #   or are the tests with real analyses enough?
     @property
     def independent(self):
         if self._independent is None:
+            if self.varying_parameters == []:
+                other_vars = [self.dependent, self.compare]
+                return [
+                    c for c in self.parameters.columns
+                    if c not in other_vars]
             return self.varying_parameters
-        return self._independent       
+        if isinstance(self._independent, list):
+            return self._independent
+        return [self._independent]     
 
     def statistical_tests(self, measurements):
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
-        # TODO: add test case for multiple stats
-        # TODO: make stats easier to work with - hypotheses make for nice reports
-        #   but are awkward as hell to use
         stats = self.stats
         if not isinstance(stats, list):
             stats = [stats]
@@ -211,10 +209,7 @@ class Analysis:
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
-        to_concat = [self.measure(model) for model in models]
-        #to_concat = list(Pool(len(models)).map(
-        #    _measure_multi, [(model, self.measurement, self.parameters) for model in models]))
-    
+        to_concat = [self.measure(model) for model in models] 
 
         if isinstance(self.measurement, str):
             measurements = [self.measurement]
