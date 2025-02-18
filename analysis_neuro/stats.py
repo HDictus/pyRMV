@@ -7,10 +7,6 @@ import pandas as pd
 from analysis_neuro.exceptions import Assumption
 from analysis_neuro import terminology as terms
 
-# TODO: all stats objects must be able to handle the case where independent is []
-# TODO: all appropriate stats objects must be able to deal with the case where
-#  there is no measurement, only a mean of measurement
-# TODO: lien et al sucks.
 
 def _iter_compare(data: pd.DataFrame, compare: str):
     """Iterate datasets to compare in data.
@@ -56,12 +52,9 @@ def squared_error(data, dependent, independent, compare):
     hypotheses = {}
 
     def by_ind(dataset):
-        # TODO: a more general way to deal with this?
-        # TODO: automated tests
         dataset = dataset.copy()
         if dependent not in dataset and terms.MEAN + dependent in dataset:
             dataset[dependent] = dataset[terms.MEAN + dependent]
-        # TODO: Nones cause problems. How do?
         dataset[independent] = dataset[independent].fillna('')
         return dataset.groupby(independent)[dependent].mean()
 
@@ -330,7 +323,7 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
                 grouped2 = data2.loc[independent_values]
             except KeyError:
                 continue
-            # TODO: test nan handling
+
             out_list.append({
                 **dict(zip(independent, independent_values)),
                 terms.PVALUE: stats.mannwhitneyu(
@@ -364,7 +357,6 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
     if not isinstance(independent, list):
         independent = [independent]
 
-    # TODO: test with many independent
     if len(independent) == 0:
         independent = ["__dummy"]
         data = data.assign(__dummy=0)
@@ -372,7 +364,6 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
         
         if terms.MEAN + dependent not in dataset1:
-            # TODO: test case for this
             grouped = dataset1.groupby(independent)
             means = grouped[dependent].mean()
             means.name = terms.MEAN + dependent
@@ -382,30 +373,27 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
         elif np.isnan(dataset1[terms.MEAN + dependent]).all():
             continue
         mean_values = dataset1.set_index(independent)[[c for c in dataset1 if c not in [dependent, compare] + independent]]
-        # TODO: test case for when more than one mean measurement per set of independents
-        # TODO: test case where mean dataset is not the first dataset
 
         group_by_independent = dataset2.groupby(independent)
         assert len(mean_values) == len(group_by_independent)
         tests = []
         for group, distr in group_by_independent:
-            # TODO: we can expect this problem more often.
             if not isinstance(group, tuple):
                 group = (group, )
             vals = mean_values.loc[group, [terms.MEAN + dependent, terms.SAMPLE_SIZE]]
-            # TODO: wtf
+
             if isinstance(vals, pd.DataFrame):
                 mean, size = vals.values[0]
             else:
                 mean, size = vals.values
-            # TODO: this is deprecated now, use rng.choice
+
             samples = np.random.choice(
                 distr[dependent],
                 size=(int(size), num_samples),
                 replace=True
             )
             distrmean = distr[dependent].mean()
-            # TODO: test case where mean < distrmean
+            
             if mean < distrmean:
                 pvalue = ((samples.mean(axis=0) <= mean).mean())
             else:
