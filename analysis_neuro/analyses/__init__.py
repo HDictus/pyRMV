@@ -249,9 +249,6 @@ def _cossell_scatter(data, dependent, independent, compare):
     return out
     
 
-# TODO: the modifications we make to cosell et al. illustrate some fundamental interface instability
-#  previously we thought a column was "close enough".
-#  any such judgement, once overturned, will break all downstream model validations
 cossell_correlation_psp_2015 = Analysis(
     doc="""
     Cossell et al. 2015 showed that the size of the PSP from a given excitatory connection
@@ -261,8 +258,7 @@ cossell_correlation_psp_2015 = Analysis(
     Rather, we check if their observation that the 7% most correlated pairs
     account for 50% of total psp strength is reproduced.
     """,
-    # TODO : we really ought to do better than modeling all slicing with a column
-    #   at the very least, that modeling should go inside the model
+
     observations=pd.DataFrame(
         {terms.REGION: 'VISp',
          terms.LAYER: 'L23',
@@ -271,14 +267,6 @@ cossell_correlation_psp_2015 = Analysis(
          terms.IMAGED_HEIGHT: 255,
          terms.MIN + terms.DEPTH: 135,
          terms.MAX + terms.DEPTH: 191,
-         # TODO: we need a more precise way to specify stimuli
-         #   for instance, it should be clear and explicit that
-         #   there were 1s gray screen intervals and 1800 images shown 0.4s each
-         #   however, for now it is inconvenient given that we show images more rapidly
-         #   we need a proper visual stimulus abstraction I guess...
-         #   perhaps a class, or callable
-         #   we also need similar abstractions for the specific data processing
-         #   methods: like their method for inferring spike times from Ca+...
          terms.STIMULUS: 'natural-images',
          terms.DATASET: 'Cossell et al. 2015',
          terms.INCLUDE_UNCONNECTED: True
@@ -290,6 +278,7 @@ cossell_correlation_psp_2015 = Analysis(
     plotter=_cossell_scatter,
     verdict=stats.PooledPValueThreshold(0.05)
 )
+
 
 cossell_connprob_corr_2015 = Analysis(
     measurement=terms.CONNECTION_PROBABILITY,
@@ -318,7 +307,10 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
 
 
 cossell_response_correlation_2015 = Analysis(
-    observations=cossell_correlation_psp_2015.observations,
+    # The paper does not provide actual numbers - only counts for bins
+    # Therefore, the biodata is not in the analysis itself but loaded 
+    # separately by the plotter above
+    observations=cossell_correlation_psp_2015.parameters,
     measurement=terms.RESPONSE_CORRELATION,
     plotter=_histogram_with_cossell_digitized
 )
