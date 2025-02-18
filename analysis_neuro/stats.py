@@ -354,6 +354,8 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
         The value of <dependent> in one dataset could be sampled from the same distribution 
         as the other dataset.
     """
+    rng = np.random.default_rng(1)
+    
     if not isinstance(independent, list):
         independent = [independent]
 
@@ -387,7 +389,7 @@ def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], c
             else:
                 mean, size = vals.values
 
-            samples = np.random.choice(
+            samples = rng.choice(
                 distr[dependent],
                 size=(int(size), num_samples),
                 replace=True
