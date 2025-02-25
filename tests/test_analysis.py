@@ -1,11 +1,12 @@
 import pandas as pd
+import numpy as np
 import pytest as pyt
 import warnings
 from mock import MagicMock
 from analysis_neuro import Analysis, terms, TerminologyError, measurements
 
 
-measured_thing = terms.Term("measured thing", measurement_method="thing")
+MEASURED_THING = terms.Term("measured thing", measurement_method="measured_thing")
 
 
 class MockModel:
@@ -13,16 +14,16 @@ class MockModel:
         self.num = num
         self.label = str(num)
 
-    def thing(self, params):
-        return params.assign(**{"measured thing": self.num})
+    def measured_thing(self, params):
+        return params.assign(**{MEASURED_THING: self.num})
 
 
 def test_extracts_parameters_from_observations():
     ana = Analysis(
-        measurement="measured thing",
+        measurement=MEASURED_THING,
         observations=pd.DataFrame(
             {
-                "measured thing": [100, 200, 300, 400, 500],
+                MEASURED_THING: [100, 200, 300, 400, 500],
                 terms.DATASET: "blabla",
                 "a param": ["a", "b", "c", "d", "e"],
                 "nother param": ["z", "z", "x", "x", "y"],
@@ -44,10 +45,10 @@ def test_extracts_parameters_from_observations():
 
 def test_single_parameter_from_repeated_observations():
     ana = Analysis(
-        measurement="measured thing",
+        measurement=MEASURED_THING,
         observations=pd.DataFrame(
             {
-                "measured thing": [100, 200, 300, 400, 500],
+                MEASURED_THING: [100, 200, 300, 400, 500],
                 terms.DATASET: "blabla",
                 "a param": ["a", "a", "a", "a", "a"],
                 "nother param": ["b", "b", "b", "c", "c"],
@@ -68,7 +69,7 @@ def test_single_parameter_from_repeated_observations():
 
 def test_requests_measurements():
     ana = Analysis(
-        measurement="measured thing",
+        measurement=MEASURED_THING,
         observations=pd.DataFrame(
             {"a param": [1, 2, 3, 4, 5], "another param": [4, 4, 4, 3, 3]}
         ),
@@ -79,8 +80,8 @@ def test_requests_measurements():
 
     expected = pd.concat(
         [
-            models[0].thing(ana.parameters).assign(dataset="1"),
-            models[1].thing(ana.parameters).assign(dataset="2"),
+            models[0].measured_thing(ana.parameters).assign(dataset="1"),
+            models[1].measured_thing(ana.parameters).assign(dataset="2"),
         ]
     )
     pd.testing.assert_frame_equal(report["measurements"], expected)
@@ -94,21 +95,21 @@ def test_runs_plotter():
 
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            MEASURED_THING: [100, 200, 300, 400, 500],
             terms.DATASET: "blabla",
             "a param": ["a", "b", "c", "d", "e"],
         }
     )
 
     ana = Analysis(
-        measurement="measured thing", plotter=plotter, observations=observations
+        measurement=MEASURED_THING, plotter=plotter, observations=observations
     )
     result = ana(MockModel(4))
     assert result["figures"] == mockfigure
     kwargs = plotter.call_args.kwargs
     pd.testing.assert_series_equal(
         kwargs["y"].reset_index(drop=True),
-        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name="measured thing"),
+        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name=MEASURED_THING),
     )
     pd.testing.assert_series_equal(
         kwargs["x"].reset_index(drop=True),
@@ -128,14 +129,14 @@ def test_runs_plotter_alternate():
 
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            MEASURED_THING: [100, 200, 300, 400, 500],
             terms.DATASET: "blabla",
             "a param": ["a", "b", "c", "d", "e"],
         }
     )
 
     ana = Analysis(
-        measurement="measured thing", plotter=plotter, observations=observations
+        measurement=MEASURED_THING, plotter=plotter, observations=observations
     )
     assert ana(MockModel(4))["figures"] == mockfigure
 
@@ -144,7 +145,7 @@ def test_plots_only_by_varying_params():
     plotter = MagicMock()
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            MEASURED_THING: [100, 200, 300, 400, 500],
             terms.DATASET: "blabla",
             "a param": ["a", "b", "c", "d", "e"],
             "a constant": "c",
@@ -152,7 +153,7 @@ def test_plots_only_by_varying_params():
     )
 
     ana = Analysis(
-        measurement="measured thing", plotter=plotter, observations=observations
+        measurement=MEASURED_THING, plotter=plotter, observations=observations
     )
     ana(MockModel(4))
     kwargs = plotter.call_args.kwargs
@@ -162,7 +163,7 @@ def test_plots_only_by_varying_params():
     )
     pd.testing.assert_series_equal(
         kwargs["y"].reset_index(drop=True),
-        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name="measured thing"),
+        pd.Series([100, 200, 300, 400, 500, 4, 4, 4, 4, 4], name=MEASURED_THING),
     )
     pd.testing.assert_series_equal(
         kwargs["hue"].reset_index(drop=True),
@@ -174,7 +175,7 @@ def test_plots_with_multiple_params():
     plotter = MagicMock()
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500, 600],
+            MEASURED_THING: [100, 200, 300, 400, 500, 600],
             terms.DATASET: "blabla",
             "layer": ["L1", "L23", "L4", "L5", "L6", "L6"],
             "mtype": ["NGC", "NGC", "MC", "MC", "LBC", None],
@@ -182,13 +183,13 @@ def test_plots_with_multiple_params():
     )
 
     ana = Analysis(
-        measurement="measured thing", plotter=plotter, observations=observations
+        measurement=MEASURED_THING, plotter=plotter, observations=observations
     )
     ana(MockModel(4))
     kwargs = plotter.call_args.kwargs
     pd.testing.assert_series_equal(
         kwargs["y"].reset_index(drop=True),
-        pd.Series([100, 200, 300, 400, 500, 600, 4, 4, 4, 4, 4, 4], name="measured thing"),
+        pd.Series([100, 200, 300, 400, 500, 600, 4, 4, 4, 4, 4, 4], name=MEASURED_THING),
     )
     pd.testing.assert_series_equal(
         kwargs["x"].reset_index(drop=True),
@@ -205,7 +206,7 @@ def test_plots_with_multiple_params():
 def test_invalid_observation_supplied():
     observations = 1234
     with pyt.raises(ValueError) as ve:
-        ana = Analysis(measurement="measured thing", observations=observations)
+        ana = Analysis(measurement=MEASURED_THING, observations=observations)
     assert "must be a pandas.DataFrame of the form:" in str(ve.value)
 
 
@@ -214,14 +215,14 @@ def test_plotter_stats_verdict_signatures():
     for kw in ["stats", "plotter", "verdict"]:
         with pyt.raises(ValueError) as ve:
             ana = Analysis(
-                measurement="measured thing",
+                measurement=MEASURED_THING,
                 observations=pd.DataFrame({}),
                 **{kw: invalid_things[0]}
             )
         assert "must be a callable of the form:" in str(ve.value)
         with pyt.raises(ValueError) as ve:
             ana = Analysis(
-                measurement="measured thing",
+                measurement=MEASURED_THING,
                 observations=pd.DataFrame({}),
                 **{kw: invalid_things[1]}
             )
@@ -229,12 +230,12 @@ def test_plotter_stats_verdict_signatures():
 
 
 def test_runs_statistical_tests():
-    mockresults = MagicMock()
+    mockresults = {'hypothesis': 'data-frame'}
     mockstats = MagicMock(return_value=mockresults)
 
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            MEASURED_THING: [100, 200, 300, 400, 500],
             terms.DATASET: "blabla",
             "layer": ["L1", "L23", "L4", "L5", "L6"],
             "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
@@ -242,26 +243,62 @@ def test_runs_statistical_tests():
     )
 
     ana = Analysis(
-        observations=observations, measurement="measured thing", stats=mockstats
+        observations=observations, measurement=MEASURED_THING, stats=mockstats
     )
 
     results = ana(MockModel(4))
     assert results["stats"] == mockresults
     mockstats.assert_called_with(
         data=results["measurements"],
-        dependent="measured thing",
+        dependent=MEASURED_THING,
+        independent=["layer", "mtype"],
+        compare=terms.DATASET,
+    )
+    
+
+def test_runs_multiple_statistical_tests():
+    mockresults1 = {'hypothesis1': 'data-frame'}
+    mockresults2 = {'hypothesis2': 'data-frame'}
+    mockstats1 = MagicMock(return_value=mockresults1)
+    mockstats2 = MagicMock(return_value=mockresults2)
+
+    observations = pd.DataFrame(
+        {
+            MEASURED_THING: [100, 200, 300, 400, 500],
+            terms.DATASET: "blabla",
+            "layer": ["L1", "L23", "L4", "L5", "L6"],
+            "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
+        }
+    )
+
+    ana = Analysis(
+        observations=observations, measurement=MEASURED_THING, stats=[mockstats1, mockstats2]
+    )
+
+    results = ana(MockModel(4))
+    assert results["stats"] == {**mockresults1, **mockresults2}
+    mockstats1.assert_called_with(
+        data=results["measurements"],
+        dependent=MEASURED_THING,
+        independent=["layer", "mtype"],
+        compare=terms.DATASET,
+    )
+    mockstats2.assert_called_with(
+        data=results["measurements"],
+        dependent=MEASURED_THING,
         independent=["layer", "mtype"],
         compare=terms.DATASET,
     )
 
 
+
 def test_runs_verdict():
-    mockresults = MagicMock()
+    mockresults = {'hypo': 'somedata'}
     mockstats = MagicMock(return_value=mockresults)
     mockverdict = MagicMock(return_value={"hypo": "Pass"})
     observations = pd.DataFrame(
         {
-            "measured thing": [100, 200, 300, 400, 500],
+            MEASURED_THING: [100, 200, 300, 400, 500],
             terms.DATASET: "blabla",
             "layer": ["L1", "L23", "L4", "L5", "L6"],
             "mtype": ["NGC", "NGC", "MC", "MC", "LBC"],
@@ -270,7 +307,7 @@ def test_runs_verdict():
 
     ana = Analysis(
         observations=observations,
-        measurement="measured thing",
+        measurement=MEASURED_THING,
         stats=mockstats,
         verdict=mockverdict,
     )
@@ -400,3 +437,91 @@ def test_defaults_dataset():
     })
     ana = Analysis(observations=df, measurement=terms.CELL_DENSITY)
     assert all(ana.observations[terms.DATASET] == 'experiment')
+
+
+def test_ignores_unmeasured_values():
+    df = pd.DataFrame({
+        'parameter': [1, 1, 2, 3, 3, 4, 4],
+        MEASURED_THING: 5,
+        terms.DATASET: 'experiment'
+    })
+    ana = Analysis(observations=df, measurement=MEASURED_THING)
+    
+    class PartialModel:
+        
+        label = 'partial'
+        
+        def measured_thing(self, parameters):
+            return pd.DataFrame({
+                'parameter': [1, 3,  3],
+                MEASURED_THING: 2
+            })
+            
+    measured = ana(PartialModel())['measurements']
+    pd.testing.assert_frame_equal(
+        measured[['parameter', terms.DATASET]].reset_index(drop=True),
+        pd.DataFrame({
+            'parameter': [1, 1, 3, 3, 1, 3, 3],
+            terms.DATASET: ['experiment'] * 4 + ['partial'] * 3,
+        })
+    )
+
+def test_infer_independent_from_non_varying():
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4, 'b': 6,
+            terms.DATASET: ['ah', 'ah'],
+            
+    })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    assert analysis.independent == ['a', 'b']
+
+
+def test_set_dependent_independent_compare():
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4,
+            terms.DATASET: ['ah']
+        })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    assert analysis.independent == ['a']
+    assert analysis.dependent == MEASURED_THING
+    assert analysis.compare == terms.DATASET
+    
+    analysis = Analysis(
+        observations=data,
+        independent=terms.DATASET,
+        dependent='a',
+        compare=MEASURED_THING,
+        measurement=MEASURED_THING
+    )
+    assert analysis.independent == [terms.DATASET]
+    assert analysis.dependent == 'a'
+    assert analysis.compare == MEASURED_THING
+    
+
+@pyt.mark.xfail
+def test_with_fields():
+    """Not sure yet how to nicely test this."""
+    data = pd.DataFrame({
+            MEASURED_THING: 0, 'a': 4,
+            terms.DATASET: ['ah']
+        })
+    analysis = Analysis(
+        observations=data, measurement=MEASURED_THING
+    )
+    fields =['measurement', 
+            'observations',
+            'plotter',
+            'stats',
+            'verdict',
+            'doc',
+            'dependent',
+            'independent',
+            'compare']
+    for field in fields:
+        mockobj = MagicMock()
+        new_ana = analysis.with_fields(**{field: mockobj})
+        assert getattr(new_ana, field) == mockobj

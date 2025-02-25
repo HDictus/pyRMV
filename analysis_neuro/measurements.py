@@ -29,6 +29,10 @@ DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.T
 
 def validate_measurement(measurement):
     """Check that <measurement> is a valid measurement."""
+    if isinstance(measurement, list):
+        for m in measurement:
+            validate_measurement(m)
+        return
     try:
         measurement = terms.ALL_TERMS[measurement]
     except KeyError as exc:
@@ -121,7 +125,9 @@ def _measurement_method(model, measurement):
     method_name = measurement.measurement_method
     if hasattr(model, method_name):
         return getattr(model, method_name)
-    return None
+    raise TypeError(
+        f"The model does not have the functionality needed to measure {measurement}."
+        f" It should define a method named '{method_name}")
 
 
 def measure(model, measurement, parameters):
@@ -136,14 +142,21 @@ def measure(model, measurement, parameters):
             measurements to make. Use terminology from
             analysis_neuro.terminology to ensure consistency.
     """
+    if isinstance(measurement, list):
+        first = measure(model, measurement[0], parameters)
+        for m in measurement[1:]:
+            first[m] = measure(model, m, parameters)[m]
+        # TODO: unreliable, error-prone
+        # maybe should expect model to provide sensible indexing?
+        return first
+        
     validate_measurement(measurement)
     validate_observations(parameters)
     measurement_method = _measurement_method(model, measurement)
-    if measurement_method is None:
-        raise TypeError(
-            f"The model does not have the functionality needed to measure {measurement}.")
+
     measured = measurement_method(parameters)
     validate_measured(measured, measurement, parameters)
+    measured[terms.DATASET] = model.label
     return measured
 
 
@@ -161,7 +174,8 @@ def extract_parameters(observations, measurement=None):
        measurement: a string indicating the column which corresponds to the
            measured quantity. will be excluded from the parameters.
     """
-    exclude_from_parameters = DATA_TERMS + [terms.STD + measurement, terms.SAMPLE_SIZE]
+    exclude_from_parameters = DATA_TERMS + [
+        terms.STD + measurement, terms.SAMPLE_SIZE, terms.MEAN + measurement]
     if measurement is not None:
         exclude_from_parameters += [measurement]
     paramcols = [col for col in observations if col not in exclude_from_parameters]
@@ -231,11 +245,15 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
                 terms.CELL_ID, terms.TEMPORAL_FREQUENCY]).loc[
                     zip(optimal_tf.index, optimal_tf.values)
             ].reset_index()
-        selectivity = response.groupby(
-            terms.CELL_ID).apply(_calculate_osi)\
-            .rename(terms.ORIENTATION_SELECTIVITY).reset_index()\
-            .assign(**row)
 
-        out.append(selectivity)
+        response['scaled'] = response[response_measurement] * np.exp(
+            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION]))
+        grouped_by_cell = response.groupby(terms.CELL_ID)
+        selectivity = np.abs(
+            grouped_by_cell['scaled'].sum()
+            / grouped_by_cell[response_measurement].sum())
+        selectivity.name = terms.ORIENTATION_SELECTIVITY
+        out.append(selectivity.reset_index().assign(**row))
 
     return pd.concat(out, axis=0)
+

@@ -27,7 +27,7 @@ def test_squared_error():
                 "a": [1, 1, 2, 2, 3, 3],
                 "b": [1, 2, 1, 2, 1, 2],
                 "c": [1, 2, 3, 4, 5, 6],
-                terms.SQERROR: [0, 1, 1, 9, 16, 25],
+                terms.SQERROR: [0., 1, 1, 9, 16, 25],
             }
         ),
     )
@@ -374,6 +374,9 @@ def test_lognorm_ttest():
         result['the population mean of msr is the same for a and b'],
         expectation)
 
+# TODO: there are several things that each stats function must
+#   be able to handle: NAN values, multiple models
+#   best if those tests can be parameterized and re-used
 def test_mannwhitney():
     # just totally random data to use
     values_experiment_d = np.random.uniform(0, 500, size=500)
@@ -438,7 +441,44 @@ def test_mannwhitney():
                             scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
         stats_frame)
 
+    # Verify that if some independent variables are NaN, it still compares those rows
+    data.loc[data['independent var'] == 'd', 'independent var'] = np.nan
+    results = stats.mann_whitney_u(
+        data,
+        compare=terms.DATASET,
+        dependent='measured',
+        independent=['independent var'])
+
+    stats_frame = results[
+        "The underlying distribution of measured for experiment and model1 is the same"]
+    assert np.allclose(stats_frame[terms.PVALUE].values,
+                [scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue,
+                 scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue])
+
 
 # TODO: test the case where there are no varying independent variables!
 # e.g. single measurement
 
+def test_bootstrap_mean():
+    dummy_term = terms.Term("dummy measurement")
+    dummy_param = terms.Term("parameter")
+    data = pd.DataFrame({
+        terms.MEAN + dummy_term: [1000] + [None] * 20,
+        terms.SAMPLE_SIZE: [2] + [None] * 20,
+        dummy_term: [None] + [500] * 10 + [1000] * 10,
+        dummy_param: 13,
+        terms.DATASET: ['experiment'] + ['model'] * 20
+    })
+    hypotheses = stats.bootstrap_mean(
+        data, dependent=dummy_term, independent=[], compare=terms.DATASET
+    )
+    # the actual mean of model is 750
+    # the possibilities are 25% of 500, 50% of 750, and 25% of 1000
+    # hence the odds of a mean >= 1000 being observed are 25%
+    pd.testing.assert_frame_equal(
+        hypotheses['The result of experiment could be sampled from the same distribution as model'],
+        pd.DataFrame({
+            terms.PVALUE: [0.25]
+        }),
+        atol=0.3
+    )

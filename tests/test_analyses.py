@@ -218,6 +218,176 @@ def test_mtype_to_mtype_connectivity():
         
         results = ana.mtype_to_mtype_connectivity(mock, mock2)
 
+def test_cossell_correlation_psp_2015():
+    
+    
+    class MockModel:
+        # TODO: it's kind of awkward to ensure that
+        #   the two measurements compare ok
+        #   we may want to make it so that 
+        #   measuring a term is actually done by the model itself
+        #   so that you can request a tuple measurement
+        #   and the model will align them appropriately
+        
+        def response_correlation(self, parameters):
+            out = []
+            for i, p in parameters.iterrows():
+                out += [
+                    {**p, 
+                     terms.CELL_ID: pair,
+                     terms.RESPONSE_CORRELATION: corr}
+                     for pair, corr in zip(self.pair_ids, self.pair_corrs)
+                ]
+            return pd.DataFrame(out)
+        
+        def psp_amplitude(self, parameters):
+            out = []
+            for i, p in parameters.iterrows():
+                out += [
+                    {**p,
+                     terms.PRESYNAPTIC + terms.CELL_ID: pair[0],
+                     terms.POSTSYNAPTIC + terms.CELL_ID: pair[1],
+                     terms.PSP_AMPLITUDE: psp}
+                    for pair, psp in zip(self.pair_ids, self.pair_psps)
+                ]
+            return pd.DataFrame(out)
+        
+    class BadModel(MockModel):
+        label = 'bad'
+        
+        pair_corrs = [0, 0.1, 0.2, 0.5, 0.6, 0.7, 0.8, 0.9]
+        pair_psps = [1, 0, 1, 0, 1, 0, 1, 0]
+        pair_ids = [(0, 1), (0, 2), (1, 2), (0, 4)]
+        
+    class PerfectModel(MockModel):
+        label = 'perfect'
+        
+        pair_corrs = np.linspace(0, 1, 100)
+        pair_psps = [0.5 / 93] * 93 + [0.2 / 4] * 4 + [0.3 / 3] * 3
+        pair_ids = [(0, num) for num in range(100)]
+        
+
+    results = ana.cossell_correlation_psp_2015(BadModel(), PerfectModel())
+    print(results)
+    assert len(results['verdict'].keys()) == 2
+    for hyp, value in results['verdict'].items():
+        if 'bad' in hyp:
+            assert value == 'Fail'
+        else:
+            assert value == 'Pass'
+
+
+def test_cossell_correlation_psp_2015():
+    
+    
+    class MockModel:
+        # TODO: it's kind of awkward to ensure that
+        #   the two measurements compare ok
+        #   we may want to make it so that 
+        #   measuring a term is actually done by the model itself
+        #   so that you can request a tuple measurement
+        #   and the model will align them appropriately
+        
+        def response_correlation(self, parameters):
+            out = []
+            for i, p in parameters.iterrows():
+                out += [
+                    {**p, 
+                     terms.CELL_ID: pair,
+                     terms.RESPONSE_CORRELATION: corr}
+                     for pair, corr in zip(self.pair_ids, self.pair_corrs)
+                ]
+            return pd.DataFrame(out)
+        
+        def psp_amplitude(self, parameters):
+            out = []
+            for i, p in parameters.iterrows():
+                out += [
+                    {**p,
+                     terms.PRESYNAPTIC + terms.CELL_ID: pair[0],
+                     terms.POSTSYNAPTIC + terms.CELL_ID: pair[1],
+                     terms.PSP_AMPLITUDE: psp}
+                    for pair, psp in zip(self.pair_ids, self.pair_psps)
+                ]
+            return pd.DataFrame(out)
+        
+    class BadModel(MockModel):
+        label = 'bad'
+        
+        pair_corrs = [0, 0.1, 0.2, 0.5, 0.6, 0.7, 0.8, 0.9]
+        pair_psps = [1, 0, 1, 0, 1, 0, 1, 0]
+        pair_ids = [(0, 1), (0, 2), (1, 2), (0, 4)]
+        
+    class PerfectModel(MockModel):
+        label = 'perfect'
+        
+        pair_corrs = np.linspace(0, 1, 100)
+        pair_psps = [0.5 / 93] * 93 + [0.2 / 4] * 4 + [0.3 / 3] * 3
+        pair_ids = [(0, num) for num in range(100)]
+        
+
+    results = ana.cossell_correlation_psp_2015(BadModel(), PerfectModel())
+    print(results)
+    assert len(results['verdict'].keys()) == 2
+    for hyp, value in results['verdict'].items():
+        if 'bad' in hyp:
+            assert value == 'Fail'
+        else:
+            assert value == 'Pass'
+            
+    
+def test_cossell_connprob_corr_2015():
+    
+    class BadModel:
+        
+        label = 'bad'
+        
+        def connection_probability(self, params):
+            return params.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
+        
+    class PerfectModel:
+        
+        label = 'perfect'
+        
+        def connection_probability(self, params):
+            return ana.cossell_connprob_corr_2015.observations.drop(columns=terms.DATASET)
+        
+    results = ana.cossell_connprob_corr_2015(BadModel(), PerfectModel())
+    print(results)
+    assert len(results['verdict'].keys()) == 3
+    for hyp, value in results['verdict'].items():
+        if 'bad' in hyp:
+            assert value == 'Fail'
+        else:
+            assert value == 'Pass'
+            
+
+def test_lee_connprob_2016():
+    
+    class BadModel:
+        
+        label = 'bad'
+        
+        def connection_probability(self, params):
+            return params.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
+        
+    class PerfectModel:
+        
+        label = 'perfect'
+        
+        def connection_probability(self, params):
+            return ana.lee_connprob_2016.observations.drop(columns=terms.DATASET)
+        
+    results = ana.lee_connprob_2016(BadModel(), PerfectModel())
+
+    assert len(results['verdict'].keys()) == 3
+    for hyp, value in results['verdict'].items():
+        if 'bad' in hyp:
+            assert value == 'Fail'
+        else:
+            assert value == 'Pass'
+
+
 def test_ji_innervation_2016():
     
     class BadModel:
@@ -255,3 +425,83 @@ def test_ji_innervation_2016():
         "L5 PV", "L5 Sst", "L5 Vip", "L5 EXC",
         "L6 PV", "L6 Sst", "L6 Vip", "L6 EXC"
     ]
+
+
+def test_ji_relative_excitation():
+
+    class BadModel():
+
+        label = 'bad'
+
+        def relative_excitation(self, parameters):
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(pd.DataFrame({terms.RELATIVE_EXCITATION: [1] * 10, **row}))
+            return pd.concat(out)
+
+    class PerfectModel():
+
+        label = 'perfect'
+
+        def relative_excitation(self, parameters):
+            return ana.ji_relative_2016.observations.copy()
+    
+    result = ana.ji_relative_2016(BadModel(), PerfectModel())
+
+    for hypothesis, verdict in result['verdict'].items():
+        if 'bad' in hypothesis:
+            assert verdict == 'Fail'
+        else:
+            assert verdict == 'Pass'
+
+    assert result['figures']
+
+    
+def test_lien_fraction_excitation_2018():
+    # TODO: we should consider the possibility that in cases like this,
+    #   a model can implement measures of the mean value for a given sample size
+    #   but cannot directly provide samples
+    #   for instance, if it describes the phenomenon as a probability distribution
+    #   It would be better to let MEAN + <measurement> be the actual measurement,
+    #   and sample size a parameter
+    #   then we can even implement a helper method that can measure 
+    #   MEAN + <measurement> for any model which implements <measurement> directly
+    #   for any <measurement>
+    #   then things can be greatly simplified, we won't even need the bootstrapper.
+
+    class BadModel:
+        
+        label = 'bad'
+        
+        def fraction_excitation_per_connection(self, parameters):
+            return pd.DataFrame([
+                {**row, terms.FRACTION_EXCITATION_PER_CONNECTION: 0.2}
+                for _ in range(20)
+                for __, row in parameters.iterrows()
+            ])
+            
+    class GoodModel:
+        
+        label = 'good'
+        
+        def fraction_excitation_per_connection(self, parameters):
+            """This model includes one very strong connection, and several weak ones
+            as @cite:ringach_sparse_2021 points out, a distribution in which there are 
+            many very weak connections and a few very strong connections, the
+            fraction contributed by connections sampled for a measurement will
+            often appear very small.
+            So although the mean value from this model differs greatly from the 
+            experimental data, a proper test should show that
+            the likelihood of the experimental results given the model's distribution
+            is acutally fairly high.
+            """
+            return pd.DataFrame([
+                {**row, terms.FRACTION_EXCITATION_PER_CONNECTION: frac}
+                for frac in [0.8] + [0.01] * 20
+                for _, row in parameters.iterrows()  
+            ])
+        
+    results = ana.lien_fraction_excitation_2018(BadModel(), GoodModel())
+    
+    assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as bad'] == "Fail"
+    assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as good'] == "Pass"

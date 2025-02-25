@@ -78,6 +78,26 @@ MTYPE = Term(
         " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
+
+
+IMAGED_WIDTH = Term(
+    "width of imaged area (um)",
+    description=(
+        "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
+        "This parameter represents the width of said window.")
+)
+IMAGED_HEIGHT = Term(
+    "height of imaged area (um)",
+    description=(
+        "Some methods, such as Calcium-Fluoresence imaging, image a rectangular window. "
+        "This parameter represents the height of said window.")
+)
+DEPTH = Term(
+    "depth (um)",
+    description="Depth within the brain."
+)
+
+
 SYNAPSE_CLASS = Term(
     "synapse class",
     description=(
@@ -265,6 +285,44 @@ NUM_SYNAPSES = Term(
     description="The total number of synapses along a pathway",
     measurement_method="num_synapses"
 )
+FRACTION_EXCITATION_PER_CONNECTION = Term(
+    "Fraction excitation (per connection)",
+    description="The fraction that each connection contributes to the total excitation along a pathway",
+    measurement_method="fraction_excitation_per_connection"
+)
+
+TOTAL_EXCITATION = Term(
+    'total excitation',
+    description="Total excitatory current from a presynaptic population into postsynaptic neurons",
+    measurement_method="total_excitation"
+)
+RELATIVE_EXCITATION = Term(
+   "relative excitation",
+   "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
+   measurement_method="relative_excitation"
+)
+
+PSP_AMPLITUDE = Term(
+    "PSP amplitude (mV)",
+    description="The size of the change in potential of a post-synaptic cell when the presynaptic cell is stimulated",
+    measurement_method='psp_amplitude'
+)
+
+RESPONSE_CORRELATION = Term(
+    "response correlation",
+    description="pearson correlation in the responses of a pair of cells.",
+    measurement_method='response_correlation'
+)
+
+INCLUDE_UNCONNECTED = Term(
+    "include unconnected",
+    description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement."
+)
+
+ORIENTATION_PREFERENCE_DIFFERENCE = Term(
+    "$\Delta$ preferred orientation",
+    description ="The angular difference in preferred orientation between pairs of cells" 
+)
 
 ORIENTATION_SELECTIVITY = Term(
     "orientation selectivity index",
@@ -274,10 +332,40 @@ ORIENTATION_SELECTIVITY = Term(
     ),
     measurement_method="orientation_selectivity"
 )
+
+RF_AREA = Term(
+    "receptive field area (degrees)",
+    description=(
+        "the area occupied by a cell's receptive field"),
+    measurement_method='rf_area')
+
 FIRING_RATE = Term(
     "firing rate (Hz)",
     description=("Rate of firing under the experimental conditions, in Hertz"),
     measurement_method="firing_rate"
+)
+
+SURROUND_SUPPRESSION_INDEX = Term(
+    "surround suppression index",
+    description=(
+        "The extent to which a neuron's response is suppressed as a stimulus increases"
+        " beyond its preferred size."
+        " Defined as $\frac{R_{pref} - R_{large}}{R_{pref}}$"
+        " where $R_{pref}$ is the response to the stimulus size that evokes the"
+        " greatest response and $R_{large}$ is the response to the largest stimulus"
+        " in the stimulus set."
+        ),
+    measurement_method="surround_suppression_index"
+)
+
+MEAN = Term(
+    "mean ",
+    description=(
+        "A prefix to indicate that the mean has been taken for some property."
+        " For instance, in a dataset where the individual firing rates of neurons"
+        " are not reported but only the mean of some populations, you would"
+        " provide `terms.MEAN + terms.FIRING_RATE` in the `observations` dataframe."
+    )
 )
 
 PRESYNAPTIC = Term(
@@ -298,6 +386,11 @@ MIN = Term(
 MAX = Term(
     "maximal ",
     description=("Prefix to apply for specifying maximal value"),
+)
+
+MEAN = Term(
+    "mean ",
+    description=("Prefix to apply to specify a mean value")
 )
 
 

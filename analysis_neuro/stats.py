@@ -4,7 +4,7 @@ from typing import List
 from scipy import stats
 import numpy as np
 import pandas as pd
-from analysis_neuro import Assumption
+from analysis_neuro.exceptions import Assumption
 from analysis_neuro import terminology as terms
 
 
@@ -52,7 +52,11 @@ def squared_error(data, dependent, independent, compare):
     hypotheses = {}
 
     def by_ind(dataset):
-        return dataset.set_index(independent)[dependent]
+        dataset = dataset.copy()
+        if dependent not in dataset and terms.MEAN + dependent in dataset:
+            dataset[dependent] = dataset[terms.MEAN + dependent]
+        dataset[independent] = dataset[independent].fillna('')
+        return dataset.groupby(independent)[dependent].mean()
 
     for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
         hypothesis = f"{dependent} is similar for {compare}" f" {label1} and {label2}"
@@ -248,7 +252,7 @@ def is_lognormal(data, dependent, independent, compare):
     hypotheses = {}
     for label, dataframe in data.groupby(compare):
         pvals = dataframe.groupby(independent)[dependent].apply(
-            lambda a: stats.normaltest(np.log(a)).pvalue)
+            lambda a: stats.normaltest(np.log(a)).pvalue if len(a) > 8 else np.nan)
         hypotheses[f"{dependent} is lognormally distributed for {label}"] =\
             pvals.reset_index().rename(columns={dependent: terms.PVALUE})
     return hypotheses
@@ -311,7 +315,7 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
 
         out_list = []
 
-        for independent_values, grouped1 in data1.groupby(independent):
+        for independent_values, grouped1 in data1.groupby(independent, dropna=False):
             if not isinstance(independent_values, tuple):
                 independent_values = (independent_values, )
 
@@ -323,8 +327,84 @@ def mann_whitney_u(data: pd.DataFrame, dependent: str, independent: List[str], c
             out_list.append({
                 **dict(zip(independent, independent_values)),
                 terms.PVALUE: stats.mannwhitneyu(
-                    grouped1[dependent].values, grouped2[dependent].values).pvalue
+                    grouped1[dependent].dropna().values, grouped2[dependent].dropna().values).pvalue
             })
         hypotheses[hypothesis] = pd.DataFrame(out_list)
 
+    return hypotheses
+
+
+def bootstrap_mean(data: pd.DataFrame, dependent: str, independent: List[str], compare: str,
+                   num_samples=1000):
+    """Test whether a mean value could be sampled from a distribution of values.
+    
+    For each dataset where the dependent variable has a reported mean value, resample those
+    datasets where individual values are reported in order to assess whether the former mean value
+    could realistically be measured from the latter.
+
+    Args:
+        data : long-form dataframe of measurements and parameters
+        dependent : dependent variable, usually the property measured in an experiment
+        independent : independent variables. One comparison betwen each pair of datasets
+            will be performed per unique combination of independent variables.
+        compare : variable identifying the datasets to be compared.
+        num_samples : the number of samples to use
+        
+    Hypothesis:
+        The value of <dependent> in one dataset could be sampled from the same distribution 
+        as the other dataset.
+    """
+    rng = np.random.default_rng(1)
+    
+    if not isinstance(independent, list):
+        independent = [independent]
+
+    if len(independent) == 0:
+        independent = ["__dummy"]
+        data = data.assign(__dummy=0)
+    hypotheses = {}
+    for label1, dataset1, label2, dataset2 in _iter_compare(data, compare):
+        
+        if terms.MEAN + dependent not in dataset1:
+            grouped = dataset1.groupby(independent)
+            means = grouped[dependent].mean()
+            means.name = terms.MEAN + dependent
+            ssizes = grouped[dependent].count()
+            ssizes.name = terms.SAMPLE_SIZE
+            dataset1 = pd.concat([means, ssizes], axis=1).reset_index()
+        elif np.isnan(dataset1[terms.MEAN + dependent]).all():
+            continue
+        mean_values = dataset1.set_index(independent)[[c for c in dataset1 if c not in [dependent, compare] + independent]]
+
+        group_by_independent = dataset2.groupby(independent)
+        assert len(mean_values) == len(group_by_independent)
+        tests = []
+        for group, distr in group_by_independent:
+            if not isinstance(group, tuple):
+                group = (group, )
+            vals = mean_values.loc[group, [terms.MEAN + dependent, terms.SAMPLE_SIZE]]
+
+            if isinstance(vals, pd.DataFrame):
+                mean, size = vals.values[0]
+            else:
+                mean, size = vals.values
+
+            samples = rng.choice(
+                distr[dependent],
+                size=(int(size), num_samples),
+                replace=True
+            )
+            distrmean = distr[dependent].mean()
+            
+            if mean < distrmean:
+                pvalue = ((samples.mean(axis=0) <= mean).mean())
+            else:
+                pvalue = ((samples.mean(axis=0) >= mean).mean())
+            tests.append({
+                **{ind: val for ind, val in zip(independent, group)},
+                terms.PVALUE: pvalue})
+        df = pd.DataFrame(tests)
+        if '__dummy' in df:
+            del df['__dummy']
+        hypotheses[f'The result of {label1} could be sampled from the same distribution as {label2}'] = df
     return hypotheses

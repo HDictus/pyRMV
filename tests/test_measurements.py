@@ -4,11 +4,14 @@ from analysis_neuro import terms
 import analysis_neuro.measurements as test_module
 from analysis_neuro.analyses.data import stimuli
 
+          
 
 def test_measures_osi_with_firing_rate():
 
     class MockModel:
 
+        label = 'mock'
+        
         def firing_rate(self, parameters):
             """Each neuron will have a rate of 1 if either temporal frequency or orientation are non-optimal.
             Else a 2.
@@ -44,13 +47,15 @@ def test_measures_osi_with_firing_rate():
         {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings]})
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures by averaging over stimulus conditions
-    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
+    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
+    assert set(measured.columns) == expected_columns
     assert all(measured[terms.ORIENTATION_SELECTIVITY] > 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 1
+    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures just for the specified temporal frequency
-    assert set(measured.columns) == set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY])
+    assert set(measured.columns) == expected_columns
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], 0)
 
     parameters[terms.TEMPORAL_FREQUENCY] = 2
@@ -99,6 +104,8 @@ def test_measures_with_method():
     params = pd.DataFrame({'_': [0, 0]})
 
     class MockModelWithDens:
+        
+        label = 'mock'
 
         def density(self, parameters):
             return parameters.assign(**{density: 100})
@@ -106,6 +113,33 @@ def test_measures_with_method():
     dens = test_module.measure(
         MockModelWithDens(), density, params)
     assert dens[density].values[0] == 100
+
+def test_measure_tuple():
+    
+    thing1 = terms.Term("thing1", measurement_method='thing1')
+    thing2 = terms.Term("thing2", measurement_method='thing2')
+    aparam = terms.Term("aparam")
+    
+    class MockModelMeasuresBoth:
+        # TODO: the problem with this is that we are relying on the modeler
+        #   to ensure that all relevant measures line up
+        #   this may not be straightforward for them
+        #   and until they themselves implement that specifically
+        #   others cannot rely on their model's compound measurements
+        label = 'mock'
+        
+        def thing1(self, parameters):
+            return parameters.assign(thing1=np.arange(len(parameters)))
+        
+        def thing2(self, parameters):
+            return parameters.assign(thing2=1 + np.arange(len(parameters)))
+        
+    measured = test_module.measure(
+        MockModelMeasuresBoth(), [thing1, thing2],
+        pd.DataFrame({aparam: [1, 2, 3, 4, 5]})
+    )
+    assert all(measured[thing1] == np.arange(5))
+    assert all(measured[thing2] == 1 + np.arange(5))
 
 
 def test_extract_parameters():

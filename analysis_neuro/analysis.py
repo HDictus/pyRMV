@@ -74,6 +74,9 @@ class Analysis:
         plotter=None,
         verdict=None,
         doc=None,
+        dependent=None,
+        independent=None,
+        compare=terms.DATASET
     ):
         """Initialize an Analysis from various components."""
         validate_measurement(measurement)
@@ -96,15 +99,10 @@ class Analysis:
             )
 
         self.plotter = plotter
-
-        if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
-            raise ValueError(
-                "stats must be a callable of the form:\n"
-                "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
-                "where hypothesis is a string describing the hypothesis tested"
-            )
-
+        
+        self._check_stats_format(stats)
         self.stats = stats
+
         if not _check_callable(verdict, ["stats"]):
             raise ValueError(
                 "verdict must be a callable of the form:\n"
@@ -116,6 +114,26 @@ class Analysis:
             )
         self.verdict = verdict
         self.doc = doc
+        self._dependent = dependent
+        self._independent = independent
+        self.compare = compare
+
+    def _check_stats_format(self, stats):
+        if isinstance(stats, list):
+            for statsobj in stats:
+                self._check_stats_format(statsobj)
+            return
+        if not _check_callable(stats, ["data", "dependent", "independent", "compare"]):
+            raise ValueError(
+                "stats must be a callable of the form:\n"
+                "(data, dependent, independent, compare) -> {hypothesis: pd.DataFrame}"
+                "where hypothesis is a string describing the hypothesis tested"
+            )
+
+    @property
+    def observations(self):
+        """Experimental observations to compare to."""
+        return self._observations.copy()
 
     @property
     def observations(self):
@@ -150,25 +168,62 @@ class Analysis:
             if len(self.parameters[col].unique()) > 1
         ]
 
+    @property
+    def dependent(self):
+        if self._dependent is None:
+            return self.measurement
+        return self._dependent
+    
+    @property
+    def independent(self):
+        if self._independent is None:
+            if self.varying_parameters == []:
+                other_vars = [self.dependent, self.compare]
+                return [
+                    c for c in self.parameters.columns
+                    if c not in other_vars]
+            return self.varying_parameters
+        if isinstance(self._independent, list):
+            return self._independent
+        return [self._independent]     
+
     def statistical_tests(self, measurements):
         """Run the statistical tests for this analysis on some data."""
         if self.stats is None:
             return "No statistical tests performed"
-        return self.stats(
-            data=measurements,
-            dependent=self.measurement,
-            independent=self.varying_parameters,
-            compare=terms.DATASET,
-        )
+        stats = self.stats
+        if not isinstance(stats, list):
+            stats = [stats]
+        
+        stat_output = {}
+        for stat in stats:
+            stat_output = {
+                **stat_output,
+                **stat(
+                    data=measurements,
+                    dependent=self.dependent,
+                    independent=self.independent,
+                    compare=self.compare,
+                )}
+        return stat_output
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
-        to_concat = [self.measure(model) for model in models]
+        to_concat = [self.measure(model) for model in models] 
 
-        # if observations represents experimental values, we want to
-        # include those in the dataframe
-        if self.measurement in self.observations:
-            to_concat = [self.observations] + to_concat
+        if isinstance(self.measurement, str):
+            measurements = [self.measurement]
+        else:
+            measurements = self.measurement
+        
+        if all(msr in self.observations.columns
+               or terms.MEAN + msr in self.observations.columns
+               for msr in measurements
+        ):
+            # if observations represents experimental values, we want to
+            # include those in the dataframe
+            observations = _exclude_obs_only(self.observations, to_concat, self.independent)
+            to_concat = [observations] + to_concat
         measurements = pd.concat(to_concat)
         stats = self.statistical_tests(measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
@@ -179,24 +234,29 @@ class Analysis:
             "verdict": verdict,
         }
         if self.plotter is not None:
-            if _check_callable(self.plotter, ["x", "y", "hue"]):
-                dependent = measurements[self.measurement]
-                independent = _join_columns(measurements[self.varying_parameters])
-                compare = measurements[terms.DATASET]
-                figure = self.plotter(
-                    x=independent, y=dependent, hue=compare
-                ).get_figure()
-            else:
-                figure = self.plotter(
-                    data=measurements,
-                    dependent=self.measurement,
-                    independent=self.varying_parameters,
-                    compare=terms.DATASET,
-                )
+            figure = self.plot(measurements)
             report["figures"] = figure
 
         return report
 
+    def plot(self, measurements):
+        if _check_callable(self.plotter, ["x", "y", "hue"]):
+            dependent = measurements[self.dependent]
+            independent = _join_columns(measurements[self.independent])
+            compare = measurements[self.compare]
+
+            return self.plotter(
+                x=independent, y=dependent, hue=compare
+            ).get_figure()
+
+        return self.plotter(
+            data=measurements,
+            dependent=self.dependent,
+            independent=self.independent,
+            compare=self.compare,
+        )
+                
+                
     def with_fields(self, **fields):
         """Duplicate this analysis, overwriting some fields."""
         current_fields = {
@@ -206,6 +266,30 @@ class Analysis:
             'stats': self.stats,
             'verdict': self.verdict,
             'doc': self.doc,
+            'dependent': self._dependent,
+            'independent': self._independent,
+            'compare': self.compare
         }
+        # TODO: this is something we should indeed test.
+        #   can we automate it more: e.g. that it mutates each argument one by one
+        #   and checks it is conserved?
         current_fields.update(fields)
         return self.__class__(**current_fields)
+
+
+def _exclude_obs_only(observations, measured, independent_vars):
+    """Remove observations that are not in measured.
+    
+    Remove all rows from <observations> where the values of <independent_vars>
+    do not occur in any dataset in <measured>.
+    An example of where this matters would be for running a validation in which
+    
+    """
+    if len(independent_vars) == 0:
+        return observations
+    by_ind = observations.set_index(independent_vars)
+    in_none = by_ind.index
+    for msr in measured:
+        msr_by_ind = msr.set_index(independent_vars)
+        in_none = in_none.difference(msr_by_ind.index)
+    return by_ind.drop(index=in_none).reset_index()

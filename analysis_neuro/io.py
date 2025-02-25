@@ -62,4 +62,4 @@ def save_result(result, path):
     path.mkdir(exist_ok=True)
     resultdict = _prepare_dict(result, path)
     with open(jsonpath, "w", encoding="utf8") as jsonfile:
-        json.dump(resultdict, jsonfile)
+        json.dump(resultdict, jsonfile, indent=4)
