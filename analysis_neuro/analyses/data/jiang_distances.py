@@ -1,6 +1,7 @@
 """Supplementary distance data from Jiang et al. 2015."""
 
 import pandas as pd
+
 from analysis_neuro import terminology as terms
 from analysis_neuro.analyses.data import data_from_histogram
 

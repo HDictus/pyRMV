@@ -1,9 +1,12 @@
 """Plotting tools."""
+
 from typing import List
+
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 import numpy as np
+import pandas as pd
+import seaborn as sns
+
 from analysis_neuro import terminology as terms
 from analysis_neuro.stats import _iter_compare
 
@@ -21,9 +24,10 @@ def crossplot(data, dependent, independent, compare):
     comparevalues = data[compare].unique()
 
     if len(comparevalues) < 2:
-         raise ValueError(
-             "a crossplot only makes sense when comparing data. "
-             "It is not defined for less than 2 datasets.")
+        raise ValueError(
+            "a crossplot only makes sense when comparing data. "
+            "It is not defined for less than 2 datasets."
+        )
 
     for l1, data1, l2, data2 in _iter_compare(data, compare):
         fig, ax = plt.subplots()
@@ -40,11 +44,13 @@ def crossplot(data, dependent, independent, compare):
         minimum = max(ax.get_xlim()[0], ax.get_ylim()[0])
         maximum = min(ax.get_xlim()[1], ax.get_ylim()[1])
         plt.plot((minimum, maximum), (minimum, maximum), color="gray", linestyle="--")
-    
+
     return figs
 
 
-def pathway_heatmap(data: pd.DataFrame, dependent: str, independent: List[str], compare: str):
+def pathway_heatmap(
+    data: pd.DataFrame, dependent: str, independent: List[str], compare: str
+):
     """Create a heatmap for connectivity data.
 
     data: all measurements
@@ -57,9 +63,8 @@ def pathway_heatmap(data: pd.DataFrame, dependent: str, independent: List[str], 
         pre_cols = [col for col in independent if col.startswith(terms.PRESYNAPTIC)]
         post_cols = [col for col in independent if col.startswith(terms.POSTSYNAPTIC)]
         pivot = dataframe.pivot_table(
-            index=pre_cols,
-            columns=post_cols,
-            values=dependent)
+            index=pre_cols, columns=post_cols, values=dependent
+        )
         shape = np.array(pivot.shape)
         fig, axes = plt.subplots(figsize=np.max([shape / 4, [3, 3]], axis=0))
 
@@ -75,18 +80,29 @@ def hist(data, dependent, independent, compare):
         independent = np.zeros(len(data))
     for indvars, alldata in data.groupby(independent):
         f = plt.figure()
-        bins = np.linspace(np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), 100)
+        bins = np.linspace(
+            np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), 100
+        )
         plt.title(str(indvars))
         for label, dataset in alldata.groupby(compare):
-            plt.hist(dataset[dependent], density=True, label=label, bins=bins, alpha=0.5)
+            plt.hist(
+                dataset[dependent], density=True, label=label, bins=bins, alpha=0.5
+            )
         ymax = plt.gca().get_ylim()[1]
         plt.gca().set_prop_cycle(None)
         means = alldata.groupby(compare)[dependent].mean()
         for mean in means:
-            plt.vlines(mean, ymin=0, ymax=ymax, linestyle='dashed')
+            plt.vlines(mean, ymin=0, ymax=ymax, linestyle="dashed")
         figs[str(indvars)] = f
         plt.xlabel(dependent)
         if terms.MEAN + dependent in alldata:
-            plt.vlines(alldata[terms.MEAN + dependent].unique(), ymin=0, ymax=ymax, color='gray', linestyle='dashed', label='experimental mean')
+            plt.vlines(
+                alldata[terms.MEAN + dependent].unique(),
+                ymin=0,
+                ymax=ymax,
+                color="gray",
+                linestyle="dashed",
+                label="experimental mean",
+            )
         plt.legend()
     return figs

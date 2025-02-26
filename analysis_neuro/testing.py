@@ -1,4 +1,5 @@
 """Tools for the testing of analyses."""
+
 import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -27,7 +28,9 @@ def _assert_figure_equal(new, old_path):
             savedpath.mkdir(exist_ok=True)
             shutil.copy(old_path, savedpath / "old.png")
             shutil.copy(newfile, savedpath / "new.png")
-            raise AssertionError(f"{errmsg}\nplots are not the same, see: {savedpath.resolve()}")
+            raise AssertionError(
+                f"{errmsg}\nplots are not the same, see: {savedpath.resolve()}"
+            )
 
 
 # pylint: disable=C0123
@@ -48,5 +51,7 @@ def assert_results_equal(new_result, stored_result):
                 _assert_figure_equal(new_result[k], val)
                 continue
         # noqa
-        assert type(val) == type(new_result[k]), f"{type(val)} =/= {type(new_result[k])}"
+        assert type(val) == type(
+            new_result[k]
+        ), f"{type(val)} =/= {type(new_result[k])}"
         assert val == new_result[k], f"{val} != {new_result[k]}"

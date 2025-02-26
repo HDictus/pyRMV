@@ -1,4 +1,5 @@
 """Tools for saving and loading results."""
+
 import json
 from pathlib import Path
 
@@ -9,8 +10,9 @@ DPI = 256
 
 
 def _make_safe_path(filename):
-    return "".join([c for c in filename
-                    if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
+    return "".join(
+        [c for c in filename if c.isalpha() or c.isdigit() or c == " "]
+    ).rstrip()
 
 
 def _append_path(path, resultdict):
