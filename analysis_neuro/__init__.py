@@ -2,7 +2,7 @@
 
 import dataframe_pointer
 
-from . import analyses, mtypes, plots
-from . import terminology as terms
 from .analysis import Analysis
+from . import analyses, stats, plots
+from . import terminology as terms
 from .exceptions import Assumption, TerminologyError

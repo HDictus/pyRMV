@@ -218,64 +218,6 @@ def test_mtype_to_mtype_connectivity():
         
         results = ana.mtype_to_mtype_connectivity(mock, mock2)
 
-def test_cossell_correlation_psp_2015():
-    
-    
-    class MockModel:
-        # TODO: it's kind of awkward to ensure that
-        #   the two measurements compare ok
-        #   we may want to make it so that 
-        #   measuring a term is actually done by the model itself
-        #   so that you can request a tuple measurement
-        #   and the model will align them appropriately
-        
-        def response_correlation(self, parameters):
-            out = []
-            for i, p in parameters.iterrows():
-                out += [
-                    {**p, 
-                     terms.CELL_ID: pair,
-                     terms.RESPONSE_CORRELATION: corr}
-                     for pair, corr in zip(self.pair_ids, self.pair_corrs)
-                ]
-            return pd.DataFrame(out)
-        
-        def psp_amplitude(self, parameters):
-            out = []
-            for i, p in parameters.iterrows():
-                out += [
-                    {**p,
-                     terms.PRESYNAPTIC + terms.CELL_ID: pair[0],
-                     terms.POSTSYNAPTIC + terms.CELL_ID: pair[1],
-                     terms.PSP_AMPLITUDE: psp}
-                    for pair, psp in zip(self.pair_ids, self.pair_psps)
-                ]
-            return pd.DataFrame(out)
-        
-    class BadModel(MockModel):
-        label = 'bad'
-        
-        pair_corrs = [0, 0.1, 0.2, 0.5, 0.6, 0.7, 0.8, 0.9]
-        pair_psps = [1, 0, 1, 0, 1, 0, 1, 0]
-        pair_ids = [(0, 1), (0, 2), (1, 2), (0, 4)]
-        
-    class PerfectModel(MockModel):
-        label = 'perfect'
-        
-        pair_corrs = np.linspace(0, 1, 100)
-        pair_psps = [0.5 / 93] * 93 + [0.2 / 4] * 4 + [0.3 / 3] * 3
-        pair_ids = [(0, num) for num in range(100)]
-        
-
-    results = ana.cossell_correlation_psp_2015(BadModel(), PerfectModel())
-    print(results)
-    assert len(results['verdict'].keys()) == 2
-    for hyp, value in results['verdict'].items():
-        if 'bad' in hyp:
-            assert value == 'Fail'
-        else:
-            assert value == 'Pass'
-
 
 def test_cossell_correlation_psp_2015():
     
