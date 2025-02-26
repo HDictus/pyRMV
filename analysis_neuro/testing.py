@@ -43,9 +43,8 @@ def assert_results_equal(new_result, stored_result):
             continue
         if isinstance(val, str):
             if val.endswith(".csv"):
-                pd.testing.assert_frame_equal(
-                    new_result[k], pd.read_csv(val, index_col=0)
-                )
+                new = new_result[k]
+                _compare_dataframe(new, val)
                 continue
             if val.endswith(".png"):
                 _assert_figure_equal(new_result[k], val)
@@ -55,3 +54,20 @@ def assert_results_equal(new_result, stored_result):
             new_result[k]
         ), f"{type(val)} =/= {type(new_result[k])}"
         assert val == new_result[k], f"{val} != {new_result[k]}"
+
+
+def _compare_dataframe(new, val):
+    nlevels = new.index.nlevels
+    if nlevels > 1:
+        old = pd.read_csv(val, index_col=list(range(nlevels)))
+        old.index = pd.MultiIndex.from_arrays(
+            [old.index.get_level_values(n).astype(
+                new.index.get_level_values(n).dtype)
+            for n in range(nlevels)],
+            names=new.index.names
+        )
+    else:
+        old = pd.read_csv(val, index_col=0)
+    pd.testing.assert_frame_equal(
+        new, old
+    )

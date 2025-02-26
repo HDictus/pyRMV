@@ -391,6 +391,8 @@ def bootstrap_mean(
         The value of <dependent> in one dataset could be sampled from the same distribution
         as the other dataset.
     """
+    # disabling here only because we already have an issue
+    # pylint: disable=too-many-locals
     rng = np.random.default_rng(1)
 
     if not isinstance(independent, list):
@@ -439,7 +441,7 @@ def bootstrap_mean(
                 pvalue = (samples.mean(axis=0) >= mean).mean()
             tests.append(
                 {
-                    **{ind: val for ind, val in zip(independent, group)},
+                    **dict(zip(independent, group)),
                     terms.PVALUE: pvalue,
                 }
             )
