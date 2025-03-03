@@ -194,6 +194,13 @@ STIMULUS = Term(
     ' "brain_observatory 1.1drifting gratings"',
 )
 
+
+VISUAL_RF_RADIUS = Term(
+    "visual receptive field radius",
+    description="The radius of the visual receptive field of a neuron.",
+    measurement_method="visual_rf_radius")
+
+
 VISUAL_STIMULUS = Term(
     "visual stimulus type",
     description="The type of visual stimulus used in an experiment. "
@@ -340,8 +347,8 @@ ORIENTATION_SELECTIVITY = Term(
 )
 
 RF_AREA = Term(
-    "receptive field area (degrees)",
-    description=("the area occupied by a cell's receptive field"),
+    "receptive field area (degrees)^2",
+    description=("the area occupied by a cell's visual receptive field"),
     measurement_method="rf_area",
 )
 

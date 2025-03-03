@@ -447,3 +447,50 @@ def test_lien_fraction_excitation_2018():
     
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as bad'] == "Fail"
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as good'] == "Pass"
+
+
+def test_niell_rf_radius_2008():
+    # TODO: we could do some things with testing
+    #  by default have perfect model, biased model, scaled model
+    #  
+    class PerfectModel:
+
+        label = 'perfect'
+
+        def visual_rf_radius(self, parameters):
+            return ana.niell_rf_radius_2008.observations
+        
+    
+    class BadModel:
+        
+        label = 'bad'
+        
+        def visual_rf_radius(self, parameters):
+            out = []
+            for i, row in parameters.iterrows():
+                out.append({**row, an.terms.VISUAL_RF_RADIUS: 1})
+                out.append({**row, an.terms.VISUAL_RF_RADIUS: 2})
+                out.append({**row, an.terms.VISUAL_RF_RADIUS: 3})
+            return pd.DataFrame(out)
+        
+    results = ana.niell_rf_radius_2008(
+        PerfectModel(),
+        BadModel()
+    )
+    # TODO: the order of labels in the hypotheses leads to brittleness:
+    #  We need to organize the results differently, per model for instance.
+    #  we should probably separate model-to-model comparisons from model to experiment... right?
+    assert results['verdict'][
+        f"The underlying distribution of {terms.VISUAL_RF_RADIUS}"
+        " for Niell2008 and perfect is the same"
+    ] == "Pass"
+    
+    assert results['verdict'][
+        f"The underlying distribution of {terms.VISUAL_RF_RADIUS}"
+        " for Niell2008 and bad is the same"
+    ] == "Fail"
+
+    assert results['verdict'][
+        f"The underlying distribution of {terms.VISUAL_RF_RADIUS}"
+        " for bad and perfect is the same"
+    ] == "Fail"

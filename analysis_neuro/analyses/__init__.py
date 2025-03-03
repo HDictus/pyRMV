@@ -360,6 +360,13 @@ lee_connprob_2016 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
+niell_rf_radius_2008 = Analysis(
+    measurement=terms.VISUAL_RF_RADIUS,
+    observations=pd.read_csv(DATADIR.joinpath("niell_rf_radius_2008.csv"), index_col=0),
+    plotter = sns.boxplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
 
 def mtype_to_mtype_connprob(*models, radius=125):
     """Visualize the connection probabilty between all mtypes for one or more models.
