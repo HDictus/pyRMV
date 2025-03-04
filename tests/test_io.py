@@ -32,16 +32,23 @@ def test_equality_assertion_ignores_ordering():
         assert_results_equal(result, loaded_result)
 
 
+# TODO: there is a case where this doesn't quite work: duplicate index within different datasets
 def test_equality_assertion_handles_duplicate():
     result, measurement = create_test_results()
-    measurement = pd.concat([measurement, measurement]).reset_index()
+    measurement = pd.concat([
+        measurement, 
+        measurement.loc[np.flipud(measurement.index)].reset_index()
+    ])
     result['measurement'] = measurement
     with TemporaryDirectory() as tdir:
         savepath = Path(tdir) / 'result'
         save_result(result, savepath)
-        result['measurement'] = measurement.loc[np.flipud(measurement.index)]
+        result['measurement'] = measurement.iloc[np.flipud(np.arange(len(measurement)))]
         loaded_result = load_result(savepath)
         assert_results_equal(result, loaded_result)
+
+
+# TODO: to allow models to 'volunteer' information, we need to be able to handle nans in this comparison
 
 
 def create_test_results():
