@@ -32,6 +32,18 @@ def test_equality_assertion_ignores_ordering():
         assert_results_equal(result, loaded_result)
 
 
+def test_equality_assertion_handles_duplicate():
+    result, measurement = create_test_results()
+    measurement = pd.concat([measurement, measurement]).reset_index()
+    result['measurement'] = measurement
+    with TemporaryDirectory() as tdir:
+        savepath = Path(tdir) / 'result'
+        save_result(result, savepath)
+        result['measurement'] = measurement.loc[np.flipud(measurement.index)]
+        loaded_result = load_result(savepath)
+        assert_results_equal(result, loaded_result)
+
+
 def create_test_results():
     measurement = pd.DataFrame(
         {"aparam": ["a", "b", "c", "d", "e"], "ameasurement": [1, 2, 3, 4, 5]}

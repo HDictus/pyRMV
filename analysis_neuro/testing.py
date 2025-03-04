@@ -71,8 +71,8 @@ def _compare_dataframe(new, val):
         )
     else:
         old = pd.read_csv(val, index_col=0)
-    new = new.sort_index(axis=1)
-    old = old.sort_index(axis=1)
+    new = new.sort_index(axis=1).sort_index()
+    old = old.sort_index(axis=1).sort_index()
     pd.testing.assert_frame_equal(
-        new.sort_values(list(new.columns)), old.sort_values(list(old.columns))
+        new, old
     )
