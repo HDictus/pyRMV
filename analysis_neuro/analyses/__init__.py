@@ -253,8 +253,10 @@ def _cossell_scatter(data, dependent, independent, compare):
             np.mean([interval.left, interval.right]) for interval in mean_psp.index
         ]
         plt.plot(centers, mean_psp.values, color="black")
-        a, b, c  = np.polyfit(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2)
-        plt.plot(points, a * points**2 + b * points + c, color='black')
+        a, b, c = np.polyfit(
+            data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2
+        )
+        plt.plot(points, a * points**2 + b * points + c, color="black")
         out[label] = fig
     return out
 

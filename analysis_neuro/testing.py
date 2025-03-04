@@ -61,16 +61,18 @@ def _compare_dataframe(new, val):
     if nlevels > 1:
         old = pd.read_csv(val, index_col=list(range(nlevels)))
         old.index = pd.MultiIndex.from_arrays(
-            [old.index.get_level_values(n).astype(
-                new.index.get_level_values(n).dtype)
-            for n in range(nlevels)],
-            names=new.index.names
+            [
+                old.index.get_level_values(n).astype(
+                    new.index.get_level_values(n).dtype
+                )
+                for n in range(nlevels)
+            ],
+            names=new.index.names,
         )
     else:
         old = pd.read_csv(val, index_col=0)
     new = new.sort_index(axis=1)
     old = old.sort_index(axis=1)
     pd.testing.assert_frame_equal(
-        new.sort_values(list(new.columns)),
-        old.sort_values(list(old.columns))
+        new.sort_values(list(new.columns)), old.sort_values(list(old.columns))
     )
