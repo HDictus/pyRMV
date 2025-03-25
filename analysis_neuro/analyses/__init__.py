@@ -59,6 +59,40 @@ lien_fraction_excitation_2018 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
+# TODO: there is an interesting question here: 
+#   should we frame this as measuring somatic current under specific conditions,
+#   or measuring total excitation along a pathway?
+#   just like ji et al, lien used cortical silencing and voltage clamp
+#   they measued the same stuff basically
+#   but what this doesn't capture is the fact that modulatory projections
+#   and long-range corticocortical projections may be active
+#   the total excitation is inferred
+#   it is more accurate to say which pathways are inactivated than which ones are active
+lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
+    doc="""
+    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
+    This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
+    """,
+    observations=pd.DataFrame(
+        {terms.PRESYNAPTIC + terms.REGION: "LGd",
+         terms.POSTSYNAPTIC + terms.REGION: "VISp",
+         terms.POSTSYNAPTIC + terms.LAYER: 'L4',
+         terms.POSTSYNAPTIC + terms.SYNAPSE_CLASS: 'EXC',
+         terms.SPECIES: 'mouse',
+         terms.SAMPLE_SIZE: 42,
+         terms.DATASET: "Lien2013",
+         terms.STIMULUS: pd.DataFrame({
+             terms.VISUAL_STIMULUS: "bar gratings",
+             terms.CONTRAST: 1,
+             terms.SPATIAL_FREQUENCY: 0.04,
+             terms.TEMPORAL_FREQUENCY: 2,
+             terms.STIM_ORIENTATION: range(0, 360, 30),
+         }).pointer,
+         terms.MEAN + terms.TOTAL_EXCITATION: [0.46]}
+    ),
+    measurement=terms.TOTAL_EXCITATION,
+)
+
 schuz_density_1989 = Analysis(
     doc="""
     We evaluate the similarity of the total neuron density in the primary

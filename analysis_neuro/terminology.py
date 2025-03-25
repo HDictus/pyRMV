@@ -298,14 +298,20 @@ FRACTION_EXCITATION_PER_CONNECTION = Term(
 )
 
 TOTAL_EXCITATION = Term(
-    "total excitation",
-    description="Total excitatory current from a presynaptic population into postsynaptic neurons",
+    "total excitation (nA)",
+    description=
+        "Total excitatory current from a presynaptic population into postsynaptic neurons during stimulation",
     measurement_method="total_excitation",
 )
 RELATIVE_EXCITATION = Term(
     "relative excitation",
     "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
     measurement_method="relative_excitation",
+)
+
+SOMATIC_CURRENT = Term(
+    "somatic current (nA)",
+    
 )
 
 PSP_AMPLITUDE = Term(

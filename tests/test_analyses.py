@@ -447,3 +447,41 @@ def test_lien_fraction_excitation_2018():
     
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as bad'] == "Fail"
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as good'] == "Pass"
+
+
+def test_lien_total_excitation():
+    
+    expected = ana.lien_thalamocortical_current_2013.observations[
+        terms.MEAN + terms.TOTAL_EXCITATION
+    ].iloc[0]
+
+    class GoodModel:
+        
+        label = 'good'
+        
+        def total_excitation(self, params):
+            res =  pd.DataFrame([
+                {terms.TOTAL_EXCITATION: expected + diff, **row}
+                for _, row in params.iterrows()
+                for diff in np.arange(-0.001, 0.001, 0.00001)
+            ])
+            return res
+    
+    class BadModel:
+        
+        label = 'bad'
+            
+        def total_excitation(self, params):
+            res =  pd.DataFrame([
+                {terms.TOTAL_EXCITATION: 0.01 + diff, **row}
+                for _, row in params.iterrows()
+                for diff in np.arange(-0.1, 0.1, 0.001)
+            ])
+            return res
+        
+    results = ana.lien_thalamocortical_current_2013(
+        GoodModel(), BadModel()
+    )
+
+    assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as bad'] == "Fail"
+    assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as good'] == "Pass"
