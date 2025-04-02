@@ -68,29 +68,47 @@ lien_fraction_excitation_2018 = Analysis(
 #   and long-range corticocortical projections may be active
 #   the total excitation is inferred
 #   it is more accurate to say which pathways are inactivated than which ones are active
+#   ON THE OTHER HAND!
+#   doesn't saying 'somatic current' already somewhat prescribe a particular modeling approach?
+#   what if you can direclty access the synaptic currents and have a point-neuron model
+#   where you can just activate the synaptic currents and sum them?
+#   SOMATIC_CURRENT would require you to overcomplicate your setup
+#   PATHWAY_CURRENT is more accurate. 
+#   The details of how that pathway current is measured, some of which are necessarily relevant like the voltage clamp (not if you have current-based synapses...)
+#   some of which may be relevant, such as that cortical silencing was achieved by optogenetic activation of PV neurons.
+#   if you want to model some bias you expect from the experiment, however, this is tricky
+#   you would have to take your pathway_current method and "if the COMPARTMENT is soma, then do this procedure..."
+#   I think this is an interesting case study of how one's own implementation can bias the approach to validation if you aren't careful
 lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     doc="""
     We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
     This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
+    
+    In the experiment Lien and Scanziani reported that the mean current recorded was independent of stimulus direction.
+    For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
+    multiple.
     """,
     observations=pd.DataFrame(
-        {terms.PRESYNAPTIC + terms.REGION: "LGd",
-         terms.POSTSYNAPTIC + terms.REGION: "VISp",
-         terms.POSTSYNAPTIC + terms.LAYER: 'L4',
-         terms.POSTSYNAPTIC + terms.SYNAPSE_CLASS: 'EXC',
+        {terms.SILENCED + terms.REGION: 'VISp',
          terms.SPECIES: 'mouse',
          terms.SAMPLE_SIZE: 42,
+         terms.VOLTAGE_CLAMP: -70,
          terms.DATASET: "Lien2013",
+         terms.REGION: 'VISp',
+         terms.LAYER: 'L4',
+         terms.SYNAPSE_CLASS: 'EXC',
          terms.STIMULUS: pd.DataFrame({
-             terms.VISUAL_STIMULUS: "bar gratings",
+             terms.VISUAL_STIMULUS: "bar grating",
              terms.CONTRAST: 1,
              terms.SPATIAL_FREQUENCY: 0.04,
              terms.TEMPORAL_FREQUENCY: 2,
-             terms.STIM_ORIENTATION: range(0, 360, 30),
-         }).pointer,
-         terms.MEAN + terms.TOTAL_EXCITATION: [0.46]}
+             terms.ANGLE_AZIMUTH: [(-120, 120)],
+             terms.ANGLE_ELEVATION: [(-60, 60)],
+             terms.STIM_ORIENTATION: [0],
+         }).pointer(),
+         terms.MEAN + terms.SOMATIC_CURRENT: [0.46]}
     ),
-    measurement=terms.TOTAL_EXCITATION,
+    measurement=terms.SOMATIC_CURRENT,
 )
 
 schuz_density_1989 = Analysis(
