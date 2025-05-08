@@ -106,7 +106,7 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
              terms.ANGLE_ELEVATION: [(-60, 60)],
              terms.STIM_ORIENTATION: [0],
          }).pointer(),
-         terms.MEAN + terms.SOMATIC_CURRENT: [0.46]}
+         terms.MEAN + terms.SOMATIC_CURRENT: [-0.046]}
     ),
     measurement=terms.SOMATIC_CURRENT,
 )

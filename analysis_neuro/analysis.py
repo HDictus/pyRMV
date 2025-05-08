@@ -22,7 +22,7 @@ def _join_columns(dataframe):
     values = [
         " ".join(str(v) for v in row if not pd.isna(v)) for row in dataframe.values
     ]
-    return pd.Series(values, name=series_name)
+    return pd.Series(values, index=dataframe.index, name=series_name)
 
 
 def _check_callable(obj, args):
