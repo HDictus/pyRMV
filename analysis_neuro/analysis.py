@@ -280,6 +280,7 @@ class Analysis:
         return self.__class__(**current_fields)
 
 
+# TODO: this leads to an unintuitive behavior when you have extra data
 def _exclude_obs_only(observations, measured, independent_vars):
     """Remove observations that are not in measured.
 

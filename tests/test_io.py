@@ -19,6 +19,14 @@ def test_save_and_load_figures_and_measurement():
         assert_results_equal(result, loaded_result)
     return
 
+def test_save_and_load_dfpointer():
+    result, measurement = create_test_results()
+    measurement['a df pointer'] = pd.DataFrame({'avalue': [3, 4]}).pointer()
+    with TemporaryDirectory() as tdir:
+        savepath = Path(tdir) / "result"
+        save_result(result, savepath)
+        loaded_result = load_result(savepath)
+        assert_results_equal(result, loaded_result)
 
 def test_equality_assertion_ignores_ordering():
     result, measurement = create_test_results()

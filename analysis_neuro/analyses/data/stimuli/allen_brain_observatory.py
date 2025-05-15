@@ -24,7 +24,9 @@ drifting_gratings = pd.DataFrame(
 gray = pd.DataFrame(
     {
         terms.VISUAL_STIMULUS: "gray",
-        terms.ANGLE_AZIMUTH: (-120, 120),
-        terms.ANGLE_ELEVATION: (-60, 60),
+        # TODO: this was incorrectly formatted before, and not caught by tests
+        #  how can we better enforce this and prevent difficulties?
+        terms.ANGLE_AZIMUTH: [(-120, 120)],
+        terms.ANGLE_ELEVATION: [(-60, 60)],
     }
 ).pointer()

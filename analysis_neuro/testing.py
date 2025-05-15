@@ -71,6 +71,7 @@ def _compare_dataframe(new, val):
         )
     else:
         old = pd.read_csv(val, index_col=0)
+    _load_pointers(old)
     new = new.sort_index(axis=1).reset_index(drop=False)
     old = old.sort_index(axis=1).reset_index(drop=False)
     new = new.sort_values(list(new.columns)).reset_index(drop=True)
@@ -78,3 +79,12 @@ def _compare_dataframe(new, val):
     pd.testing.assert_frame_equal(
         new, old
     )
+
+def _load_pointers(dataframe):
+    for col in dataframe.columns:
+        if dataframe[col].dtype == object:
+            for i, value in dataframe[col].items():
+                if isinstance(value, str) and 'dataframe pointer' in value:
+                    dataframe.loc[i, col] = pd.read_csv(value, index_col=0).pointer()
+
+    return dataframe
