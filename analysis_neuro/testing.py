@@ -84,7 +84,7 @@ def _load_pointers(dataframe):
     for col in dataframe.columns:
         if dataframe[col].dtype == object:
             for i, value in dataframe[col].items():
-                if isinstance(value, str) and 'dataframe pointer' in value:
+                if isinstance(value, str) and 'dataframe pointer' in value and len(value) < 1000:
                     dataframe.loc[i, col] = pd.read_csv(value, index_col=0).pointer()
 
     return dataframe

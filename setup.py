@@ -24,7 +24,7 @@ setup(
         "mock", 
         "importlib-resources", 
         "pytest",
-        "dataframe-pointer>=0.3",
+        "dataframe-pointer>=0.0.3",
         "lazy",
         "tqdm"],
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
