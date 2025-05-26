@@ -71,8 +71,9 @@ def _replace_df_pointers(df, path):
             for i, v in df[col].items():
                 if isinstance(v, dataframe_pointer._DFPointer):
                     safe_path = path / f'{_make_safe_path(repr(v))}.csv'
-                    df.loc[i, col] = str(safe_path.absolute())
+                    df.loc[i, col] = str(safe_path)
                     v.df.to_csv(safe_path)
+
 
 def save_result(result, path):
     """Save an analysis report to the directory provided."""
