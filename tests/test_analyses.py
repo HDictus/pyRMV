@@ -147,6 +147,44 @@ def test_siegle_spontaneous():
     ] == "Fail"
 
 
+def test_ma_spontaneous():
+
+    class MockModel:
+
+        label='mock'
+
+        def firing_rate(self, params):
+            return pd.DataFrame([
+                dict(**row, **{terms.FIRING_RATE: num})
+                for _, row in params.iterrows()
+                for num in np.random.uniform(0, 1, size=300)
+            ])
+
+    class Perfect:
+
+        label = 'perfect'
+
+        def firing_rate(self, params):
+            out = []
+            indexed = ana.ma_spontaneous_2010.observations.set_index([terms.LAYER, terms.GENE_EXPRESSION])[terms.MEAN + terms.FIRING_RATE]
+            for i, row in params.iterrows():
+                mean = indexed.loc[[(row[terms.LAYER], row[terms.GENE_EXPRESSION])]].iloc[0]
+                for i in range(100):
+                    out.append({**row, terms.FIRING_RATE: mean + np.random.normal()})
+            return pd.DataFrame(out)
+
+    results = ana.ma_spontaneous_2010(MockModel(), Perfect())
+    print(results['verdict'])
+
+    assert results['verdict'][
+        'The result of Ma2010 could be sampled from the same distribution as mock'
+    ] == "Fail"
+    
+    assert results['verdict'][
+        'The result of Ma2010 could be sampled from the same distribution as perfect'
+    ] == "Pass"
+
+
 def test_pala_peterson_conprob_2015():
     class MockModel:
 

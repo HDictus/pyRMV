@@ -394,7 +394,6 @@ def bootstrap_mean(
     # disabling here only because we already have an issue
     # pylint: disable=too-many-locals
     rng = np.random.default_rng(1)
-
     if not isinstance(independent, list):
         independent = [independent]
 
