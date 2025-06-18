@@ -75,6 +75,12 @@ def pathway_heatmap(
 
 
 def hist(data, dependent, independent, compare):
+    """Create histograms comparing datasets.
+
+    Creates a histogram for each unique combination of independent variables.
+    The histogram overlays the distribution of the depdendent variable for
+    each compared dataset.
+    """
     figs = {}
     if len(independent) == 0:
         independent = np.zeros(len(data))

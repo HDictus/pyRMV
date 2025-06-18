@@ -351,7 +351,7 @@ INCLUDE_UNCONNECTED = Term(
 )
 
 ORIENTATION_PREFERENCE_DIFFERENCE = Term(
-    "$\Delta$ preferred orientation",
+    "$\\Delta$ preferred orientation",
     description="The angular difference in preferred orientation between pairs of cells",
 )
 
@@ -423,7 +423,7 @@ MAX = Term(
     description=("Prefix to apply for specifying maximal value"),
 )
 
-MEAN = Term("mean ", description=("Prefix to apply to specify a mean value"))
+MEAN = Term("mean ", description="Prefix to apply to specify a mean value")
 
 
 def describe(*terms):

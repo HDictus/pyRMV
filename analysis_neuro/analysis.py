@@ -69,7 +69,7 @@ class Analysis:
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(
         self,
         measurement,
@@ -139,11 +139,6 @@ class Analysis:
         """Experimental observations to compare to."""
         return self._observations.copy()
 
-    @property
-    def observations(self):
-        """Experimental observations to compare to."""
-        return self._observations.copy()
-
     def measure(self, model):
         """Measure the required measurements on model.
 
@@ -174,12 +169,14 @@ class Analysis:
 
     @property
     def dependent(self):
+        """Dependent variable, Usually the measurement."""
         if self._dependent is None:
             return self.measurement
         return self._dependent
 
     @property
     def independent(self):
+        """Independent variables, usually all non-constant parameters."""
         if self._independent is None:
             if self.varying_parameters == []:
                 other_vars = [self.dependent, self.compare]
@@ -246,6 +243,7 @@ class Analysis:
         return report
 
     def plot(self, measurements):
+        """Generate plots for provided measurements."""
         if _check_callable(self.plotter, ["x", "y", "hue"]):
             dependent = measurements[self.dependent]
             independent = _join_columns(measurements[self.independent])

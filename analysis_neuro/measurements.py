@@ -117,7 +117,7 @@ def validate_observations(observations):
                     # if it is prefixed and the postfix term exists
                     if (
                         column.startswith(term)
-                        and column[len(term) :] in terms.ALL_TERMS
+                        and column[len(term):] in terms.ALL_TERMS
                     ):
                         is_valid_prefixed = True
                         break

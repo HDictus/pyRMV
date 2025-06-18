@@ -59,7 +59,7 @@ lien_fraction_excitation_2018 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-# TODO: there is an interesting question here: 
+# TODO: there is an interesting question here:
 #   should we frame this as measuring somatic current under specific conditions,
 #   or measuring total excitation along a pathway?
 #   just like ji et al, lien used cortical silencing and voltage clamp
@@ -73,7 +73,7 @@ lien_fraction_excitation_2018 = Analysis(
 #   what if you can direclty access the synaptic currents and have a point-neuron model
 #   where you can just activate the synaptic currents and sum them?
 #   SOMATIC_CURRENT would require you to overcomplicate your setup
-#   PATHWAY_CURRENT is more accurate. 
+#   PATHWAY_CURRENT is more accurate.
 #   The details of how that pathway current is measured, some of which are necessarily relevant like the voltage clamp (not if you have current-based synapses...)
 #   some of which may be relevant, such as that cortical silencing was achieved by optogenetic activation of PV neurons.
 #   if you want to model some bias you expect from the experiment, however, this is tricky
@@ -83,7 +83,7 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     doc="""
     We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
     This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
-    
+
     In the experiment Lien and Scanziani reported that the mean current recorded was independent of stimulus direction.
     For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
     multiple.
@@ -312,16 +312,17 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
     return hypotheses
 
 
+# pylint: disable=unused-argument
 def _cossell_scatter(data, dependent, independent, compare):
     out = {}
     for label, dataset in data.groupby(compare):
         fig = plt.figure()
         plt.scatter(
-            data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], alpha=0.1
+            dataset[terms.RESPONSE_CORRELATION], dataset[terms.PSP_AMPLITUDE], alpha=0.1
         )
         points = np.linspace(-1, 1, 20)
         mean_psp = (
-            data[terms.PSP_AMPLITUDE]
+            dataset[terms.PSP_AMPLITUDE]
             .groupby(pd.cut(data[terms.RESPONSE_CORRELATION], points))
             .mean()
         )
@@ -388,6 +389,7 @@ cossell_connprob_corr_2015 = Analysis(
 )
 
 
+# pylint: disable=unused-argument
 def _histogram_with_cossell_digitized(data, dependent, independent, compare):
     cossell_digitized = pd.read_csv(
         DATADIR.joinpath("cossell_response_correlation_2015.csv")

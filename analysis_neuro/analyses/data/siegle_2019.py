@@ -29,4 +29,3 @@ spontaneous = pd.read_csv(
 spontaneous[terms.STIMULUS] = [
     allen_brain_observatory.gray for _, __ in spontaneous.iterrows()
 ]
-
