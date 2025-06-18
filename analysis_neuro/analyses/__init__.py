@@ -89,24 +89,28 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     multiple.
     """,
     observations=pd.DataFrame(
-        {terms.SILENCED + terms.REGION: 'VISp',
-         terms.SPECIES: 'mouse',
-         terms.SAMPLE_SIZE: 42,
-         terms.VOLTAGE_CLAMP: -70,
-         terms.DATASET: "Lien2013",
-         terms.REGION: 'VISp',
-         terms.LAYER: 'L4',
-         terms.SYNAPSE_CLASS: 'EXC',
-         terms.STIMULUS: pd.DataFrame({
-             terms.VISUAL_STIMULUS: "bar grating",
-             terms.CONTRAST: 1,
-             terms.SPATIAL_FREQUENCY: 0.04,
-             terms.TEMPORAL_FREQUENCY: 2,
-             terms.ANGLE_AZIMUTH: [(-120, 120)],
-             terms.ANGLE_ELEVATION: [(-60, 60)],
-             terms.STIM_ORIENTATION: [0],
-         }).pointer(),
-         terms.MEAN + terms.SOMATIC_CURRENT: [-0.046]}
+        {
+            terms.SILENCED + terms.REGION: "VISp",
+            terms.SPECIES: "mouse",
+            terms.SAMPLE_SIZE: 42,
+            terms.VOLTAGE_CLAMP: -70,
+            terms.DATASET: "Lien2013",
+            terms.REGION: "VISp",
+            terms.LAYER: "L4",
+            terms.SYNAPSE_CLASS: "EXC",
+            terms.STIMULUS: pd.DataFrame(
+                {
+                    terms.VISUAL_STIMULUS: "bar grating",
+                    terms.CONTRAST: 1,
+                    terms.SPATIAL_FREQUENCY: 0.04,
+                    terms.TEMPORAL_FREQUENCY: 2,
+                    terms.ANGLE_AZIMUTH: [(-120, 120)],
+                    terms.ANGLE_ELEVATION: [(-60, 60)],
+                    terms.STIM_ORIENTATION: [0],
+                }
+            ).pointer(),
+            terms.MEAN + terms.SOMATIC_CURRENT: [-0.046],
+        }
     ),
     measurement=terms.SOMATIC_CURRENT,
 )
@@ -243,28 +247,46 @@ siegle_spontaneous_2019 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-ma_digitized = pd.DataFrame({
-    terms.MEAN + terms.FIRING_RATE: [0.08256880733945562, 2.889908256880739, 0.1651376146789022, 1.6513761467889954],
-    terms.SAMPLE_SIZE: [37, 12, 25, 21],
-    terms.STD + terms.FIRING_RATE: [0.24770642201834883, 5.201834862385325, 0.41284403669725106, 3.7155963302752326],
-    terms.LAYER: ['L4', 'L4', 'L23', 'L23'],
-    terms.REGION: 'VISp',
-    terms.GENE_EXPRESSION: ['Sst', 'Pvalb', 'Sst', 'Pvalb'],
-    terms.DATASET: 'Ma2010',
-    terms.STIMULUS: pd.DataFrame({
-        terms.VISUAL_STIMULUS: "gray",
-            terms.ANGLE_AZIMUTH: [(-120, 120)],
-            terms.ANGLE_ELEVATION: [(-60, 60)],
-        }).pointer()
-})
-ma_digitized[terms.STD + terms.FIRING_RATE] -= ma_digitized[terms.MEAN + terms.FIRING_RATE]
+ma_digitized = pd.DataFrame(
+    {
+        terms.MEAN
+        + terms.FIRING_RATE: [
+            0.08256880733945562,
+            2.889908256880739,
+            0.1651376146789022,
+            1.6513761467889954,
+        ],
+        terms.SAMPLE_SIZE: [37, 12, 25, 21],
+        terms.STD
+        + terms.FIRING_RATE: [
+            0.24770642201834883,
+            5.201834862385325,
+            0.41284403669725106,
+            3.7155963302752326,
+        ],
+        terms.LAYER: ["L4", "L4", "L23", "L23"],
+        terms.REGION: "VISp",
+        terms.GENE_EXPRESSION: ["Sst", "Pvalb", "Sst", "Pvalb"],
+        terms.DATASET: "Ma2010",
+        terms.STIMULUS: pd.DataFrame(
+            {
+                terms.VISUAL_STIMULUS: "gray",
+                terms.ANGLE_AZIMUTH: [(-120, 120)],
+                terms.ANGLE_ELEVATION: [(-60, 60)],
+            }
+        ).pointer(),
+    }
+)
+ma_digitized[terms.STD + terms.FIRING_RATE] -= ma_digitized[
+    terms.MEAN + terms.FIRING_RATE
+]
 
 ma_spontaneous_2010 = Analysis(
     observations=ma_digitized,
     measurement=terms.FIRING_RATE,
     plotter=plots.hist,
     stats=stats.bootstrap_mean,
-    verdict=stats.PooledPValueThreshold(0.05)
+    verdict=stats.PooledPValueThreshold(0.05),
 )
 
 pala_peterson_conprob_2015 = Analysis(
@@ -323,17 +345,17 @@ def _cossell_scatter(data, dependent, independent, compare):
         points = np.linspace(-1, 1, 20)
         mean_psp = (
             dataset[terms.PSP_AMPLITUDE]
-            .groupby(pd.cut(data[terms.RESPONSE_CORRELATION], points))
+            .groupby(pd.cut(dataset[terms.RESPONSE_CORRELATION], points))
             .mean()
         )
         centers = [
             np.mean([interval.left, interval.right]) for interval in mean_psp.index
         ]
         plt.plot(centers, mean_psp.values, color="black")
-        #a, b, c = np.polyfit(
+        # a, b, c = np.polyfit(
         #    data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2
-        #)
-        #plt.plot(points, a * points**2 + b * points + c, color="black")
+        # )
+        # plt.plot(points, a * points**2 + b * points + c, color="black")
         out[label] = fig
     return out
 

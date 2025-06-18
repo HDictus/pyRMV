@@ -187,9 +187,7 @@ SAMPLE_SIZE = Term(
 
 VOLTAGE_CLAMP = Term(
     "voltage clamp (mV)",
-    description=(
-        "Membrane potential at which a voltage clamp is applied."
-    )
+    description=("Membrane potential at which a voltage clamp is applied."),
 )
 
 # TODO: should we instead have CURRENT, and COMPARTMENT as separate variables,
@@ -197,10 +195,8 @@ VOLTAGE_CLAMP = Term(
 #  it would be more generalizable
 SOMATIC_CURRENT = Term(
     "Somatic current (nA)",
-    description=(
-        "Total current recorded at soma, e.g. through a voltage clamp"
-    ),
-    measurement_method="somatic_current"
+    description=("Total current recorded at soma, e.g. through a voltage clamp"),
+    measurement_method="somatic_current",
 )
 
 STIMULUS = Term(
@@ -316,8 +312,7 @@ FRACTION_EXCITATION_PER_CONNECTION = Term(
 
 TOTAL_EXCITATION = Term(
     "total excitation (nA)",
-    description=
-        "Total excitatory current from a presynaptic population into postsynaptic neurons during stimulation",
+    description="Total excitatory current from a presynaptic population into postsynaptic neurons during stimulation",
     measurement_method="total_excitation",
 )
 RELATIVE_EXCITATION = Term(
@@ -330,7 +325,8 @@ SILENCED = Term(
     "silenced ",
     description=(
         "prefix indicating a cell group was silenced, i.e. prevented from spiking. "
-        "For instance, terms.SILENCED + terms.REGION : 'VISp' indicates that cells in primary visual cortex were prevented from spiking.")
+        "For instance, terms.SILENCED + terms.REGION : 'VISp' indicates that cells in primary visual cortex were prevented from spiking."
+    ),
 )
 
 PSP_AMPLITUDE = Term(

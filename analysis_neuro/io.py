@@ -70,7 +70,7 @@ def _replace_df_pointers(df, path):
         if df[col].dtype == object:
             for i, v in df[col].items():
                 if isinstance(v, dataframe_pointer.DFPointer):
-                    safe_path = path / f'{_make_safe_path(repr(v))}.csv'
+                    safe_path = path / f"{_make_safe_path(repr(v))}.csv"
                     df.loc[i, col] = str(safe_path.name)
                     v.df.to_csv(safe_path)
 
