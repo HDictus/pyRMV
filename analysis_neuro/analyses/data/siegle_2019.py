@@ -16,13 +16,6 @@ osi[terms.STIMULUS] = [
     allen_brain_observatory.drifting_gratings for _, __ in osi.iterrows()
 ]
 
-dsi = pd.read_csv(files("analysis_neuro.analyses.data").joinpath("siegle-dsi-2019.csv"))
-
-dsi[terms.STIMULUS] = [
-    allen_brain_observatory.drifting_gratings for _, __ in osi.iterrows()
-]
-
-
 spontaneous = pd.read_csv(
     files("analysis_neuro.analyses.data").joinpath("siegle-spontaneous-2019.csv")
 )
