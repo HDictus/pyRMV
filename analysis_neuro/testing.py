@@ -61,13 +61,35 @@ def _compare_dataframe(new, val):
     if nlevels > 1:
         old = pd.read_csv(val, index_col=list(range(nlevels)))
         old.index = pd.MultiIndex.from_arrays(
-            [old.index.get_level_values(n).astype(
-                new.index.get_level_values(n).dtype)
-            for n in range(nlevels)],
-            names=new.index.names
+            [
+                old.index.get_level_values(n).astype(
+                    new.index.get_level_values(n).dtype
+                )
+                for n in range(nlevels)
+            ],
+            names=new.index.names,
         )
     else:
         old = pd.read_csv(val, index_col=0)
-    pd.testing.assert_frame_equal(
-        new, old
-    )
+    _load_pointers(old, Path(val).parent)
+    new = new.sort_index(axis=1).reset_index(drop=False)
+    old = old.sort_index(axis=1).reset_index(drop=False)
+    new = new.sort_values(list(new.columns)).reset_index(drop=True)
+    old = old.sort_values(list(old.columns)).reset_index(drop=True)
+    pd.testing.assert_frame_equal(new, old)
+
+
+def _load_pointers(dataframe, path):
+    for col in dataframe.columns:
+        if dataframe[col].dtype == object:
+            for i, value in dataframe[col].items():
+                if (
+                    isinstance(value, str)
+                    and "dataframe pointer" in value
+                    and len(value) < 1000
+                ):
+                    dataframe.loc[i, col] = pd.read_csv(
+                        path / value, index_col=0
+                    ).pointer()
+
+    return dataframe

@@ -43,20 +43,29 @@ ji_relative_2016 = Analysis(
 
 
 lien_fraction_excitation_2018 = Analysis(
-    observations=pd.DataFrame(
-        {
-            terms.POSTSYNAPTIC + terms.REGION: "VISp",
-            terms.POSTSYNAPTIC + terms.SYNAPSE_CLASS: "EXC",
-            terms.PRESYNAPTIC + terms.REGION: "LGd",
-            terms.MEAN + terms.FRACTION_EXCITATION_PER_CONNECTION: [0.012],
-            terms.SAMPLE_SIZE: 14,
-            terms.DATASET: "Lien2018",
-        }
-    ),
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.lien_2013"
+    ).fraction_excitation,
     measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
     stats=stats.bootstrap_mean,
     plotter=plots.hist,
     verdict=stats.PooledPValueThreshold(0.05),
+)
+
+
+lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
+    doc="""
+    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
+    This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
+
+    In the experiment Lien and Scanziani reported that the mean current recorded was independent of stimulus direction.
+    For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
+    multiple.
+    """,
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.lien_2013"
+    ).thalamocortical_current,
+    measurement=terms.SOMATIC_CURRENT,
 )
 
 schuz_density_1989 = Analysis(
@@ -191,6 +200,17 @@ siegle_spontaneous_2019 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
+
+ma_spontaneous_2010 = Analysis(
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.ma_2010"
+    ).spontaneous,
+    measurement=terms.FIRING_RATE,
+    plotter=plots.hist,
+    stats=stats.bootstrap_mean,
+    verdict=stats.PooledPValueThreshold(0.05),
+)
+
 pala_peterson_conprob_2015 = Analysis(
     doc="""
     We compare to the connectivity observed in
@@ -236,25 +256,28 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
     return hypotheses
 
 
+# pylint: disable=unused-argument
 def _cossell_scatter(data, dependent, independent, compare):
     out = {}
     for label, dataset in data.groupby(compare):
         fig = plt.figure()
         plt.scatter(
-            data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], alpha=0.1
+            dataset[terms.RESPONSE_CORRELATION], dataset[terms.PSP_AMPLITUDE], alpha=0.1
         )
         points = np.linspace(-1, 1, 20)
         mean_psp = (
-            data[terms.PSP_AMPLITUDE]
-            .groupby(pd.cut(data[terms.RESPONSE_CORRELATION], points))
+            dataset[terms.PSP_AMPLITUDE]
+            .groupby(pd.cut(dataset[terms.RESPONSE_CORRELATION], points))
             .mean()
         )
         centers = [
             np.mean([interval.left, interval.right]) for interval in mean_psp.index
         ]
         plt.plot(centers, mean_psp.values, color="black")
-        a, b, c  = np.polyfit(data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2)
-        plt.plot(points, a * points**2 + b * points + c, color='black')
+        # a, b, c = np.polyfit(
+        #    data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2
+        # )
+        # plt.plot(points, a * points**2 + b * points + c, color="black")
         out[label] = fig
     return out
 
@@ -310,6 +333,7 @@ cossell_connprob_corr_2015 = Analysis(
 )
 
 
+# pylint: disable=unused-argument
 def _histogram_with_cossell_digitized(data, dependent, independent, compare):
     cossell_digitized = pd.read_csv(
         DATADIR.joinpath("cossell_response_correlation_2015.csv")

@@ -30,9 +30,9 @@ jobs:
         pip install .
     - name: Lint with pycodestyle, pydocstyle, and pylint
       run: |
-        pylint src
-        pycodestyle src
-        pydocstyle src
+        pylint analysis_neuro
+        pycodestyle analysis_neuro
+        pydocstyle analysis_neuro
 
     - name: Test with pytest
       run: |

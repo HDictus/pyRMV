@@ -185,6 +185,16 @@ SAMPLE_SIZE = Term(
     ),
 )
 
+VOLTAGE_CLAMP = Term(
+    "voltage clamp (mV)",
+    description=("Membrane potential at which a voltage clamp is applied."),
+)
+
+SOMATIC_CURRENT = Term(
+    "Somatic current (nA)",
+    description=("Total current recorded at soma, e.g. through a voltage clamp"),
+    measurement_method="somatic_current",
+)
 
 STIMULUS = Term(
     "stimulus",
@@ -298,14 +308,22 @@ FRACTION_EXCITATION_PER_CONNECTION = Term(
 )
 
 TOTAL_EXCITATION = Term(
-    "total excitation",
-    description="Total excitatory current from a presynaptic population into postsynaptic neurons",
+    "total excitation (nA)",
+    description="Total excitatory current from a presynaptic population into postsynaptic neurons during stimulation",
     measurement_method="total_excitation",
 )
 RELATIVE_EXCITATION = Term(
     "relative excitation",
     "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
     measurement_method="relative_excitation",
+)
+
+SILENCED = Term(
+    "silenced ",
+    description=(
+        "prefix indicating a cell group was silenced, i.e. prevented from spiking. "
+        "For instance, terms.SILENCED + terms.REGION : 'VISp' indicates that cells in primary visual cortex were prevented from spiking."
+    ),
 )
 
 PSP_AMPLITUDE = Term(
@@ -326,7 +344,7 @@ INCLUDE_UNCONNECTED = Term(
 )
 
 ORIENTATION_PREFERENCE_DIFFERENCE = Term(
-    "$\Delta$ preferred orientation",
+    "$\\Delta$ preferred orientation",
     description="The angular difference in preferred orientation between pairs of cells",
 )
 
@@ -398,7 +416,7 @@ MAX = Term(
     description=("Prefix to apply for specifying maximal value"),
 )
 
-MEAN = Term("mean ", description=("Prefix to apply to specify a mean value"))
+MEAN = Term("mean ", description="Prefix to apply to specify a mean value")
 
 
 def describe(*terms):

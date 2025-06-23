@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import dataframe_pointer
 import pandas as pd
 
 DPI = 256
@@ -43,9 +44,8 @@ def _prepare_dict(result, path):
     resultdict = {}
     for key, value in result.items():
         if isinstance(value, pd.DataFrame):
-            safe_path = path / f"{_make_safe_path(key)}.csv"
-            value.to_csv(safe_path)
-            resultdict[key] = str(safe_path.name)
+            name = _save_dataframe(path, key, value)
+            resultdict[key] = name
         elif isinstance(value, plt.Figure):
             safe_path = path / f"{_make_safe_path(key)}.png"
             value.savefig(safe_path, dpi=DPI)
@@ -55,6 +55,24 @@ def _prepare_dict(result, path):
         else:
             resultdict[key] = value
     return resultdict
+
+
+def _save_dataframe(path, key, df):
+    safe_path = path / f"{_make_safe_path(key)}.csv"
+    df = df.copy()
+    _replace_df_pointers(df, path)
+    df.to_csv(safe_path)
+    return safe_path.name
+
+
+def _replace_df_pointers(df, path):
+    for col in df.columns:
+        if df[col].dtype == object:
+            for i, v in df[col].items():
+                if isinstance(v, dataframe_pointer.DFPointer):
+                    safe_path = path / f"{_make_safe_path(repr(v))}.csv"
+                    df.loc[i, col] = str(safe_path.name)
+                    v.df.to_csv(safe_path)
 
 
 def save_result(result, path):

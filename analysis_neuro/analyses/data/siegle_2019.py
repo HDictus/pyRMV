@@ -11,7 +11,7 @@ from analysis_neuro import terminology as terms
 from analysis_neuro.analyses.data.stimuli import allen_brain_observatory
 
 osi = pd.read_csv(files("analysis_neuro.analyses.data").joinpath("siegle-osi-2019.csv"))
-del osi[terms.VISUAL_STIMULUS]
+
 osi[terms.STIMULUS] = [
     allen_brain_observatory.drifting_gratings for _, __ in osi.iterrows()
 ]
