@@ -59,26 +59,7 @@ lien_fraction_excitation_2018 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-# TODO: there is an interesting question here:
-#   should we frame this as measuring somatic current under specific conditions,
-#   or measuring total excitation along a pathway?
-#   just like ji et al, lien used cortical silencing and voltage clamp
-#   they measued the same stuff basically
-#   but what this doesn't capture is the fact that modulatory projections
-#   and long-range corticocortical projections may be active
-#   the total excitation is inferred
-#   it is more accurate to say which pathways are inactivated than which ones are active
-#   ON THE OTHER HAND!
-#   doesn't saying 'somatic current' already somewhat prescribe a particular modeling approach?
-#   what if you can direclty access the synaptic currents and have a point-neuron model
-#   where you can just activate the synaptic currents and sum them?
-#   SOMATIC_CURRENT would require you to overcomplicate your setup
-#   PATHWAY_CURRENT is more accurate.
-#   The details of how that pathway current is measured, some of which are necessarily relevant like the voltage clamp (not if you have current-based synapses...)
-#   some of which may be relevant, such as that cortical silencing was achieved by optogenetic activation of PV neurons.
-#   if you want to model some bias you expect from the experiment, however, this is tricky
-#   you would have to take your pathway_current method and "if the COMPARTMENT is soma, then do this procedure..."
-#   I think this is an interesting case study of how one's own implementation can bias the approach to validation if you aren't careful
+
 lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     doc="""
     We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
