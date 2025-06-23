@@ -43,16 +43,9 @@ ji_relative_2016 = Analysis(
 
 
 lien_fraction_excitation_2018 = Analysis(
-    observations=pd.DataFrame(
-        {
-            terms.POSTSYNAPTIC + terms.REGION: "VISp",
-            terms.POSTSYNAPTIC + terms.SYNAPSE_CLASS: "EXC",
-            terms.PRESYNAPTIC + terms.REGION: "LGd",
-            terms.MEAN + terms.FRACTION_EXCITATION_PER_CONNECTION: [0.012],
-            terms.SAMPLE_SIZE: 14,
-            terms.DATASET: "Lien2018",
-        }
-    ),
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.lien_2013"
+    ).fraction_excitation,
     measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
     stats=stats.bootstrap_mean,
     plotter=plots.hist,
@@ -69,30 +62,9 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
     multiple.
     """,
-    observations=pd.DataFrame(
-        {
-            terms.SILENCED + terms.REGION: "VISp",
-            terms.SPECIES: "mouse",
-            terms.SAMPLE_SIZE: 42,
-            terms.VOLTAGE_CLAMP: -70,
-            terms.DATASET: "Lien2013",
-            terms.REGION: "VISp",
-            terms.LAYER: "L4",
-            terms.SYNAPSE_CLASS: "EXC",
-            terms.STIMULUS: pd.DataFrame(
-                {
-                    terms.VISUAL_STIMULUS: "bar grating",
-                    terms.CONTRAST: 1,
-                    terms.SPATIAL_FREQUENCY: 0.04,
-                    terms.TEMPORAL_FREQUENCY: 2,
-                    terms.ANGLE_AZIMUTH: [(-120, 120)],
-                    terms.ANGLE_ELEVATION: [(-60, 60)],
-                    terms.STIM_ORIENTATION: [0],
-                }
-            ).pointer(),
-            terms.MEAN + terms.SOMATIC_CURRENT: [-0.046],
-        }
-    ),
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.lien_2013"
+    ).thalamocortical_current,
     measurement=terms.SOMATIC_CURRENT,
 )
 
@@ -228,42 +200,11 @@ siegle_spontaneous_2019 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-ma_digitized = pd.DataFrame(
-    {
-        terms.MEAN
-        + terms.FIRING_RATE: [
-            0.08256880733945562,
-            2.889908256880739,
-            0.1651376146789022,
-            1.6513761467889954,
-        ],
-        terms.SAMPLE_SIZE: [37, 12, 25, 21],
-        terms.STD
-        + terms.FIRING_RATE: [
-            0.24770642201834883,
-            5.201834862385325,
-            0.41284403669725106,
-            3.7155963302752326,
-        ],
-        terms.LAYER: ["L4", "L4", "L23", "L23"],
-        terms.REGION: "VISp",
-        terms.GENE_EXPRESSION: ["Sst", "Pvalb", "Sst", "Pvalb"],
-        terms.DATASET: "Ma2010",
-        terms.STIMULUS: pd.DataFrame(
-            {
-                terms.VISUAL_STIMULUS: "gray",
-                terms.ANGLE_AZIMUTH: [(-120, 120)],
-                terms.ANGLE_ELEVATION: [(-60, 60)],
-            }
-        ).pointer(),
-    }
-)
-ma_digitized[terms.STD + terms.FIRING_RATE] -= ma_digitized[
-    terms.MEAN + terms.FIRING_RATE
-]
 
 ma_spontaneous_2010 = Analysis(
-    observations=ma_digitized,
+    observations=importlib.import_module(
+        "analysis_neuro.analyses.data.ma_2010"
+    ).spontaneous,
     measurement=terms.FIRING_RATE,
     plotter=plots.hist,
     stats=stats.bootstrap_mean,
