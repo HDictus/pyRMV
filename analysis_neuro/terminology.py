@@ -190,9 +190,6 @@ VOLTAGE_CLAMP = Term(
     description=("Membrane potential at which a voltage clamp is applied."),
 )
 
-# TODO: should we instead have CURRENT, and COMPARTMENT as separate variables,
-#  such that COMPARTMENT can specify 'soma', or perhaps point to a df of specifics?
-#  it would be more generalizable
 SOMATIC_CURRENT = Term(
     "Somatic current (nA)",
     description=("Total current recorded at soma, e.g. through a voltage clamp"),

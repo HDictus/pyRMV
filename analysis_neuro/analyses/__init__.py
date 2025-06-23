@@ -187,16 +187,6 @@ siegle_osi_2019 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-siegle_dsi_2019 = siegle_osi.with_fields(
-    doc="""
-    We compare to the levels of direction selectivity observed in
-    Seigle et al. 2019""",
-    measurement=terms.DIRECTION_SELECTIVITY,
-    observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2019"
-    ).dsi
-)
-
 siegle_spontaneous_2019 = Analysis(
     doc="""
     We compare to the firing rate distribution for blank gray stimuli
