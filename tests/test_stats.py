@@ -374,11 +374,8 @@ def test_lognorm_ttest():
         result['the population mean of msr is the same for a and b'],
         expectation)
 
-# TODO: there are several things that each stats function must
-#   be able to handle: NAN values, multiple models
-#   best if those tests can be parameterized and re-used
-def test_mannwhitney():
-    # just totally random data to use
+
+def three_continuous_datasets():
     values_experiment_d = np.random.uniform(0, 500, size=500)
     values_experiment_e = np.random.uniform(500, 1000, size=500)
     values_model1_d = np.random.uniform(20, 520, size=500)
@@ -411,7 +408,16 @@ def test_mannwhitney():
             terms.DATASET: 'model2',
             'independent var': 'e',
             'measured': values_model2_e})], axis=0)
+    samples = data.groupby(['dataset', 'independent var'])['measured']
+    return data, samples
 
+# TODO: there are several things that each stats function must
+#   be able to handle: NAN values, multiple models
+#   best if those tests can be parameterized and re-used
+#   These tests can be reapplied to multiple stats objects
+def test_mannwhitney():
+    # just totally random data to use
+    data, samples = three_continuous_datasets()
     results = stats.mann_whitney_u(data, compare=terms.DATASET,
                                    dependent='measured',
                                    independent=['independent var'])
@@ -420,16 +426,31 @@ def test_mannwhitney():
     pd.testing.assert_frame_equal(
         pd.DataFrame({
             "independent var": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue,
-                           scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue]}),
+            terms.PVALUE: [
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('experiment', 'd')), 
+                    samples.get_group(('model1', 'd'))
+                ).pvalue,
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('experiment', 'e')), 
+                    samples.get_group(('model1', 'e'))).pvalue
+            ]
+        }),
         stats_frame)
     stats_frame = results[
         "The underlying distribution of measured for experiment and model2 is the same"]
     pd.testing.assert_frame_equal(
         pd.DataFrame({
             "independent var": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_experiment_d, values_model2_d).pvalue,
-                            scipy.stats.mannwhitneyu(values_experiment_e, values_model2_e).pvalue]}),
+            terms.PVALUE: [
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('experiment', 'd')), 
+                    samples.get_group(('model2', 'd'))).pvalue,
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('experiment', 'e')), 
+                    samples.get_group(('model2', 'e'))).pvalue
+                ]
+        }),
         stats_frame)
 
     stats_frame = results[
@@ -437,11 +458,22 @@ def test_mannwhitney():
     pd.testing.assert_frame_equal(
         pd.DataFrame({
             "independent var": ['d', 'e'],
-            terms.PVALUE: [scipy.stats.mannwhitneyu(values_model1_d, values_model2_d).pvalue,
-                            scipy.stats.mannwhitneyu(values_model1_e, values_model2_e).pvalue]}),
+            terms.PVALUE: [
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('model1', 'd')),
+                    samples.get_group(('model2', 'd'))).pvalue,
+                scipy.stats.mannwhitneyu(
+                    samples.get_group(('model1', 'e')),
+                    samples.get_group(('model2', 'e'))).pvalue
+            ]
+        }),
         stats_frame)
 
+
+def test_mannwhitney_nan_ind():
     # Verify that if some independent variables are NaN, it still compares those rows
+    data, samples = three_continuous_datasets()
+    samples = data.copy().groupby(['dataset', 'independent var'])['measured']
     data.loc[data['independent var'] == 'd', 'independent var'] = np.nan
     results = stats.mann_whitney_u(
         data,
@@ -451,9 +483,71 @@ def test_mannwhitney():
 
     stats_frame = results[
         "The underlying distribution of measured for experiment and model1 is the same"]
-    assert np.allclose(stats_frame[terms.PVALUE].values,
-                [scipy.stats.mannwhitneyu(values_experiment_e, values_model1_e).pvalue,
-                 scipy.stats.mannwhitneyu(values_experiment_d, values_model1_d).pvalue])
+    assert np.allclose(
+        stats_frame[terms.PVALUE].values,
+            [scipy.stats.mannwhitneyu(
+                samples.get_group(('experiment', 'e')), 
+                samples.get_group(('model1', 'e'))).pvalue,
+            scipy.stats.mannwhitneyu(
+                samples.get_group(('experiment', 'd')), 
+                samples.get_group(('model1', 'd'))).pvalue
+            ]
+        )
+
+
+def test_mannwhitney_nan_multiple():
+    # Verify that if some independent variables are NaN, it still compares those rows
+    data, samples = three_continuous_datasets()
+    samples = data.copy().groupby(['dataset', 'independent var'])['measured']
+    data['secondvar'] = np.nan
+    data.loc[data['independent var'] == 'd', 'independent var'] = np.nan
+    results = stats.mann_whitney_u(
+        data,
+        compare=terms.DATASET,
+        dependent='measured',
+        independent=['independent var', 'secondvar'])
+
+    stats_frame = results[
+        "The underlying distribution of measured for experiment and model1 is the same"]
+    assert np.allclose(
+        stats_frame[terms.PVALUE].values,
+            [scipy.stats.mannwhitneyu(
+                samples.get_group(('experiment', 'e')), 
+                samples.get_group(('model1', 'e'))).pvalue,
+            scipy.stats.mannwhitneyu(
+                samples.get_group(('experiment', 'd')), 
+                samples.get_group(('model1', 'd'))).pvalue
+            ]
+        )
+
+
+def test_mannwhitney_sample_of_1():
+    data = pd.DataFrame({
+        'param': [1, 1, 1, 1],
+        'value': [20, 23, 21, 23],
+        'dataset': ['a', 'a', 'a', 'b']
+    })
+    results = stats.mann_whitney_u(
+        data, dependent='value', independent=['param'], compare='dataset'
+    )
+    pvalue = results[
+        'The underlying distribution of value for a and b is the same'
+    ][terms.PVALUE]
+
+    assert (pvalue > 0.05).all()
+    
+    data = pd.DataFrame({
+        'param': [1, 1, 1, 1],
+        'value': [23, 23, 21, 20],
+        'dataset': ['a', 'b', 'b', 'b']
+    })
+    results = stats.mann_whitney_u(
+        data, dependent='value', independent=['param'], compare='dataset'
+    )
+    pvalue = results[
+        'The underlying distribution of value for a and b is the same'
+    ][terms.PVALUE]
+    assert (pvalue > 0.05).all()
 
 
 # TODO: test the case where there are no varying independent variables!

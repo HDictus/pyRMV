@@ -317,6 +317,13 @@ def lognorm_ttest(
     return hypotheses
 
 
+def _checkna(v):
+    try:
+        return np.isnan(v)
+    except TypeError:
+        return False
+
+
 def mann_whitney_u(
     data: pd.DataFrame, dependent: str, independent: List[str], compare: str
 ):
@@ -339,25 +346,38 @@ def mann_whitney_u(
             f"The underlying distribution of {dependent}"
             f" for {label1} and {label2} is the same"
         )
-        data2.set_index(independent, inplace=True)
+        data2_groups = data2.groupby(independent, dropna=False)
 
         out_list = []
-
         for independent_values, grouped1 in data1.groupby(independent, dropna=False):
             if not isinstance(independent_values, tuple):
                 independent_values = (independent_values,)
-
             try:
-                grouped2 = data2.loc[independent_values]
+                grouped2 = data2_groups.get_group(independent_values)
             except KeyError:
-                continue
-
+                # this is necessary due to a bug in pandas.
+                # when pandas 3.0 is released, this can be removed
+                nan_keys = [k for k, v in zip(independent, independent_values) if _checkna(v)]
+                non_nan_keys = [k for k, v in zip(independent, independent_values) if ~_checkna(v)]
+                non_nan_values = tuple(v for k, v in zip(independent, independent_values) if ~_checkna(v))
+                if len(nan_keys) > 0:
+                    nans = np.all([
+                        data2[key].isna() for key in nan_keys
+                    ], axis=0)
+                    if len(non_nan_keys) == 0:
+                        grouped2 = data2[nans]
+                    else:
+                        grouped2 = data2[nans].groupby(non_nan_keys).get_group(non_nan_values)
+                else:
+                    continue
+            sample1 = grouped1[dependent].dropna().values
+            sample2 = grouped2[dependent].dropna().values
             out_list.append(
                 {
                     **dict(zip(independent, independent_values)),
                     terms.PVALUE: stats.mannwhitneyu(
-                        grouped1[dependent].dropna().values,
-                        grouped2[dependent].dropna().values,
+                        sample1,
+                        sample2,
                     ).pvalue,
                 }
             )
