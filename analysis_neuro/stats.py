@@ -382,7 +382,6 @@ def mann_whitney_u(
                 }
             )
         hypotheses[hypothesis] = pd.DataFrame(out_list)
-
     return hypotheses
 
 

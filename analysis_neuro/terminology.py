@@ -80,6 +80,10 @@ MTYPE = Term(
     ),
 )
 
+SMIZELL_TYPE = Term(
+    "Schneider-Mizell type",
+    "Cell class according to the clustering method from Schnieder-Mizell et al. 2023")
+
 
 IMAGED_WIDTH = Term(
     "width of imaged area (um)",

@@ -1,3 +1,2 @@
-python -m venv .siegle_ecephys_venv
-.siegle_ecephys_venv/bin/pip install allensdk analysis-neuro
-.siegle_ecephys_venv/bin/python download_siegle_data.py
+bash download_scripts/download_sielge_data.bash
+bash download_schneider_mizell.bash

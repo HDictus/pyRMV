@@ -158,6 +158,46 @@ jiang_intersomatic_2015 = Analysis(
     plotter=_histogram,
 )
 
+# TODO: this info is in two places: the download script and the loading part.
+
+schneider_mizell_connprob_2023 = jiang_connprob_2015.with_fields(
+    observations=pd.read_csv(DATADIR / 'schneider-mizell-connprob.csv', index_col=0)
+)
+
+# TODO: update crossplot to do this
+def nsyn_crossplot(data, dependent, independent, compare):
+    compared = []
+    averaged = data.groupby([compare] + independent)[dependent].mean().reset_index()
+    for dset1, data1 in data.groupby(compare):
+        for dset2, data2 in data.groupby(compare):
+            if dset1 == dset2:
+                continue
+            if (dset2, dset1) in compared:
+                continue
+            compared.append((dset1, dset2))
+            f = plt.figure()
+            one = averaged[averaged[compare] == dset1][dependent]
+            other = averaged[averaged[compare] == dset2][dependent]
+            minimum = min(one.min(), other.min())
+            maximum = max(one.max(), other.max())
+            plt.scatter(
+                one,
+                other
+            )
+            plt.plot([minimum, maximum], [minimum, maximum], color='gray')
+            plt.xlabel(dset1)
+            plt.ylabel(dset2)
+
+    return {}
+
+schneider_mizell_synconn_2023 = Analysis(
+    observations=pd.read_csv(DATADIR / 'schneider-mizell-nsyn.csv', index_col=0),
+    measurement=terms.SYNAPSES_PER_CONNECTION,
+    plotter=nsyn_crossplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
 
 def _histogram_siegle(data, dependent, independent, compare):
     # pylint: disable=unused-argument
