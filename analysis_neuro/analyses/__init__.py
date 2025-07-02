@@ -160,7 +160,7 @@ jiang_intersomatic_2015 = Analysis(
 
 # TODO: this info is in two places: the download script and the loading part.
 
-schneider_mizell_connprob_2023 = jiang_connprob_2015.with_fields(
+schneider_mizell_connprob_2024 = jiang_connprob_2015.with_fields(
     observations=pd.read_csv(DATADIR / 'schneider-mizell-connprob.csv', index_col=0)
 )
 
@@ -168,6 +168,7 @@ schneider_mizell_connprob_2023 = jiang_connprob_2015.with_fields(
 def nsyn_crossplot(data, dependent, independent, compare):
     compared = []
     averaged = data.groupby([compare] + independent)[dependent].mean().reset_index()
+    out = {}
     for dset1, data1 in data.groupby(compare):
         for dset2, data2 in data.groupby(compare):
             if dset1 == dset2:
@@ -187,10 +188,11 @@ def nsyn_crossplot(data, dependent, independent, compare):
             plt.plot([minimum, maximum], [minimum, maximum], color='gray')
             plt.xlabel(dset1)
             plt.ylabel(dset2)
+            out[f'{dset1}-{dset2}.png'] = f
+    return out
 
-    return {}
 
-schneider_mizell_synconn_2023 = Analysis(
+schneider_mizell_synconn_2024 = Analysis(
     observations=pd.read_csv(DATADIR / 'schneider-mizell-nsyn.csv', index_col=0),
     measurement=terms.SYNAPSES_PER_CONNECTION,
     plotter=nsyn_crossplot,

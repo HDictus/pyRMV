@@ -20,6 +20,8 @@ layer_boundaries = pd.DataFrame({
 
 def assign_layer(row):                                                                                                                                                                                   
     """Based on fig. 3"""   
+    if row['m_type'].startswith('L'):
+        return row['m_type'][:2]
     position = row['pt_position_um_y']                                                                                                                                                                                              
     for l, b in layer_boundaries['lower_bound'].items():                                                                                                                                                                                 
         if position < b:                                                                                                                                                                                 
@@ -35,10 +37,22 @@ assert np.all(sm_edges.groupby(['post_soma_id'])['m_type_post'].nunique() == 1)
 sm_edges = sm_edges[np.isin(sm_edges['post_soma_id'], cell_types.index.values)]
 types = sm_edges.groupby(['post_soma_id'])['m_type_post'].apply(lambda s: s.iloc[0])
 cell_types['m_type'] = types
-sm_edges['pre_layer'] = cell_types.loc[sm_edges['pre_soma_id'].values, 'layer'].values
-sm_edges = sm_edges[np.isin(sm_edges['post_soma_id'], cell_types.index.values)]
-sm_edges['post_layer'] = cell_types.loc[sm_edges['post_soma_id'].values, 'layer'].values
+sm_edges['pre_layer'] = [
+    mt[:2] if mt.startswith('L') else l
+    for l, mt in zip(
+        cell_types.loc[sm_edges['pre_soma_id'].values, 'layer'].values,
+        sm_edges['m_type_pre']
+    )
+]
 
+sm_edges = sm_edges[np.isin(sm_edges['post_soma_id'], cell_types.index.values)]
+sm_edges['post_layer'] = [
+    mt[:2] if mt.startswith('L') else l
+    for l, mt in zip(
+        cell_types.loc[sm_edges['post_soma_id'].values, 'layer'].values,
+        sm_edges['m_type_post']
+    )
+]
 nsyn = pd.DataFrame({
     terms.PRESYNAPTIC + terms.LAYER: sm_edges['pre_layer'],
     terms.POSTSYNAPTIC + terms.LAYER: sm_edges['post_layer'],
@@ -48,7 +62,7 @@ nsyn = pd.DataFrame({
     terms.COLUMN_RADIUS: 50,
 })
 
-cell_counts = cell_types.groupby(['m_type', 'layer'])['pt_root_id'].count()
+cell_counts = sm_edges.groupby(['m_type_post', 'post_layer'])['post_soma_id'].nunique()
 print(cell_counts)
 connprobs = []
 for (prel, posl, prem, posm), edges in nsyn.groupby([
@@ -56,6 +70,7 @@ for (prel, posl, prem, posm), edges in nsyn.groupby([
     terms.POSTSYNAPTIC + terms.LAYER,
     terms.PRESYNAPTIC + terms.SMIZELL_TYPE,
     terms.POSTSYNAPTIC + terms.SMIZELL_TYPE]):
+
     total_pre = cell_counts[(prem, prel)]
     total_post = cell_counts[(posm, posl)]
     if (prel, prem) == (posl, posm):
@@ -69,15 +84,16 @@ for (prel, posl, prem, posm), edges in nsyn.groupby([
         terms.PRESYNAPTIC + terms.SMIZELL_TYPE: prem,
         terms.POSTSYNAPTIC + terms.SMIZELL_TYPE: posm,
         terms.SAMPLE_SIZE: npairs,
+        terms.COLUMN_RADIUS: 50,
         terms.CONNECTION_PROBABILITY: nconn / npairs
     })
 
 connprob = pd.DataFrame(connprobs)
 
-nsyn[terms.DATASET] = 'Schneider-Mizell2023'
-nsyn[terms.CITATION] = 'schneider-mizell_cell-type_2023'
-connprob[terms.DATASET] = 'Schneider-Mizell2023'
-connprob[terms.CITATION] = 'schneider-mizell_cell-type_2023'
+nsyn[terms.DATASET] = 'Schneider-Mizell2024'
+nsyn[terms.CITATION] = 'schneider-mizell_cell-type_2024'
+connprob[terms.DATASET] = 'Schneider-Mizell2024'
+connprob[terms.CITATION] = 'schneider-mizell_cell-type_2024'
 
 nsyn.to_csv("../../../analysis_neuro/analyses/data/schneider-mizell-nsyn.csv")
 connprob.to_csv("../../../analysis_neuro/analyses/data/schneider-mizell-connprob.csv")

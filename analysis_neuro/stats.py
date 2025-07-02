@@ -210,6 +210,7 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
             for s, n, p in zip(sampleprob, trials, probability)
         ]
 
+
     def binomtest(data1, data2, label1, label2):
         assume_1_accurate = np.logical_or(
             np.isnan(data1[terms.SAMPLE_SIZE].values),
@@ -247,8 +248,10 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
             f"The probability {dependent} is the same for {label1} as for {label2}."
         )
         pvalues = binomtest(dataset1, dataset2, label1, label2)
-        statistic = dataset1[independent]
+        statistic = dataset1[independent].copy()
         statistic[terms.PVALUE] = list(pvalues)
+        statistic[label1 + dependent] = dataset1[dependent]
+        statistic[label2 + dependent] = dataset2[dependent]
         hypotheses[hypothesis] = statistic
 
     return hypotheses
@@ -372,13 +375,18 @@ def mann_whitney_u(
                     continue
             sample1 = grouped1[dependent].dropna().values
             sample2 = grouped2[dependent].dropna().values
+            if len(sample1) == 0 or len(sample2) == 0:
+                pvalue = np.nan
+            else:
+                pvalue = stats.mannwhitneyu(
+                            sample1,
+                            sample2,
+                        ).pvalue
+
             out_list.append(
                 {
                     **dict(zip(independent, independent_values)),
-                    terms.PVALUE: stats.mannwhitneyu(
-                        sample1,
-                        sample2,
-                    ).pvalue,
+                    terms.PVALUE: pvalue
                 }
             )
         hypotheses[hypothesis] = pd.DataFrame(out_list)

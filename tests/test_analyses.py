@@ -271,17 +271,17 @@ def test_schneider_mizell_connprob():
         label='perfect'
 
         def connection_probability(self, params):
-            return ana.schneider_mizell_connprob_2023.observations.assign(**{terms.DATASET: self.label})
+            return ana.schneider_mizell_connprob_2024.observations.assign(**{terms.DATASET: self.label})
 
 
-    result = ana.schneider_mizell_connprob_2023(MockModel(), PerfectModel())
+    result = ana.schneider_mizell_connprob_2024(MockModel(), PerfectModel())
     mockresults = result["measurements"][
         result["measurements"][terms.DATASET] == "mock"
     ]
     assert np.all(mockresults[terms.CONNECTION_PROBABILITY] == 0.9)
     assert result["verdict"] == {
-        "The probability connection probability is the same for Schneider-Mizell2023 as for mock.": "Fail",
-        "The probability connection probability is the same for Schneider-Mizell2023 as for perfect.": "Pass",
+        "The probability connection probability is the same for Schneider-Mizell2024 as for mock.": "Fail",
+        "The probability connection probability is the same for Schneider-Mizell2024 as for perfect.": "Pass",
         "The probability connection probability is the same for mock as for perfect.": "Fail",
     }
 
@@ -302,16 +302,16 @@ def test_schneider_mizell_syn_per_conn():
         label='perfect'
 
         def synapses_per_connection(self, parameters):
-            return ana.schneider_mizell_synconn_2023.observations.assign(**{terms.DATASET: self.label})
+            return ana.schneider_mizell_synconn_2024.observations.assign(**{terms.DATASET: self.label})
 
-    result = ana.schneider_mizell_synconn_2023(MockModel(), PerfectModel())
+    result = ana.schneider_mizell_synconn_2024(MockModel(), PerfectModel())
     mockresults = result["measurements"][
         result["measurements"][terms.DATASET] == "mock"
     ]
     # TODO: brittleness and extra work in writing hypothesis names - should be gotten from stats objects?
     assert result["verdict"] == {
-        f"The underlying distribution of {terms.SYNAPSES_PER_CONNECTION} for Schneider-Mizell2023 and mock is the same": "Fail",
-        f"The underlying distribution of {terms.SYNAPSES_PER_CONNECTION} for Schneider-Mizell2023 and perfect is the same": "Pass",
+        f"The underlying distribution of {terms.SYNAPSES_PER_CONNECTION} for Schneider-Mizell2024 and mock is the same": "Fail",
+        f"The underlying distribution of {terms.SYNAPSES_PER_CONNECTION} for Schneider-Mizell2024 and perfect is the same": "Pass",
         f"The underlying distribution of {terms.SYNAPSES_PER_CONNECTION} for mock and perfect is the same": "Fail",
     }
 
