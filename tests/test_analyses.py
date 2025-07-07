@@ -581,3 +581,27 @@ def test_lien_total_excitation():
 
     assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as bad'] == "Fail"
     assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as good'] == "Pass"
+
+
+def test_campagnola_connprob():
+
+    class MockModel:
+
+        label = "mock"
+
+        def connection_probability(self, params):
+            return params.assign(**{terms.CONNECTION_PROBABILITY: 0.1})
+
+    class PerfectModel:
+
+        label='perfect'
+
+        def connection_probability(self, params):
+            return ana.campagnola_connprob_2022.observations.assign(**{terms.DATASET: self.label})
+
+    results = ana.campagnola_connprob_2022(MockModel(), PerfectModel())
+    for hypothesis, outcome in results['verdict'].items():
+        if 'mock' in hypothesis:
+            assert outcome == 'Fail'
+        else:
+            assert outcome == 'Pass'
