@@ -203,19 +203,25 @@ schneider_mizell_synconn_2024 = Analysis(
 
 def barplot_by_pway(data, dependent, independent, compare):
     figs = {}
-    for pway, pway_group in data.groupby([
+    """
+    pathways = [
         terms.PRESYNAPTIC + terms.GENE_EXPRESSION,
         terms.POSTSYNAPTIC + terms.GENE_EXPRESSION,
         terms.PRESYNAPTIC + terms.LAYER,
-        terms.POSTSYNAPTIC + terms.LAYER
-    ]):
+        terms.POSTSYNAPTIC + terms.LAYER,
+        terms.REGION,
+    ]"""
+    pathways = [ind for ind in independent if terms.INTERSOMATIC_DISTANCE not in ind]
+    for pway, pway_group in data.groupby(pathways):
         grouped_by_vertical_distance = pway_group.groupby([
             terms.MIN + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE,
             terms.MAX + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE]
         )
         ngroups = grouped_by_vertical_distance.ngroups
-        f, ax = plt.subplots((1, ngroups), sharex=true)
-        for i, ((min_, max_), group) in grouped_by_vertical_distance:
+        f, ax = plt.subplots(ngroups, 1, sharex=True)
+        if ngroups == 1:
+            ax = [ax]
+        for i, ((min_, max_), group) in enumerate(grouped_by_vertical_distance):
             sns.barplot(
                 x=np.float32(group[terms.MIN + terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE].values),
                 y=group[dependent].values,
@@ -227,12 +233,13 @@ def barplot_by_pway(data, dependent, independent, compare):
 
 # TODO: PSC, PSP, STP, DECAY validations
 campagnola_connprob_2022 = Analysis(
-    observations=pd.read_csv(DATADIR / 'campagnola_mouse_2022_connectivity.csv'),
+    observations=pd.read_csv(DATADIR / 'campagnola_mouse_2022_connectivity.csv').dropna(),
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=barplot_by_pway,
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05)
 )
+
 
 def _histogram_siegle(data, dependent, independent, compare):
     # pylint: disable=unused-argument
