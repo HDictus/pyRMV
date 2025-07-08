@@ -56,7 +56,7 @@ for pair in tqdm(list(pairs)):
         terms.SPECIES: 'mouse',
         terms.REGION: pair.experiment.target_region.replace('VisP', 'VISp'), # breaking your own convetion, aibs... tut-tut
         terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE: np.abs(pair.lateral_distance) * 1e6,
-        terms.VERTICAL + terms.INTERSOMATIC_DISTANCE: np.abs(pair.vertical_distance) * 1e6,
+        terms.VERTICAL + terms.INTERSOMATIC_DISTANCE: pair.vertical_distance * 1e6,
 
         terms.PRESYNAPTIC + terms.LAYER: f'L{pair.pre_cell.cortical_location.cortical_layer}'.replace('/', ''),
         terms.PRESYNAPTIC + terms.GENE_EXPRESSION: _format_gene(pair.pre_cell.cre_type),

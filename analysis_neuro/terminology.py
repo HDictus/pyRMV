@@ -290,6 +290,20 @@ CONNECTION_PROBABILITY = Term(
     ),
     measurement_method="connection_probability",
 )
+
+IN_DEGREE = Term(
+    "In-degree",
+    "Number of edges coming into a node in the network.",
+    measurement_method='in_degree'
+)
+
+OUT_DEGREE = Term(
+    "Out-degree",
+    "Number of edges going out of a node in the network.",
+    measurement_method='out_degree'
+)
+
+
 INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"),
