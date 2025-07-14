@@ -6,6 +6,11 @@ from analysis_neuro import terminology as terms
 import pandas as pd
 
 
+# TODO: for schuz_density_blabla what we really have is mean density across 3 animals
+#  we should make it reflect that, and then it could apply a bootstrap-mean test.
+#  However, this is not useful for our model, as our model provides only a single
+#  animal, without an uncertainty estimate.
+#  this represents a difficulty with the framework
 def test_schuz_density():
     class MockModel:
 
@@ -584,7 +589,12 @@ def test_lien_total_excitation():
 
 
 def test_campagnola_connprob():
-
+    # full validation takes a lot of memory
+    test_version = ana.campagnola_connprob_2022.with_fields(
+        observations=ana.campagnola_connprob_2022.observations[
+            ana.campagnola_connprob_2022.observations[terms.SAMPLE_SIZE] > 6
+        ]
+    )
     class MockModel:
 
         label = "mock"
@@ -597,9 +607,10 @@ def test_campagnola_connprob():
         label='perfect'
 
         def connection_probability(self, params):
-            return ana.campagnola_connprob_2022.observations.assign(**{terms.DATASET: self.label})
+            return test_version.observations.assign(**{terms.DATASET: self.label})
 
-    results = ana.campagnola_connprob_2022(MockModel(), PerfectModel())
+    results = test_version(MockModel(), PerfectModel())
+    import pdb; pdb.set_trace()
     for hypothesis, outcome in results['verdict'].items():
         if 'mock' in hypothesis:
             assert outcome == 'Fail'

@@ -111,9 +111,8 @@ If no existing terminology is defined for a relevant variable, the user should d
     # (inside analysis_neuro/terminology.py)
     CONNECTION_PROBABILITY = Term(
          "connection probability",
-         "The probability for a random pair of cells in a pathway to have at least one synapse between them")
-
-    measurements[CONNECTION_PROBABILITY] = {'method_name': 'connection_probability'}
+         "The probability for a random pair of cells in a pathway to have at least one synapse between them",
+         measurement_method='connection_probability')
 
 
 TODO: we plan to make the latter step unnecessary in the future.
