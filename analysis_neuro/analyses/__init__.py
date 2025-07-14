@@ -7,6 +7,7 @@ except ImportError:
 
 import importlib
 import warnings
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -237,6 +238,87 @@ campagnola_connprob_2022 = Analysis(
     measurement=terms.CONNECTION_PROBABILITY,
     plotter=barplot_by_pway,
     stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+psc_measurements = [terms.PSC_AMPLITUDE, terms.PSC_RISE_TIME, terms.PSC_DECAY_TAU]
+psc_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psc.csv').dropna()
+
+campagnola_psc_amp_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_AMPLITUDE]),
+    measurement=terms.PSC_AMPLITUDE,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psc_decay_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_DECAY_TAU]),
+    measurement=terms.PSC_DECAY_TAU,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psc_rise_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_RISE_TIME]),
+    measurement=terms.PSC_RISE_TIME,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+psp_measurements = [terms.PSP_AMPLITUDE, terms.PSP_RISE_TIME, terms.PSP_DECAY_TAU]
+psp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psp.csv').dropna()
+
+campagnola_psp_amp_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_AMPLITUDE]),
+    measurement=terms.PSP_AMPLITUDE,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psp_decay_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_DECAY_TAU]),
+    measurement=terms.PSP_DECAY_TAU,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psp_rise_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_RISE_TIME]),
+    measurement=terms.PSP_RISE_TIME,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+stp_measurements = [terms.STP_INDUCTION, terms.STP_RECOVERY, terms.PAIRED_PULSE_DIFFERENCE]
+stp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_stp.csv').dropna()
+
+campagnola_stp_induction_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in psp_measurements if c != terms.STP_INDUCTION]),
+    measurement=terms.STP_INDUCTION,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_stp_recovery_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in psp_measurements if c != terms.STP_RECOVERY]),
+    measurement=terms.STP_RECOVERY,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_ppd_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in psp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]),
+    measurement=terms.PAIRED_PULSE_DIFFERENCE,
+    plotter=barplot_by_pway,
+    stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
