@@ -114,8 +114,7 @@ If no existing terminology is defined for a relevant variable, the user should d
          "The probability for a random pair of cells in a pathway to have at least one synapse between them",
          measurement_method='connection_probability')
 
-
-TODO: we plan to make the latter step unnecessary in the future.
+.
 
 The ``Model`` object should define a method for the desired measurement:
 
@@ -143,6 +142,23 @@ For instance, for the above experimental data the ``parameters`` correspond to t
 
 The return value is of the same format as experimental ``observations``, with one row per measurement sample.
 
+For many forms of data, there are multiple measurements per combination of parameters, e.g.
+
++--------------------+-------------------+---------------------+------------------------------------+-------------------------+
+| presynaptic region | presynaptic layer | postsynaptic region | max retinotopic_distance (degrees) | synapses per connection |
++====================+===================+=====================+====================================+=========================+
+| VISp               | L23               | VISlm               |                               30   |                  3      |
++--------------------+-------------------+---------------------+------------------------------------+-------------------------+
+| VISp               | L23               | VISlm               |                               30   |                  2     |
++--------------------+-------------------+---------------------+------------------------------------+-------------------------+
+
+In this case, the parameters dataframe would turn out as.
+
++--------------------+-------------------+---------------------+------------------------------------+
+| presynaptic region | presynaptic layer | postsynaptic region | max retinotopic_distance (degrees) |
++====================+===================+=====================+====================================+
+| VISp               | L23               | VISlm               |                               30   |
++--------------------+-------------------+---------------------+------------------------------------+
 
 Contributing
 ============
