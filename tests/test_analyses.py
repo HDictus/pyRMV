@@ -610,7 +610,7 @@ def test_campagnola_connprob():
             return test_version.observations.assign(**{terms.DATASET: self.label})
 
     results = test_version(MockModel(), PerfectModel())
-    import pdb; pdb.set_trace()
+
     for hypothesis, outcome in results['verdict'].items():
         if 'mock' in hypothesis:
             assert outcome == 'Fail'

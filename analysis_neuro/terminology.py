@@ -403,22 +403,26 @@ PSC_AMPLITUDE = Term(
 # the same is true for amplitude...
 PSP_RISE_TIME = Term(
     "PSP rise time (ms)",
-    ("Time from initiation to peak of post-synaptic potential")
+    ("Time from initiation to peak of post-synaptic potential"),
+    measurement_method='psp_rise_time',
 )
 
 PSC_RISE_TIME = Term(
     "PSC rise time (ms)",
     ("time from initiation to peak of post-synaptic current"),
+    measurement_method='psc_rise_time'
 )
 
 # TODO: decay time constant is also more general concept
 PSC_DECAY_TAU = Term(
     "PSC decay tau (ms)",
-    "decay time constant of post-synaptic current"
+    "decay time constant of post-synaptic current",
+    measurement_method='psc_decay_tau'
 )
 PSP_DECAY_TAU = Term(
     "PSP decay tau (ms)",
-    "decay time constant of post-synaptic potential"
+    "decay time constant of post-synaptic potential",
+    measurement_method='psp_decay_tau'
 )
 
 HOLDING_POTENTIAL = Term(
