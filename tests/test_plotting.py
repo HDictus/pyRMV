@@ -109,15 +109,15 @@ def test_hist_with_grouping():
     assert all(isinstance(fig, plt.Figure) for fig in figs.values())
 
 
-def test_hist_custom_bins():
-    """Test hist with custom bin count."""
+def test_hist_standard_bins():
+    """Test hist with standard bin count."""
     np.random.seed(42)
     data = pd.DataFrame({
         'values': np.random.normal(0, 1, 100),
         'dataset': ['test'] * 100
     })
     
-    figs = plots.hist(data, 'values', [], 'dataset', n_bins=50)
+    figs = plots.hist(data, 'values', [], 'dataset')
     assert len(figs) == 1
     assert isinstance(list(figs.values())[0], plt.Figure)
 
@@ -257,8 +257,8 @@ def test_scatter_with_binned_mean_basic():
     assert isinstance(figs['test'], plt.Figure)
 
 
-def test_scatter_with_binned_mean_custom_bins():
-    """Test scatter with binned mean with custom bin count."""
+def test_scatter_with_binned_mean_standard_bins():
+    """Test scatter with binned mean with standard bin count."""
     np.random.seed(42)
     x = np.random.uniform(-1, 1, 100)
     y = x * 0.5 + np.random.normal(0, 0.1, 100)
@@ -268,7 +268,7 @@ def test_scatter_with_binned_mean_custom_bins():
         'dataset': ['test'] * 100
     })
     
-    figs = plots.scatter_with_binned_mean(data, 'y', ['x'], 'dataset', n_bins=15)
+    figs = plots.scatter_with_binned_mean(data, 'y', ['x'], 'dataset')
     assert len(figs) == 1
     assert isinstance(figs['test'], plt.Figure)
 

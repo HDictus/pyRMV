@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 
 from analysis_neuro import terminology as terms
+from analysis_neuro.stats import _iter_compare
 
 
 def crossplot(data: pd.DataFrame, dependent: str, independent: List[str],
@@ -27,33 +28,24 @@ def crossplot(data: pd.DataFrame, dependent: str, independent: List[str],
         Dictionary mapping comparison names to matplotlib figures
     """
     figs = {}
-    compared = []
-
+    
     group_cols = [compare] + independent
     averaged = data.groupby(group_cols)[dependent].mean().reset_index()
 
-    for dset1, data1 in averaged.groupby(compare):
-        for dset2, data2 in averaged.groupby(compare):
-            if dset1 == dset2:
-                continue
-            if (dset2, dset1) in compared:
-                continue
+    for l1, data1, l2, data2 in _iter_compare(averaged, compare):
+        fig = plt.figure()
+        figs[f"{l1}-{l2}"] = fig
+        
+        one = data1[dependent].values
+        other = data2[dependent].values
 
-            compared.append((dset1, dset2))
+        minimum = min(one.min(), other.min())
+        maximum = max(one.max(), other.max())
 
-            fig = plt.figure()
-            one = data1[dependent].values
-            other = data2[dependent].values
-
-            minimum = min(one.min(), other.min())
-            maximum = max(one.max(), other.max())
-
-            plt.scatter(one, other)
-            plt.plot([minimum, maximum], [minimum, maximum], color='gray')
-            plt.xlabel(str(dset1))
-            plt.ylabel(str(dset2))
-
-            figs[f'{dset1}-{dset2}'] = fig
+        plt.scatter(one, other)
+        plt.plot([minimum, maximum], [minimum, maximum], color='gray')
+        plt.xlabel(str(l1))
+        plt.ylabel(str(l2))
 
     return figs
 
@@ -92,7 +84,7 @@ def pathway_heatmap(data: pd.DataFrame, dependent: str,
 
 
 def hist(data: pd.DataFrame, dependent: str, independent: List[str],
-         compare: str, n_bins: int = 100) -> Dict[str, plt.Figure]:
+         compare: str) -> Dict[str, plt.Figure]:
     """Create histograms comparing datasets.
 
     Creates a histogram for each unique combination of independent variables.
@@ -104,7 +96,6 @@ def hist(data: pd.DataFrame, dependent: str, independent: List[str],
         dependent: column name for the dependent variable
         independent: list of column names for independent variables
         compare: column name for dataset comparison
-        n_bins: number of bins for the histogram
 
     Returns:
         Dictionary mapping variable combinations to matplotlib figures
@@ -114,7 +105,7 @@ def hist(data: pd.DataFrame, dependent: str, independent: List[str],
     for indvars, alldata in data.groupby(independent_vars):
         fig = plt.figure()
         bins = np.linspace(
-            np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), n_bins
+            np.nanmin(alldata[dependent]), np.nanmax(alldata[dependent]), 50
         )
         plt.title(str(indvars))
         for label, dataset in alldata.groupby(compare):
@@ -230,8 +221,7 @@ def pathway_barplot(data: pd.DataFrame, dependent: str,
 
 
 def scatter_with_binned_mean(data: pd.DataFrame, dependent: str,
-                             independent: List[str], compare: str,
-                             n_bins: int = 20) -> Dict[str, plt.Figure]:
+                             independent: List[str], compare: str) -> Dict[str, plt.Figure]:
     """Create scatter plots with binned mean overlay.
 
     Plots scatter data with a binned mean line overlay showing the
@@ -242,7 +232,6 @@ def scatter_with_binned_mean(data: pd.DataFrame, dependent: str,
         dependent: column name for the dependent variable
         independent: list of column names for independent variables
         compare: column name for dataset comparison
-        n_bins: number of bins for the mean overlay
 
     Returns:
         Dictionary mapping dataset labels to matplotlib figures
@@ -262,7 +251,7 @@ def scatter_with_binned_mean(data: pd.DataFrame, dependent: str,
         )
 
         x_range = np.linspace(
-            dataset[x_col].min(), dataset[x_col].max(), n_bins
+            dataset[x_col].min(), dataset[x_col].max(), 50
         )
         mean_y = (
             dataset[dependent]
