@@ -45,7 +45,7 @@ lien_fraction_excitation_2018 = Analysis(
     ).fraction_excitation,
     measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
     stats=stats.bootstrap_mean,
-    plotter=plots.unified_histogram,
+    plotter=plots.hist,
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
@@ -142,7 +142,7 @@ jiang_intersomatic_2015 = Analysis(
     """,
     measurement=terms.INTERSOMATIC_DISTANCE,
     observations=jiangd.jiang_intersomatic_2015,
-    plotter=plots.unified_histogram,
+    plotter=plots.hist,
 )
 
 # TODO: this info is in two places: the download script and the loading part.
@@ -157,7 +157,7 @@ schneider_mizell_connprob_2024 = jiang_connprob_2015.with_fields(
 schneider_mizell_synconn_2024 = Analysis(
     observations=pd.read_csv(DATADIR / 'schneider-mizell-nsyn.csv', index_col=0),
     measurement=terms.SYNAPSES_PER_CONNECTION,
-    plotter=plots.averaged_crossplot,
+    plotter=plots.crossplot,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05)
 )
@@ -265,7 +265,7 @@ siegle_osi_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).osi,
-    plotter=plots.unified_histogram,
+    plotter=plots.hist,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -278,7 +278,7 @@ siegle_spontaneous_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).spontaneous,
-    plotter=plots.unified_histogram,
+    plotter=plots.hist,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -289,7 +289,7 @@ ma_spontaneous_2010 = Analysis(
         "analysis_neuro.analyses.data.ma_2010"
     ).spontaneous,
     measurement=terms.FIRING_RATE,
-    plotter=plots.unified_histogram,
+    plotter=plots.hist,
     stats=stats.bootstrap_mean,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -398,11 +398,16 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
     cossell_digitized = pd.read_csv(
         DATADIR.joinpath("cossell_response_correlation_2015.csv")
     ).values
-    return plots.unified_histogram(
-        data, dependent, independent, compare,
-        reference_data=cossell_digitized,
-        reference_label="Cossell et al. 2015 (digitized)"
-    )
+    figs = plots.hist(data, dependent, independent, compare)
+    
+    for _, fig in figs.items():
+        ax = fig.gca()
+        ref_x, ref_y = cossell_digitized[:, 0], cossell_digitized[:, 1]
+        ref_y = ref_y / np.trapz(ref_y, ref_x)
+        ax.plot(ref_x, ref_y, label="Cossell et al. 2015 (digitized)")
+        ax.legend()
+    
+    return figs
 
 
 cossell_response_correlation_2015 = Analysis(

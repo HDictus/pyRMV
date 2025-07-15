@@ -38,7 +38,7 @@ def test_pathway_heatmap_adjusts_size():
 def test_crossplot_handles_multiple_compare():
     data = pd.DataFrame({
         'measured': [0, 1, 2, 3, 4, 5, 6, 7, 8],
-        'param': 3,
+        'param': [3, 3, 3, 3, 3, 3, 3, 3, 3],
         'compare': ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c']
     })
     out = plots.crossplot(data, 'measured', ['param'], 'compare')
@@ -82,21 +82,21 @@ def test_wide_barplot_single_category():
     assert isinstance(ax, plt.Axes)
 
 
-def test_unified_histogram_basic():
-    """Test basic unified histogram functionality."""
+def test_hist_basic():
+    """Test basic hist functionality."""
     np.random.seed(42)
     data = pd.DataFrame({
         'values': np.random.normal(0, 1, 100),
         'dataset': ['experiment', 'model'] * 50
     })
     
-    figs = plots.unified_histogram(data, 'values', [], 'dataset')
+    figs = plots.hist(data, 'values', [], 'dataset')
     assert len(figs) == 1
-    assert isinstance(figs['hist'], plt.Figure)
+    assert isinstance(list(figs.values())[0], plt.Figure)
 
 
-def test_unified_histogram_with_grouping():
-    """Test unified histogram with grouping variables."""
+def test_hist_with_grouping():
+    """Test hist with grouping variables."""
     np.random.seed(42)
     data = pd.DataFrame({
         'values': np.random.normal(0, 1, 100),
@@ -104,70 +104,26 @@ def test_unified_histogram_with_grouping():
         'dataset': ['experiment', 'model'] * 50
     })
     
-    figs = plots.unified_histogram(data, 'values', ['group'], 'dataset')
-    assert len(figs) == 2  # One for each group
-    assert all(isinstance(fig, plt.Figure) for fig in figs.values())
-
-
-def test_unified_histogram_with_reference():
-    """Test unified histogram with reference data."""
-    np.random.seed(42)
-    data = pd.DataFrame({
-        'values': np.random.normal(0, 1, 100),
-        'dataset': ['test'] * 100
-    })
-    
-    # Create reference data (normal distribution)
-    ref_x = np.linspace(-3, 3, 50)
-    ref_y = np.exp(-0.5 * ref_x**2)
-    ref_data = np.column_stack([ref_x, ref_y])
-    
-    figs = plots.unified_histogram(
-        data, 'values', [], 'dataset', 
-        reference_data=ref_data, 
-        reference_label='Reference'
-    )
-    assert len(figs) == 1
-    assert isinstance(figs['hist'], plt.Figure)
-
-
-def test_unified_histogram_with_grouping_and_reference():
-    """Test unified histogram with both grouping and reference data."""
-    np.random.seed(42)
-    data = pd.DataFrame({
-        'values': np.random.normal(0, 1, 100),
-        'group': ['A'] * 50 + ['B'] * 50,
-        'dataset': ['experiment', 'model'] * 50
-    })
-    
-    ref_x = np.linspace(-3, 3, 50)
-    ref_y = np.exp(-0.5 * ref_x**2)
-    ref_data = np.column_stack([ref_x, ref_y])
-    
-    figs = plots.unified_histogram(
-        data, 'values', ['group'], 'dataset',
-        reference_data=ref_data,
-        reference_label='Reference'
-    )
+    figs = plots.hist(data, 'values', ['group'], 'dataset')
     assert len(figs) == 2
     assert all(isinstance(fig, plt.Figure) for fig in figs.values())
 
 
-def test_unified_histogram_custom_bins():
-    """Test unified histogram with custom bin count."""
+def test_hist_custom_bins():
+    """Test hist with custom bin count."""
     np.random.seed(42)
     data = pd.DataFrame({
         'values': np.random.normal(0, 1, 100),
         'dataset': ['test'] * 100
     })
     
-    figs = plots.unified_histogram(data, 'values', [], 'dataset', n_bins=50)
+    figs = plots.hist(data, 'values', [], 'dataset', n_bins=50)
     assert len(figs) == 1
-    assert isinstance(figs['hist'], plt.Figure)
+    assert isinstance(list(figs.values())[0], plt.Figure)
 
 
-def test_unified_histogram_with_experimental_mean():
-    """Test unified histogram with experimental mean values."""
+def test_hist_with_experimental_mean():
+    """Test hist with experimental mean values."""
     np.random.seed(42)
     data = pd.DataFrame({
         'values': np.random.normal(0, 1, 100),
@@ -175,13 +131,17 @@ def test_unified_histogram_with_experimental_mean():
     })
     data[terms.MEAN + 'values'] = 0.5
     
-    figs = plots.unified_histogram(data, 'values', [], 'dataset')
+    figs = plots.hist(data, 'values', [], 'dataset')
     assert len(figs) == 1
-    assert isinstance(figs['hist'], plt.Figure)
+    assert isinstance(list(figs.values())[0], plt.Figure)
 
 
-def test_unified_histogram_integration():
-    """Integration test for unified histogram with grouping."""
+
+
+
+
+def test_hist_integration():
+    """Integration test for hist with grouping."""
     np.random.seed(42)
     data = pd.DataFrame({
         'y': np.random.normal(0, 1, 60),
@@ -189,45 +149,45 @@ def test_unified_histogram_integration():
         'dataset': ['experiment', 'model'] * 30
     })
     
-    figs = plots.unified_histogram(data, 'y', ['x'], 'dataset')
-    assert len(figs) == 3  # One for each x value
+    figs = plots.hist(data, 'y', ['x'], 'dataset')
+    assert len(figs) == 3
     assert all(isinstance(f, plt.Figure) for f in figs.values())
 
 
-def test_averaged_crossplot_basic():
-    """Test basic averaged crossplot functionality."""
+def test_crossplot_basic():
+    """Test basic crossplot functionality."""
     data = pd.DataFrame({
         'independent': [1, 2, 3] * 4,
         'dependent': [1, 4, 9, 2, 5, 10, 1.5, 4.5, 9.5, 2.5, 5.5, 10.5],
         'dataset': ['A'] * 6 + ['B'] * 6
     })
     
-    figs = plots.averaged_crossplot(data, 'dependent', ['independent'], 'dataset')
-    assert len(figs) == 1  # One comparison: A-B
+    figs = plots.crossplot(data, 'dependent', ['independent'], 'dataset')
+    assert len(figs) == 1
     assert isinstance(list(figs.values())[0], plt.Figure)
 
 
-def test_averaged_crossplot_multiple_datasets():
-    """Test averaged crossplot with multiple datasets."""
+def test_crossplot_multiple_datasets():
+    """Test crossplot with multiple datasets."""
     data = pd.DataFrame({
         'independent': [1, 2, 3] * 6,
         'dependent': [1, 4, 9] * 6,
         'dataset': ['A'] * 6 + ['B'] * 6 + ['C'] * 6
     })
     
-    figs = plots.averaged_crossplot(data, 'dependent', ['independent'], 'dataset')
-    assert len(figs) == 3  # Three comparisons: A-B, A-C, B-C
+    figs = plots.crossplot(data, 'dependent', ['independent'], 'dataset')
+    assert len(figs) == 3
 
 
-def test_averaged_crossplot_single_dataset():
-    """Test averaged crossplot with single dataset (should return empty)."""
+def test_crossplot_single_dataset():
+    """Test crossplot with single dataset (should return empty)."""
     data = pd.DataFrame({
         'independent': [1, 2, 3],
         'dependent': [1, 4, 9],
         'dataset': ['A'] * 3
     })
     
-    figs = plots.averaged_crossplot(data, 'dependent', ['independent'], 'dataset')
+    figs = plots.crossplot(data, 'dependent', ['independent'], 'dataset')
     assert len(figs) == 0
 
 
