@@ -174,3 +174,4 @@ def test_extract_parameters():
             'b': ['b', 'c', 'd', 'e']
         })
     )
+

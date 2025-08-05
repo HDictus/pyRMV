@@ -550,6 +550,22 @@ MAX = Term(
 
 MEAN = Term("mean ", description="Prefix to apply to specify a mean value")
 
+CURRENT_FM_AMPLITUDE = Term(
+    "Frequency modulation amplitude",
+    description="The extent to which the current entering a cell along a particular pathway is modulated at the stimulus temporal frequency",
+    measurement_method="current_fm_amplitude"
+)
+
+OSI_CURRENT_FM = Term(
+    "OSI frequency modulation",
+    description="The extent to which the level of frequency modulation (CURRENT_FM_AMPLITUDE) is modulated by the stimulus orientation",
+    measurement_method="osi_current_fm"
+)
+
+RESPONSE_CLASS = Term(
+    "response class",
+    description="Type of responses to visual stimuli. Can be sON, sOFF, tOFF, or some combination like sON/tOFF",
+)
 
 def describe(*terms):
     """Describe the given terms, or all terms if nothing passed."""

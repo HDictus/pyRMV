@@ -2,6 +2,16 @@
 import pandas as pd
 from analysis_neuro import terminology as terms
 
+stimulus = pd.DataFrame({
+    terms.VISUAL_STIMULUS: "bar grating",
+    terms.CONTRAST: 1,
+    terms.SPATIAL_FREQUENCY: 0.04,
+    terms.TEMPORAL_FREQUENCY: 2,
+    terms.ANGLE_AZIMUTH: [(-120, 120)] * 12,
+    terms.ANGLE_ELEVATION: [(-60, 60)] * 12, # TODO: use intervals, or MAX and MIN
+    terms.STIM_ORIENTATION: range(0, 360, 30), # TODO: just to reuse ... meh
+})
+
 thalamocortical_current = pd.DataFrame(
     {
         terms.SILENCED + terms.REGION: "VISp",
@@ -12,17 +22,7 @@ thalamocortical_current = pd.DataFrame(
         terms.REGION: "VISp",
         terms.LAYER: "L4",
         terms.SYNAPSE_CLASS: "EXC",
-        terms.STIMULUS: pd.DataFrame(
-            {
-                terms.VISUAL_STIMULUS: "bar grating",
-                terms.CONTRAST: 1,
-                terms.SPATIAL_FREQUENCY: 0.04,
-                terms.TEMPORAL_FREQUENCY: 2,
-                terms.ANGLE_AZIMUTH: [(-120, 120)],
-                terms.ANGLE_ELEVATION: [(-60, 60)],
-                terms.STIM_ORIENTATION: [0],
-            }
-        ).pointer(),
+        terms.STIMULUS: stimulus.iloc[:1].pointer(), # can use single orientation
         terms.MEAN + terms.SOMATIC_CURRENT: [-0.046],
     }
 )

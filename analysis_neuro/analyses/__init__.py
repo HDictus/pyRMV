@@ -19,6 +19,17 @@ from analysis_neuro import terminology as terms
 
 DATADIR = files("analysis_neuro.analyses.data")
 
+def _histogram(data, dependent, independent, compare):
+    # pylint: disable=unused-argument
+    fig = plt.figure()
+    bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
+    for label, dataset in data.groupby(compare):
+        plt.hist(
+            dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
+        )
+    plt.legend()
+    return fig
+
 
 def _wide_barplot(x, y, hue):
     _, ax = plt.subplots(figsize=(len(np.unique(x)) * len(np.unique(hue)) / 3, 5))
@@ -66,6 +77,27 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
         "analysis_neuro.analyses.data.lien_2013"
     ).thalamocortical_current,
     measurement=terms.SOMATIC_CURRENT,
+)
+
+# TODO: this was better wih pre and post
+lien_osi_fm_2013 = Analysis(
+    measurement=terms.OSI_CURRENT_FM,
+    observations=pd.DataFrame({
+        terms.MEAN + terms.OSI_CURRENT_FM: 0.23,
+        terms.SAMPLE_SIZE: 13,
+        terms.SILENCED + terms.REGION: "VISp",
+        terms.SPECIES: "mouse",
+        terms.VOLTAGE_CLAMP: -70,
+        terms.REGION: ["VISp"],
+        terms.LAYER: "L4",
+        terms.DATASET: 'Lien2013',
+        terms.MTYPE: "PC",
+        terms.STIMULUS: importlib.import_module(
+            "analysis_neuro.analyses.data.lien_2013"
+        ).stimulus.pointer(),
+        terms.RESPONSE_CLASS: "sON/tOFF",
+    }),
+    plotter=_histogram
 )
 
 schuz_density_1989 = Analysis(
@@ -134,16 +166,6 @@ jiang_connprob_2015 = Analysis(
 )
 
 
-def _histogram(data, dependent, independent, compare):
-    # pylint: disable=unused-argument
-    fig = plt.figure()
-    bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
-    for label, dataset in data.groupby(compare):
-        plt.hist(
-            dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
-        )
-    plt.legend()
-    return fig
 
 
 jiang_intersomatic_2015 = Analysis(
