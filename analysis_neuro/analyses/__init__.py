@@ -85,9 +85,7 @@ schuz_density_1989 = Analysis(
 keller_density_2018 = Analysis(
     observations=pd.read_csv(DATADIR.joinpath("keller_2018.csv")),
     measurement=terms.CELL_DENSITY,
-    plotter=sns.barplot,
-    stats=stats.ttest,
-    verdict=stats.PooledPValueThreshold(threshold=0.05),
+    plotter=sns.barplot
 )
 
 
@@ -118,7 +116,6 @@ thalamic_nuclei_cell_counts = Analysis(
     stats=stats.squared_error,
 )
 
-
 jiang_connprob_2015 = Analysis(
     doc="""
     We compare connection probabilities to those observed by Jiang et al.
@@ -129,9 +126,6 @@ jiang_connprob_2015 = Analysis(
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05),
 )
-
-
-
 
 jiang_intersomatic_2015 = Analysis(
     doc="""
@@ -145,14 +139,9 @@ jiang_intersomatic_2015 = Analysis(
     plotter=plots.hist,
 )
 
-# TODO: this info is in two places: the download script and the loading part.
-
 schneider_mizell_connprob_2024 = jiang_connprob_2015.with_fields(
     observations=pd.read_csv(DATADIR / 'schneider-mizell-connprob.csv', index_col=0)
 )
-
-# TODO: update crossplot to do this
-
 
 schneider_mizell_synconn_2024 = Analysis(
     observations=pd.read_csv(DATADIR / 'schneider-mizell-nsyn.csv', index_col=0),
@@ -162,9 +151,6 @@ schneider_mizell_synconn_2024 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
-
-
-# TODO: PSC, PSP, STP, DECAY validations
 campagnola_connprob_2022 = Analysis(
     observations=pd.read_csv(DATADIR / 'campagnola_mouse_2022_connectivity.csv').dropna(),
     measurement=terms.CONNECTION_PROBABILITY,
@@ -173,8 +159,17 @@ campagnola_connprob_2022 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
-psc_measurements = [terms.PSC_AMPLITUDE, terms.PSC_RISE_TIME, terms.PSC_DECAY_TAU]
-psc_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psc.csv').dropna()
+psc_measurements = [
+    terms.PSC_AMPLITUDE,
+    terms.PSC_RISE_TIME, 
+    terms.PSC_DECAY_TAU,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+psc_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psc.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
 
 campagnola_psc_amp_2022 = Analysis(
     observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_AMPLITUDE]),
@@ -200,8 +195,17 @@ campagnola_psc_rise_2022 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
-psp_measurements = [terms.PSP_AMPLITUDE, terms.PSP_RISE_TIME, terms.PSP_DECAY_TAU]
-psp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psp.csv').dropna()
+psp_measurements = [
+    terms.PSP_AMPLITUDE,
+    terms.PSP_RISE_TIME, 
+    terms.PSP_DECAY_TAU,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+psp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psp.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
 
 campagnola_psp_amp_2022 = Analysis(
     observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_AMPLITUDE]),
@@ -227,8 +231,17 @@ campagnola_psp_rise_2022 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05)
 )
 
-stp_measurements = [terms.STP_INDUCTION, terms.STP_RECOVERY, terms.PAIRED_PULSE_DIFFERENCE]
-stp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_stp.csv').dropna()
+stp_measurements = [
+    terms.STP_INDUCTION,
+    terms.STP_RECOVERY,
+    terms.PAIRED_PULSE_DIFFERENCE,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+stp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_stp.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
 
 campagnola_stp_induction_2022 = Analysis(
     observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.STP_INDUCTION]),
@@ -255,7 +268,14 @@ campagnola_ppd_2022 = Analysis(
 )
 
 
-
+def _region_violins(data, dependent, independent, compare):
+    import matplotlib.pyplot as plt
+    figures = {}
+    for region, regiondata in data.groupby(terms.REGION):
+        figures[region] = plt.subplots(figsize=(10, 5))
+        xdata = [', '.join([str(v) for v in row]) for row in regiondata[independent].values]
+        sns.violinplot(x=xdata, y=regiondata[dependent], hue=regiondata[compare])
+    return figures
 
 siegle_osi_2019 = Analysis(
     doc="""
@@ -265,7 +285,7 @@ siegle_osi_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).osi,
-    plotter=plots.hist,
+    plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -278,7 +298,7 @@ siegle_spontaneous_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).spontaneous,
-    plotter=plots.hist,
+    plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )

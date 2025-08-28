@@ -322,3 +322,4 @@ def test_wide_barplot_integration(sample_data):
     
     ax = plots.wide_barplot(x, y, hue)
     assert isinstance(ax, plt.Axes)
+    
