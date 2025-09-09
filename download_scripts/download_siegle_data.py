@@ -62,6 +62,7 @@ observations = pd.DataFrame({
     terms.REGION: experiment['ecephys_structure_acronym'],
     terms.SPIKING_CLASS: experiment['spiking_class'],
     terms.CITATION: 'siegle_survey_2019',
+    terms.LAYER: experiment['layer'],
     terms.DATASET: 'Siegle2019'
 })
 observations.to_csv("analysis_neuro/analyses/data/siegle-spontaneous-2019.csv", index=False)
