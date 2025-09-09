@@ -6,18 +6,19 @@ import shutil
 
 import numpy as np
 import pandas as pd
-
+from pathlib import Path
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
 
 # TODO: is there a way to safely run allensdk functions alongside analysis-neuro?
-data_directory = '/gpfs/bbp.cscs.ch/project/proj148/home/dictus/ecephys_cache_dir' # must be updated to a valid directory in your filesystem
+data_directory = __file__.parent  / 'data_store' / 'ecephys' # must be updated to a valid directory in your filesystem
 
 manifest_path = os.path.join(data_directory, "manifest.json")
 
 cache = EcephysProjectCache.from_warehouse(manifest=manifest_path)
 
 metrics = cache.get_unit_analysis_metrics_by_session_type('brain_observatory_1.1')
-
+strict = metrics['isi_violations'] == 0
+metrics = metrics[strict]
 # TODO: the operations after this point are pretty cheap - maybe we could run everything up to this in a python shell to get the metrics
 # then load them in siegle_2019.py and do the following operations alognside setting the stimulus
 # that way there are fewer steps involved in getting the data, and it's all transparently included

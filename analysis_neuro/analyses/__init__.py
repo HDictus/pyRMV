@@ -7,8 +7,8 @@ except ImportError:
 
 import importlib
 import warnings
+import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -20,9 +20,6 @@ from analysis_neuro import terminology as terms
 DATADIR = files("analysis_neuro.analyses.data")
 
 
-def _wide_barplot(x, y, hue):
-    _, ax = plt.subplots(figsize=(len(np.unique(x)) * len(np.unique(hue)) / 3, 5))
-    return sns.barplot(x=x, y=y, hue=hue, ax=ax)
 
 
 ji_innervation_2016 = Analysis(
@@ -30,13 +27,13 @@ ji_innervation_2016 = Analysis(
     measurement=terms.FRACTION_INNERVATED,
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05),
-    plotter=_wide_barplot,
+    plotter=plots.wide_barplot,
 )
 
 ji_relative_2016 = Analysis(
     measurement=terms.RELATIVE_EXCITATION,
     observations=pd.read_csv(DATADIR.joinpath("ji_relative_2016.csv"), index_col=0),
-    plotter=_wide_barplot,
+    plotter=plots.wide_barplot,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -88,9 +85,7 @@ schuz_density_1989 = Analysis(
 keller_density_2018 = Analysis(
     observations=pd.read_csv(DATADIR.joinpath("keller_2018.csv")),
     measurement=terms.CELL_DENSITY,
-    plotter=sns.barplot,
-    stats=stats.ttest,
-    verdict=stats.PooledPValueThreshold(threshold=0.05),
+    plotter=sns.barplot
 )
 
 
@@ -121,7 +116,6 @@ thalamic_nuclei_cell_counts = Analysis(
     stats=stats.squared_error,
 )
 
-
 jiang_connprob_2015 = Analysis(
     doc="""
     We compare connection probabilities to those observed by Jiang et al.
@@ -133,19 +127,6 @@ jiang_connprob_2015 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-
-def _histogram(data, dependent, independent, compare):
-    # pylint: disable=unused-argument
-    fig = plt.figure()
-    bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
-    for label, dataset in data.groupby(compare):
-        plt.hist(
-            dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
-        )
-    plt.legend()
-    return fig
-
-
 jiang_intersomatic_2015 = Analysis(
     doc="""
     We compare intersomatic distances observed for L5 pyramidal cells sampled
@@ -155,24 +136,146 @@ jiang_intersomatic_2015 = Analysis(
     """,
     measurement=terms.INTERSOMATIC_DISTANCE,
     observations=jiangd.jiang_intersomatic_2015,
-    plotter=_histogram,
+    plotter=plots.hist,
+)
+
+schneider_mizell_connprob_2024 = jiang_connprob_2015.with_fields(
+    observations=pd.read_csv(DATADIR / 'schneider-mizell-connprob.csv', index_col=0)
+)
+
+schneider_mizell_synconn_2024 = Analysis(
+    observations=pd.read_csv(DATADIR / 'schneider-mizell-nsyn.csv', index_col=0),
+    measurement=terms.SYNAPSES_PER_CONNECTION,
+    plotter=plots.crossplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_connprob_2022 = Analysis(
+    observations=pd.read_csv(DATADIR / 'campagnola_mouse_2022_connectivity.csv').dropna(),
+    measurement=terms.CONNECTION_PROBABILITY,
+    plotter=plots.pathway_barplot,
+    stats=stats.binom_test,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+psc_measurements = [
+    terms.PSC_AMPLITUDE,
+    terms.PSC_RISE_TIME, 
+    terms.PSC_DECAY_TAU,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+psc_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psc.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
+
+campagnola_psc_amp_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_AMPLITUDE]),
+    measurement=terms.PSC_AMPLITUDE,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psc_decay_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_DECAY_TAU]),
+    measurement=terms.PSC_DECAY_TAU,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psc_rise_2022 = Analysis(
+    observations=psc_data.drop(columns=[c for c in psc_measurements if c != terms.PSC_RISE_TIME]),
+    measurement=terms.PSC_RISE_TIME,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+psp_measurements = [
+    terms.PSP_AMPLITUDE,
+    terms.PSP_RISE_TIME, 
+    terms.PSP_DECAY_TAU,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+psp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_psp.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
+
+campagnola_psp_amp_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_AMPLITUDE]),
+    measurement=terms.PSP_AMPLITUDE,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psp_decay_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_DECAY_TAU]),
+    measurement=terms.PSP_DECAY_TAU,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_psp_rise_2022 = Analysis(
+    observations=psp_data.drop(columns=[c for c in psp_measurements if c != terms.PSP_RISE_TIME]),
+    measurement=terms.PSP_RISE_TIME,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+stp_measurements = [
+    terms.STP_INDUCTION,
+    terms.STP_RECOVERY,
+    terms.PAIRED_PULSE_DIFFERENCE,
+    terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+    terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+]
+stp_data = pd.read_csv(DATADIR / 'campagnola_mouse_2022_stp.csv', index_col=0).dropna().set_index(
+    [terms.PRESYNAPTIC + terms.CELL_ID, terms.POSTSYNAPTIC + terms.CELL_ID],
+    drop=True
+)
+
+campagnola_stp_induction_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.STP_INDUCTION]),
+    measurement=terms.STP_INDUCTION,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_stp_recovery_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.STP_RECOVERY]),
+    measurement=terms.STP_RECOVERY,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
+)
+
+campagnola_ppd_2022 = Analysis(
+    observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]),
+    measurement=terms.PAIRED_PULSE_DIFFERENCE,
+    plotter=plots.pathway_barplot,
+    stats=stats.mann_whitney_u,
+    verdict=stats.PooledPValueThreshold(0.05)
 )
 
 
-def _histogram_siegle(data, dependent, independent, compare):
-    # pylint: disable=unused-argument
-    out = {}
-    for key, inddata in data.groupby(independent):
-        fig = plt.figure()
-        bins = np.linspace(inddata[dependent].min(), inddata[dependent].max(), 100)
-        for label, dataset in inddata.groupby(compare):
-            plt.hist(
-                dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
-            )
-            plt.legend()
-        out[str(key)] = fig
-    return out
-
+def _region_violins(data, dependent, independent, compare):
+    import matplotlib.pyplot as plt
+    figures = {}
+    for region, regiondata in data.groupby(terms.REGION):
+        figures[region] = plt.subplots(figsize=(10, 5))
+        xdata = [', '.join([str(v) for v in row]) for row in regiondata[independent].values]
+        sns.violinplot(x=xdata, y=regiondata[dependent], hue=regiondata[compare])
+    return figures
 
 siegle_osi_2019 = Analysis(
     doc="""
@@ -182,7 +285,7 @@ siegle_osi_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).osi,
-    plotter=_histogram_siegle,
+    plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -195,7 +298,7 @@ siegle_spontaneous_2019 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2019"
     ).spontaneous,
-    plotter=_histogram_siegle,
+    plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -257,29 +360,6 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
 
 
 # pylint: disable=unused-argument
-def _cossell_scatter(data, dependent, independent, compare):
-    out = {}
-    for label, dataset in data.groupby(compare):
-        fig = plt.figure()
-        plt.scatter(
-            dataset[terms.RESPONSE_CORRELATION], dataset[terms.PSP_AMPLITUDE], alpha=0.1
-        )
-        points = np.linspace(-1, 1, 20)
-        mean_psp = (
-            dataset[terms.PSP_AMPLITUDE]
-            .groupby(pd.cut(dataset[terms.RESPONSE_CORRELATION], points))
-            .mean()
-        )
-        centers = [
-            np.mean([interval.left, interval.right]) for interval in mean_psp.index
-        ]
-        plt.plot(centers, mean_psp.values, color="black")
-        # a, b, c = np.polyfit(
-        #    data[terms.RESPONSE_CORRELATION], data[terms.PSP_AMPLITUDE], deg=2
-        # )
-        # plt.plot(points, a * points**2 + b * points + c, color="black")
-        out[label] = fig
-    return out
 
 
 cossell_correlation_psp_2015 = Analysis(
@@ -309,7 +389,7 @@ cossell_correlation_psp_2015 = Analysis(
     dependent=terms.PSP_AMPLITUDE,
     independent=terms.RESPONSE_CORRELATION,
     stats=_cossell_respcorr,
-    plotter=_cossell_scatter,
+    plotter=plots.scatter_with_binned_mean,
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
@@ -338,20 +418,16 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
     cossell_digitized = pd.read_csv(
         DATADIR.joinpath("cossell_response_correlation_2015.csv")
     ).values
-    cossell_digitized[:, 1] /= np.trapz(
-        cossell_digitized[:, 1], cossell_digitized[:, 0]
-    )
-    fig = plt.figure()
-    # assumes no independent
-    for label, dataset in data.groupby(compare):
-        plt.hist(dataset[dependent], alpha=0.4, label=label, density=True)
-    plt.plot(
-        cossell_digitized[:, 0],
-        cossell_digitized[:, 1],
-        label="Cossell et al. 2015 (digitized)",
-    )
-    plt.legend()
-    return {"hist": fig}
+    figs = plots.hist(data, dependent, independent, compare)
+    
+    for _, fig in figs.items():
+        ax = fig.gca()
+        ref_x, ref_y = cossell_digitized[:, 0], cossell_digitized[:, 1]
+        ref_y = ref_y / np.trapz(ref_y, ref_x)
+        ax.plot(ref_x, ref_y, label="Cossell et al. 2015 (digitized)")
+        ax.legend()
+    
+    return figs
 
 
 cossell_response_correlation_2015 = Analysis(

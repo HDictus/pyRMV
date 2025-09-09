@@ -80,6 +80,10 @@ MTYPE = Term(
     ),
 )
 
+SMIZELL_TYPE = Term(
+    "Schneider-Mizell type",
+    "Cell class according to the clustering method from Schnieder-Mizell et al. 2023")
+
 
 IMAGED_WIDTH = Term(
     "width of imaged area (um)",
@@ -286,6 +290,20 @@ CONNECTION_PROBABILITY = Term(
     ),
     measurement_method="connection_probability",
 )
+
+IN_DEGREE = Term(
+    "In-degree",
+    "Number of edges coming into a node in the network.",
+    measurement_method='in_degree'
+)
+
+OUT_DEGREE = Term(
+    "Out-degree",
+    "Number of edges going out of a node in the network.",
+    measurement_method='out_degree'
+)
+
+
 INTERSOMATIC_DISTANCE = Term(
     "interesomatic distance (um)",
     description=("The distance between the centers of the soma of a pair of cells"),
@@ -330,6 +348,123 @@ PSP_AMPLITUDE = Term(
     "PSP amplitude (mV)",
     description="The size of the change in potential of a post-synaptic cell when the presynaptic cell is stimulated",
     measurement_method="psp_amplitude",
+)
+
+HORIZONTAL = Term(
+    "Horizontal ",
+    "Perpendicular to the principal axis of a brain region. In cortex, this is perpendicular to WM-pia axis."
+)
+VERTICAL = Term(
+    "Vertical ",
+    "Parallel to the principal axis of a brain region. In cortex, this is parallel to WM-pia axis."
+)
+
+# TODO: these values are median across trials : that is something we need to be able to communicate!
+
+PAIRED_PULSE_DIFFERENCE = Term(
+    "Paired pulse difference",
+    ("median difference first and second psp in burst"
+     "normalized by 90th percentile of PSP amplitude. "
+     "see https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"
+     ),
+     measurement_method='paired_pulse_difference'
+)
+
+# TODO: there are details on this property, like the percentile used to normalize and the number of end pulses to average
+#  that may be different in other experiments measuring the same thing.
+#  these should  be split into other parameters and their relationship to STP induction made clear.
+#  maybe like STP_INDUCTION + END_SPIKE_NUMBERS?
+#  There should be a public method that measures STP induction and applies the relevant parameter-dependent computations
+STP_INDUCTION = Term(
+    "stp induction",
+    ("The median difference between PSP amplitude on the first, and last three spikes of a burst of pulses, normalized by 90th percentile of PSP amplitude. "
+     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"),
+     measurement_method='stp_induction'
+)
+# TODO: perhaps the documentation on these could be more extensive?
+STP_RECOVERY = Term(
+    "stp recovery",
+    ("The median difference between PSP amplitude on the first four pulses of two spike trains separated by an interval, normalized by the 90th percentile of PSP amplitude. ",
+     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"),
+     measurement_method='stp_recovery'
+)
+
+
+
+PSC_AMPLITUDE = Term(
+    'PSC amplitude (nA)',
+    ("Peak size of the post-synaptic current measured in a cell."),
+    measurement_method='psc_amplitude'
+)
+
+
+# TODO: rise time is a distinct concept, that should be its own term that can be
+# with an accompanying method that can be applied to any time series
+# the same is true for amplitude...
+PSP_RISE_TIME = Term(
+    "PSP rise time (ms)",
+    ("Time from initiation to peak of post-synaptic potential"),
+    measurement_method='psp_rise_time',
+)
+
+PSC_RISE_TIME = Term(
+    "PSC rise time (ms)",
+    ("time from initiation to peak of post-synaptic current"),
+    measurement_method='psc_rise_time'
+)
+
+# TODO: decay time constant is also more general concept
+PSC_DECAY_TAU = Term(
+    "PSC decay tau (ms)",
+    "decay time constant of post-synaptic current",
+    measurement_method='psc_decay_tau'
+)
+PSP_DECAY_TAU = Term(
+    "PSP decay tau (ms)",
+    "decay time constant of post-synaptic potential",
+    measurement_method='psp_decay_tau'
+)
+
+HOLDING_POTENTIAL = Term(
+    "Holding potential (mV)",
+    ("Potential at which a neuron recorded from in an experiment. "
+     "Not to be confused with voltage clamp, which fixes the voltage by adapting the current. "
+     "Holding a cell involves injecting a fixed amount of current that brings a neuron to a given potential."
+     "The current is then not adapted, and so the potential can change with other sources.")
+)
+SYNAPTIC_CONDUCTANCE = Term(
+    "synaptic conductance (nS)",
+    "Total conductance of a synaptic connection.",
+    measurement_method='synaptic_conductance'
+)
+REVERSAL_POTENTIAL = Term(
+    "reversal potential (mV)",
+    "The reversal potential of a conductance"
+)
+
+STIM_FREQUENCY = Term(
+    "Stimulus pulse frequency (Hz)",
+    "frequency of pulses in a stimulus burst"
+)
+NUM_PULSES = Term(
+    "Number of pulses",
+    "Number of pulses in a stimulus burst"
+)
+
+INTERBURST_INTERVAL = Term(
+    "Interburst interval",
+    "Interval between bursts in a stimulus protocol, for instance to measure recovery from synaptic depression."
+)
+
+NUM_BURSTS = Term(
+    "Number of bursts",
+    "Number of pulse bursts in the stimulus protocol"
+)
+
+NORMALIZED_WEIGHT = Term(
+    "normalized weight",
+    "Strength of a synapse or connection, normalized with respect to the mean for the pathway.",
+    measurement_method="normalized_weight"
 )
 
 RESPONSE_CORRELATION = Term(
@@ -391,6 +526,7 @@ MEAN = Term(
         " provide `terms.MEAN + terms.FIRING_RATE` in the `observations` dataframe."
     ),
 )
+
 
 PRESYNAPTIC = Term(
     "Presynaptic ",
