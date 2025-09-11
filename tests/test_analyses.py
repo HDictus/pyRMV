@@ -107,6 +107,12 @@ class MockModel:
         return randomized_measurement(
             params, terms.FRACTION_EXCITATION_PER_CONNECTION
         )
+        
+    def osi_current_fm(self, params):
+        return randomized_measurement(
+            params, terms.OSI_CURRENT_FM,
+            distribution=lambda nsamples: rng.uniform(0, 0.2, size=nsamples)
+        )
 
 
 def randomized_measurement(
@@ -192,6 +198,7 @@ EXCEPTIONS = [
     'cossell_response_correlation_2015',
     'lien_fraction_excitation_2018',
     'lien_thalamocortical_current_2013',
+    'lien_osi_fm_2013',
 ] + CAMPAGNOLA
 
 
@@ -411,6 +418,32 @@ def test_lien_thalamocortical_current():
     
 
     results = ana.lien_thalamocortical_current_2013(
+        GoodModel(), MockModel()
+    )
+    assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as mock'] == "Fail"
+    assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as good'] == "Pass"
+
+
+def test_lien_fm_mod():
+    
+    expected = ana.lien_osi_fm_2013.observations[
+        terms.MEAN + terms.OSI_CURRENT_FM
+    ].iloc[0]
+
+    class GoodModel:
+
+        label = 'good'
+        
+        def osi_current_fm(self, params):
+            res =  pd.DataFrame([
+                {terms.OSI_CURRENT_FM: expected + diff, **row}
+                for _, row in params.iterrows()
+                for diff in np.arange(-0.001, 0.001, 0.00001)
+            ])
+            return res
+
+
+    results = ana.lien_osi_fm_2013(
         GoodModel(), MockModel()
     )
     assert results['verdict']['The result of Lien2013 could be sampled from the same distribution as mock'] == "Fail"

@@ -17,20 +17,8 @@ import analysis_neuro.analyses.data.jiang_distances as jiangd
 from analysis_neuro import Analysis, plots, stats
 from analysis_neuro import terminology as terms
 
+
 DATADIR = files("analysis_neuro.analyses.data")
-
-def _histogram(data, dependent, independent, compare):
-    # pylint: disable=unused-argument
-    fig = plt.figure()
-    bins = np.linspace(data[dependent].min(), data[dependent].max(), 13)
-    for label, dataset in data.groupby(compare):
-        plt.hist(
-            dataset[dependent], bins=bins, density=True, label=str(label), alpha=0.6
-        )
-    plt.legend()
-    return fig
-
-
 
 
 ji_innervation_2016 = Analysis(
@@ -40,6 +28,7 @@ ji_innervation_2016 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
     plotter=plots.wide_barplot,
 )
+
 
 ji_relative_2016 = Analysis(
     measurement=terms.RELATIVE_EXCITATION,
@@ -94,7 +83,9 @@ lien_osi_fm_2013 = Analysis(
         ).stimulus.pointer(),
         terms.RESPONSE_CLASS: "sON/tOFF",
     }),
-    plotter=_histogram
+    plotter=plots.hist,
+    stats=stats.bootstrap_mean,
+    verdict=stats.PooledPValueThreshold(0.05)
 )
 
 schuz_density_1989 = Analysis(
