@@ -62,7 +62,7 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.lien_2013"
     ).thalamocortical_current,
-    measurement=terms.SOMATIC_CURRENT,
+    measurement=terms.PATHWAY_CURRENT,
 )
 
 # TODO: this was better wih pre and post

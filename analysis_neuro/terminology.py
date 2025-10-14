@@ -200,6 +200,12 @@ SOMATIC_CURRENT = Term(
     measurement_method="somatic_current",
 )
 
+PATHWAY_CURRENT = Term(
+    "pathway current (nA)",
+    description="Total current into a neuron along a pathway i.e. from a given source population",
+    measurement_method='pathway_current'
+)
+
 STIMULUS = Term(
     "stimulus",
     description="Set of stimuli shown to a subject. Add stimuli to analysis_neuro.stimuli "

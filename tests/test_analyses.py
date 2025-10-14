@@ -102,6 +102,11 @@ class MockModel:
         return randomized_measurement(
             params, terms.SOMATIC_CURRENT
         )
+    
+    def pathway_current(self, params):
+        return randomized_measurement(
+            params, terms.PATHWAY_CURRENT
+        )
 
     def fraction_excitation_per_connection(self, params):
         return randomized_measurement(
@@ -126,6 +131,7 @@ def randomized_measurement(
          for _, row in params.iterrows()
          for val in distribution(nsamples)
     ])
+
 
 class PerfectModel:
     """Universal perfect model that returns experimental data for any analysis."""
@@ -295,6 +301,10 @@ def test_cossell_correlation_psp_2015():
         #   so that you can request a tuple measurement
         #   and the model will align them appropriately
 
+        pair_ids = None
+        pair_corrs = None
+        pair_corrs = None
+
         def response_correlation(self, parameters):
             out = []
             for i, p in parameters.iterrows():
@@ -338,7 +348,6 @@ def test_cossell_correlation_psp_2015():
     assert 'verdict' in results
     assert len(results['verdict']) == 2
 
-    # Check expected behavior
     for hypothesis, verdict in results['verdict'].items():
         if 'mock' in hypothesis:
             assert verdict == 'Fail', f"Mock model should fail: {hypothesis}"
@@ -397,20 +406,21 @@ def test_lien_fraction_excitation():
 
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as mock'] == "Fail"
     assert results['verdict']['The result of Lien2018 could be sampled from the same distribution as good'] == "Pass"
-    
+
+
 def test_lien_thalamocortical_current():
        
     expected = ana.lien_thalamocortical_current_2013.observations[
-        terms.MEAN + terms.SOMATIC_CURRENT
+        terms.MEAN + terms.PATHWAY_CURRENT
     ].iloc[0]
 
     class GoodModel:
         
         label = 'good'
         
-        def somatic_current(self, params):
+        def pathway_current(self, params):
             res =  pd.DataFrame([
-                {terms.SOMATIC_CURRENT: expected + diff, **row}
+                {terms.PATHWAY_CURRENT: expected + diff, **row}
                 for _, row in params.iterrows()
                 for diff in np.arange(-0.001, 0.001, 0.00001)
             ])

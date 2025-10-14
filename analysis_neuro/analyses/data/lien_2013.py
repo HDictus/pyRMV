@@ -25,7 +25,7 @@ thalamocortical_current = pd.DataFrame(
         # lien and scanziani noted that total current was independent of stimulus orientation
         # therefore, for this validation, only one orientation should be neccessary
         terms.STIMULUS: stimulus.iloc[:1].pointer(),
-        terms.MEAN + terms.SOMATIC_CURRENT: [-0.046],
+        terms.MEAN + terms.PATHWAY_CURRENT: [-0.046],
     }
 )
 
