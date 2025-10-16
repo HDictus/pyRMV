@@ -81,6 +81,8 @@ vertical_distances = pd.DataFrame(
 
 connected = pd.Series(0, index=horizontal_distances.index)
 connected_idx = pd.MultiIndex.from_arrays(np.nonzero(M.matrix))
+alledges = M.edges.set_index(connected_idx)
+
 connected_idx = connected_idx.intersection(connected.index)
 
 connected[connected_idx] = 1
@@ -133,9 +135,10 @@ microns_connprob = pd.DataFrame({
     terms.CONNECTION_PROBABILITY: connprob['connected'].values,
     terms.SAMPLE_SIZE: npairs.values
 })
-microns_connprob.to_feather("analysis_neuro/analyses/data/microns-connprob-2021.feather")
+microns_connprob.to_feather("../../../analysis_neuro/analyses/data/microns-connprob-2021.feather")
 
-alledges = submatrix.edges.set_index(connected_idx)
+
+
 intersection = alledges.index.intersection(pairs.index)
 connected_pairs = pairs.loc[intersection]
 connected_pairs[['count', 'total_size']] = alledges.loc[intersection, ['count', 'total_size']]
@@ -168,8 +171,8 @@ microns_norm_weight = pd.DataFrame({
 
 # TODO: may be better to store multiple measurements with same parameterization in single df and load each one
 
-microns_indegree.to_feather("analysis_neuro/analyses/data/microns-indegree-2021.feather")
-microns_outdegree.to_feather("analysis_neuro/analyses/data/microns-outdegree-2021.feather")
-microns_connprob.to_feather("analysis_neuro/analyses/data/microns-connprob-2021.feather")
-microns_nsyn.to_feather("analysis_neuro/analyses/data/microns-nsyn-2021.feather")
-microns_norm_weight.to_feather("analysis_neuro/analyses/data/microns-normweight-2021.feather")
+microns_indegree.to_feather("../../../analysis_neuro/analyses/data/microns-indegree-2021.feather")
+microns_outdegree.to_feather("../../../analysis_neuro/analyses/data/microns-outdegree-2021.feather")
+microns_connprob.to_feather("../../../analysis_neuro/analyses/data/microns-connprob-2021.feather")
+microns_nsyn.to_feather("../../../analysis_neuro/analyses/data/microns-nsyn-2021.feather")
+microns_norm_weight.to_feather("../../../analysis_neuro/analyses/data/microns-normweight-2021.feather")
