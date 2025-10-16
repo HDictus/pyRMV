@@ -350,17 +350,17 @@ pala_peterson_conprob_2015 = Analysis(
 )
 
 
-def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
+def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7):
     """Check whether 50% of psp strength is in 7% most correlated pairs"""
     # pylint: disable=too-many-locals,unused-argument
     hypotheses = {}
     n_pairs = 179 + 279 + 40 + 14 + 8
-    sevenpct = int(np.floor(n_pairs * 0.07))
+    sevenpct = int(np.floor(n_pairs * pct / 100))
     n_samples = 1000
     # presently we assume only one set of parameters
     for label, data_for_dataset in data.groupby(compare):
         hypothesis = (
-            f"The observation that the 7% pairs with highest {independent} "
+            f"The observation that the {pct}% pairs with highest {independent} "
             f"account for 50% of {dependent} "
             f"could be made from the dataset {label}."
         )
@@ -379,11 +379,9 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
             pvalue = np.mean(fraction_accounted >= 0.5)
         else:
             pvalue = np.mean(fraction_accounted <= 0.5)
+        print(label, meanfrac, pvalue)
         hypotheses[hypothesis] = pd.DataFrame({terms.PVALUE: [pvalue]})
     return hypotheses
-
-
-# pylint: disable=unused-argument
 
 
 cossell_correlation_psp_2015 = Analysis(
