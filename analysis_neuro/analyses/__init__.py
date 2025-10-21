@@ -333,7 +333,7 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7
     hypotheses = {}
     n_pairs = 179 + 279 + 40 + 14 + 8
     sevenpct = int(np.floor(n_pairs * pct / 100))
-    n_samples = 1000
+    n_samples = 10000
     # presently we assume only one set of parameters
     for label, data_for_dataset in data.groupby(compare):
         hypothesis = (
