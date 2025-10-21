@@ -154,8 +154,6 @@ def measure(model, measurement, parameters):
         first = measure(model, measurement[0], parameters)
         for m in measurement[1:]:
             first[m] = measure(model, m, parameters)[m]
-        # TODO: unreliable, error-prone
-        # maybe should expect model to provide sensible indexing?
         return first
 
     validate_measurement(measurement)

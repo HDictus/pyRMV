@@ -8,7 +8,7 @@ from lazy import lazy
 
 import analysis_neuro.terminology as terms
 
-from .measurements import (
+from analysis_neuro.measurements import (
     extract_parameters,
     measure,
     validate_measurement,
@@ -43,6 +43,7 @@ def _check_callable(obj, args):
     return True
 
 
+# pylint: disable=too-many-instance-attributes
 class Analysis:
     """An object for defining analyses.
 
@@ -69,7 +70,7 @@ class Analysis:
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments,too-many-arguments
     def __init__(
         self,
         measurement,
@@ -271,14 +272,10 @@ class Analysis:
             "independent": self._independent,
             "compare": self.compare,
         }
-        # TODO: this is something we should indeed test.
-        #   can we automate it more: e.g. that it mutates each argument one by one
-        #   and checks it is conserved?
         current_fields.update(fields)
         return self.__class__(**current_fields)
 
 
-# TODO: this leads to an unintuitive behavior when you have extra data
 def _exclude_obs_only(observations, measured, independent_vars):
     """Remove observations that are not in measured.
 
