@@ -5,7 +5,8 @@ import analysis_neuro.measurements as test_module
 from analysis_neuro.analyses.data import stimuli
 
           
-
+# TODO: simplify: always optimal with respect to other stimulus parameters.
+#  if not, then is different property
 def test_measures_osi_with_firing_rate():
 
     class MockModel:
@@ -92,6 +93,46 @@ def test_measures_osi_with_firing_rate():
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
 
     assert list(measured[terms.CELL_ID]) == [0]
+
+def test_measures_connprob_with_synapse_strength():
+
+    edges = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 2, 2, 3, 3, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [1, 2, 3, 4, 5, 6, 7],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 0, 0, 0, 0, 0, 0],
+        terms.EDGE_WEIGHT: [0, 1, 2, 0, 0, 1, 0]
+    })
+
+    class MockModel:
+
+        label='mock'
+
+        def connection_probability(self, parameters):
+            return test_module.connection_probability(self, parameters)
+
+        def edge_weight(self, parameters):
+            return edges
+    
+    expected = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [1, 1],
+        terms.CONNECTION_PROBABILITY: [2/3, 1/4],
+        terms.SAMPLE_SIZE: [3, 4],
+        terms.DATASET: 'mock'
+    })
+    params = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [1, 1]}
+    )
+    pd.testing.assert_frame_equal(
+        test_module.measure(
+            MockModel(),
+            terms.CONNECTION_PROBABILITY,
+            params
+        ),
+        expected
+    )
 
 
 def test_measures_with_method():

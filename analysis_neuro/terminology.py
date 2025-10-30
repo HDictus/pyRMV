@@ -443,6 +443,13 @@ SYNAPTIC_CONDUCTANCE = Term(
     "Total conductance of a synaptic connection.",
     measurement_method='synaptic_conductance'
 )
+# TODO: use this for cossell et al.
+EDGE_WEIGHT = Term(
+    "edge weight",
+    "Unitless measure of the weight of connections in a synaptic network. Includes 0 for unconnected pairs of neurons",
+    measurement_method='edge_weight'
+)
+
 REVERSAL_POTENTIAL = Term(
     "reversal potential (mV)",
     "The reversal potential of a conductance"

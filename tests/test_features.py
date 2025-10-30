@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import analysis_neuro.features as test_module
 from analysis_neuro.features import frequency_modulation_amplitude, g_OSI_signal
 
 
@@ -37,3 +38,4 @@ def test_gosi_distinguishes_sel_from_nonsel():
     pd.testing.assert_series_equal(
         g_OSI_signal([0, 1, 0, 1, 1, 1, 1, 1], [0, 90, 180, 270, 0, 90, 180, 270], [1, 1, 1, 1, 2, 2, 2, 2]),
         pd.Series({1: 1., 2: 0.}))
+

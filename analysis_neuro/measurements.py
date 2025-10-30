@@ -280,3 +280,14 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
         out.append(selectivity.reset_index().assign(**row))
 
     return pd.concat(out, axis=0)
+
+
+def connection_probability(model, parameters):
+    edges = measure(model, terms.EDGE_WEIGHT, parameters) # TODO: consider removing this level of abstraction
+    edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
+    groups = edges.groupby(list(parameters.columns))['conn']
+    connprob = pd.DataFrame({
+        terms.CONNECTION_PROBABILITY: groups.mean(),
+        terms.SAMPLE_SIZE: groups.count()
+    }).reset_index()
+    return connprob
