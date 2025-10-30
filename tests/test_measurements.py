@@ -135,6 +135,48 @@ def test_measures_connprob_with_synapse_strength():
     )
 
 
+def test_measures_fraction_innervated():
+    # TODO: this is terribly inefficient, we should expect a sparse matrix instead
+    edges = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [2, 2, 2, 3, 3, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
+        terms.EDGE_WEIGHT: [0, 1, 2, 0, 0, 1, 0]
+    })
+    class MockModel:
+
+        label='mock'
+
+        def fraction_innervated(self, parameters):
+            res = test_module.fraction_innervated(self, parameters)
+            return res
+
+        def edge_weight(self, parameters):
+            return edges
+
+    expected = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1],
+        terms.FRACTION_INNERVATED: [1/2, 1/3],
+        terms.SAMPLE_SIZE: [2, 3],
+        terms.DATASET: 'mock'
+    })
+    parameters = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1],
+    })
+
+    pd.testing.assert_frame_equal(
+        test_module.measure(
+            MockModel(),
+            terms.FRACTION_INNERVATED,
+            parameters
+        ),
+        expected
+    )
+
+
 def test_measures_with_method():
 
     density = terms.Term(

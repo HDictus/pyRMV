@@ -291,3 +291,25 @@ def connection_probability(model, parameters):
         terms.SAMPLE_SIZE: groups.count()
     }).reset_index()
     return connprob
+    
+
+def fraction_innervated(model, parameters):
+    """Measure fraction innervated based on edge weights.
+
+    see terms.FRACTION_INNERVATED for definition of term.
+    model must provide a measurement method for EDGE_WEIGHT
+    """
+    edges = measure(model, terms.EDGE_WEIGHT, parameters)
+    edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
+    innervated = edges.groupby(
+        list(parameters.columns) 
+        + [terms.POSTSYNAPTIC + terms.CELL_ID
+    ])['conn'].any()
+
+    grouped_by_parameters = innervated.reset_index().groupby(list(parameters.columns))['conn']
+    finner = grouped_by_parameters.mean()
+    ncells = grouped_by_parameters.count()
+    return pd.DataFrame({
+        terms.FRACTION_INNERVATED: finner,
+        terms.SAMPLE_SIZE: ncells
+        }).reset_index()
