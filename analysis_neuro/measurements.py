@@ -303,10 +303,11 @@ def fraction_innervated(model, parameters):
     edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
     innervated = edges.groupby(
         list(parameters.columns) 
-        + [terms.POSTSYNAPTIC + terms.CELL_ID
-    ])['conn'].any()
+        + [terms.POSTSYNAPTIC + terms.CELL_ID],
+        dropna=False
+    )['conn'].any()
 
-    grouped_by_parameters = innervated.reset_index().groupby(list(parameters.columns))['conn']
+    grouped_by_parameters = innervated.reset_index().groupby(list(parameters.columns), dropna=False)['conn']
     finner = grouped_by_parameters.mean()
     ncells = grouped_by_parameters.count()
     return pd.DataFrame({

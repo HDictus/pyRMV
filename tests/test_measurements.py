@@ -125,24 +125,29 @@ def test_measures_connprob_with_synapse_strength():
         terms.PRESYNAPTIC + terms.LAYER: [2, 3],
         terms.POSTSYNAPTIC + terms.LAYER: [1, 1]}
     )
+    result = test_module.measure(
+        MockModel(),
+        terms.CONNECTION_PROBABILITY,
+        params
+    )
     pd.testing.assert_frame_equal(
-        test_module.measure(
-            MockModel(),
-            terms.CONNECTION_PROBABILITY,
-            params
-        ),
+        result,
         expected
     )
 
 
 def test_measures_fraction_innervated():
-    # TODO: this is terribly inefficient, we should expect a sparse matrix instead
+    # TODO: Consider whether pre and post id should be index
+    # TODO: here we see another example of where allowing nans in dataframes
+    #   leads to unintuitive behavior.
+    #   so what do we do when a value is specified for one measurement and not another?
+    #   should we define our own non-nan nantype?
     edges = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [2, 2, 2, 3, 3, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, np.nan, 3, 3, 3, 3],
         terms.PRESYNAPTIC + terms.LAYER: 1,
         terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
         terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
-        terms.EDGE_WEIGHT: [0, 1, 2, 0, 0, 1, 0]
+        terms.EDGE_WEIGHT: [0, 1, 2, 0, 0, 1, 0],
     })
     class MockModel:
 
@@ -156,24 +161,25 @@ def test_measures_fraction_innervated():
             return edges
 
     expected = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3],
         terms.PRESYNAPTIC + terms.LAYER: [1, 1],
         terms.FRACTION_INNERVATED: [1/2, 1/3],
         terms.SAMPLE_SIZE: [2, 3],
         terms.DATASET: 'mock'
     })
     parameters = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3],
         terms.PRESYNAPTIC + terms.LAYER: [1, 1],
     })
+    result = test_module.measure(
+        MockModel(),
+        terms.FRACTION_INNERVATED,
+        parameters
+    )
 
     pd.testing.assert_frame_equal(
-        test_module.measure(
-            MockModel(),
-            terms.FRACTION_INNERVATED,
-            parameters
-        ),
-        expected
+        result.sort_values(list(parameters.columns)).reset_index(drop=True),
+        expected.sort_values(list(parameters.columns)).reset_index(drop=True)
     )
 
 
