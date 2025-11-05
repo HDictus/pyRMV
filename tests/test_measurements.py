@@ -184,13 +184,13 @@ def test_measures_fraction_innervated():
 
 # TODO: we can do edge weight from synaptic conductance maybe
 
-def test_measure_relative_excitation_from_synaptic_conductance():
+def test_measure_relative_excitation_from_edge_weight():
     edges = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, np.nan, 3, 3, 3, 3],
         terms.PRESYNAPTIC + terms.LAYER: 1,
-        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
-        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
-        terms.SYNAPTIC_CONDUCTANCE: [1, 2, 1, 2],
+        terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
+        terms.EDGE_WEIGHT: [0, 1, 2, 0, 0, 1, 2],
     })
 
     class MockModel:
@@ -201,7 +201,7 @@ def test_measure_relative_excitation_from_synaptic_conductance():
             res = test_module.relative_excitation(self, parameters)
             return res
 
-        def synaptic_conductance(self, parameters):
+        def edge_weight(self, parameters):
             ewithp = edges.assign(**{
                 terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
                 terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan
@@ -230,6 +230,7 @@ def test_measure_relative_excitation_from_synaptic_conductance():
     })
 
     result = test_module.measure(MockModel(), terms.RELATIVE_EXCITATION, parameters)
+
     pd.testing.assert_frame_equal(
         result.sort_index(axis=1).sort_values(list(result.columns)).reset_index(drop=True),
         expected.sort_index(axis=1).sort_values(list(expected.columns)).reset_index(drop=True)

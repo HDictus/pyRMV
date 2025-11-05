@@ -336,15 +336,16 @@ def relative_excitation(model, parameters):
             for col, val in zip(relativecols, grp)
         }
         relative_to = _conductance_sum(model, pd.DataFrame(relative_params, index=[0]))
-        conds[terms.RELATIVE_EXCITATION] = conds[terms.SYNAPTIC_CONDUCTANCE] / relative_to.mean()
-        normalized.append(conds.drop(columns=[terms.SYNAPTIC_CONDUCTANCE]))
+        conds[terms.RELATIVE_EXCITATION] = conds[terms.EDGE_WEIGHT] / relative_to.mean()
+        normalized.append(conds.drop(columns=[terms.EDGE_WEIGHT]))
     return pd.concat(normalized)
 
 
 def _conductance_sum(model, parameters):
-    edges = measure(model, terms.SYNAPTIC_CONDUCTANCE, parameters)
+    edges = measure(model, terms.EDGE_WEIGHT, parameters)
+    edges = edges[edges[terms.EDGE_WEIGHT] != 0]
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
     cond_per_tgid = edges.groupby(groupcols, dropna=False)[
-        terms.SYNAPTIC_CONDUCTANCE
+        terms.EDGE_WEIGHT
     ].sum()
     return cond_per_tgid

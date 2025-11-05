@@ -442,11 +442,15 @@ HOLDING_POTENTIAL = Term(
      "Holding a cell involves injecting a fixed amount of current that brings a neuron to a given potential."
      "The current is then not adapted, and so the potential can change with other sources.")
 )
+
+# TODO: distinguish connection and synaptic conductance
 SYNAPTIC_CONDUCTANCE = Term(
     "synaptic conductance (nS)",
-    "Total conductance of a synaptic connection.",
+    "Total conductance of a synapse",
     measurement_method='synaptic_conductance'
 )
+
+# TODO: consider using name PAIR_WEIGHT
 # TODO: use this for cossell et al.
 EDGE_WEIGHT = Term(
     "edge weight",
