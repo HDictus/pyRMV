@@ -341,6 +341,10 @@ RELATIVE_EXCITATION = Term(
     "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
     measurement_method="relative_excitation",
 )
+RELATIVE_TO = Term(
+    "relative to",
+    "Prefix for parameter combination to use to normalize relative measurements."
+)
 
 SILENCED = Term(
     "silenced ",

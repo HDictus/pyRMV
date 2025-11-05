@@ -283,7 +283,11 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
 
 
 def connection_probability(model, parameters):
-    edges = measure(model, terms.EDGE_WEIGHT, parameters) # TODO: consider removing this level of abstraction
+    """Measure terms.CONNECTION_PROBABILITY
+
+    model must support measuring terms.EDGE_WEIGHT
+    """
+    edges = measure(model, terms.EDGE_WEIGHT, parameters)
     edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
     groups = edges.groupby(list(parameters.columns))['conn']
     connprob = pd.DataFrame({
@@ -291,7 +295,7 @@ def connection_probability(model, parameters):
         terms.SAMPLE_SIZE: groups.count()
     }).reset_index()
     return connprob
-    
+
 
 def fraction_innervated(model, parameters):
     """Measure fraction innervated based on edge weights.
@@ -302,15 +306,45 @@ def fraction_innervated(model, parameters):
     edges = measure(model, terms.EDGE_WEIGHT, parameters)
     edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
     innervated = edges.groupby(
-        list(parameters.columns) 
+        list(parameters.columns)
         + [terms.POSTSYNAPTIC + terms.CELL_ID],
         dropna=False
     )['conn'].any()
 
-    grouped_by_parameters = innervated.reset_index().groupby(list(parameters.columns), dropna=False)['conn']
+    grouped_by_parameters = innervated.reset_index().groupby(
+        list(parameters.columns), dropna=False
+    )['conn']
     finner = grouped_by_parameters.mean()
     ncells = grouped_by_parameters.count()
     return pd.DataFrame({
         terms.FRACTION_INNERVATED: finner,
         terms.SAMPLE_SIZE: ncells
         }).reset_index()
+
+
+# TODO: some models will prefer to use connectivity like we did, others may prefer to use stimulation, like ji did
+#   they should be able to define relative excitation in terms of pathway current
+# TODO: rename all methods to be conditioned on their sub-measurement
+# NOTE: if we end up going row-by-row for this measurement, it will lead to some really inefficient results without caching
+def relative_excitation(model, parameters):
+    cond_per_tgid = _conductance_sum(model, parameters).reset_index()
+    relativecols = [col for col in cond_per_tgid if col.startswith(terms.RELATIVE_TO)]
+    normalized = []
+    for grp, conds in cond_per_tgid.groupby(relativecols, dropna=False):
+        relative_params = {
+            col.replace(terms.RELATIVE_TO, ''): val
+            for col, val in zip(relativecols, grp)
+        }
+        relative_to = _conductance_sum(model, pd.DataFrame(relative_params, index=[0]))
+        conds[terms.RELATIVE_EXCITATION] = conds[terms.SYNAPTIC_CONDUCTANCE] / relative_to.mean()
+        normalized.append(conds.drop(columns=[terms.SYNAPTIC_CONDUCTANCE]))
+    return pd.concat(normalized)
+
+
+def _conductance_sum(model, parameters):
+    edges = measure(model, terms.SYNAPTIC_CONDUCTANCE, parameters)
+    groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
+    cond_per_tgid = edges.groupby(groupcols, dropna=False)[
+        terms.SYNAPTIC_CONDUCTANCE
+    ].sum()
+    return cond_per_tgid

@@ -182,6 +182,59 @@ def test_measures_fraction_innervated():
         expected.sort_values(list(parameters.columns)).reset_index(drop=True)
     )
 
+# TODO: we can do edge weight from synaptic conductance maybe
+
+def test_measure_relative_excitation_from_synaptic_conductance():
+    edges = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.SYNAPTIC_CONDUCTANCE: [1, 2, 1, 2],
+    })
+
+    class MockModel:
+
+        label='mock'
+
+        def relative_excitation(self, parameters):
+            res = test_module.relative_excitation(self, parameters)
+            return res
+
+        def synaptic_conductance(self, parameters):
+            ewithp = edges.assign(**{
+                terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+                terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan
+            })
+            paramcols = ewithp.set_index(list(parameters.columns))
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(paramcols.loc[tuple(row.values)].reset_index())
+            return pd.concat(out)
+    
+    parameters = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan,
+    })
+
+    expected = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1, 1],
+        terms.RELATIVE_EXCITATION: [1, 1/3, 2/3],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 3, 4],
+        terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan,
+        terms.DATASET: 'mock'
+    })
+
+    result = test_module.measure(MockModel(), terms.RELATIVE_EXCITATION, parameters)
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1).sort_values(list(result.columns)).reset_index(drop=True),
+        expected.sort_index(axis=1).sort_values(list(expected.columns)).reset_index(drop=True)
+    )
+    
 
 def test_measures_with_method():
 
@@ -202,6 +255,7 @@ def test_measures_with_method():
     dens = test_module.measure(
         MockModelWithDens(), density, params)
     assert dens[density].values[0] == 100
+
 
 def test_measure_tuple():
     
