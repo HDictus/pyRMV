@@ -450,12 +450,11 @@ SYNAPTIC_CONDUCTANCE = Term(
     measurement_method='synaptic_conductance'
 )
 
-# TODO: consider using name PAIR_WEIGHT
-# TODO: use this for cossell et al.
-EDGE_WEIGHT = Term(
-    "edge weight",
+
+PAIR_WEIGHT = Term(
+    "pair weight",
     "Unitless measure of the weight of connections in a synaptic network. Includes 0 for unconnected pairs of neurons",
-    measurement_method='edge_weight'
+    measurement_method='pair_weight'
 )
 
 REVERSAL_POTENTIAL = Term(

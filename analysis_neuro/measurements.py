@@ -285,10 +285,10 @@ def orientation_selectivity(model, parameters, response_measurement=terms.FIRING
 def connection_probability(model, parameters):
     """Measure terms.CONNECTION_PROBABILITY
 
-    model must support measuring terms.EDGE_WEIGHT
+    model must support measuring terms.PAIR_WEIGHT
     """
-    edges = measure(model, terms.EDGE_WEIGHT, parameters)
-    edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
+    edges = measure(model, terms.PAIR_WEIGHT, parameters)
+    edges['conn'] = edges[terms.PAIR_WEIGHT] > 0
     groups = edges.groupby(list(parameters.columns))['conn']
     connprob = pd.DataFrame({
         terms.CONNECTION_PROBABILITY: groups.mean(),
@@ -301,10 +301,10 @@ def fraction_innervated(model, parameters):
     """Measure fraction innervated based on edge weights.
 
     see terms.FRACTION_INNERVATED for definition of term.
-    model must provide a measurement method for EDGE_WEIGHT
+    model must provide a measurement method for PAIR_WEIGHT
     """
-    edges = measure(model, terms.EDGE_WEIGHT, parameters)
-    edges['conn'] = edges[terms.EDGE_WEIGHT] > 0
+    edges = measure(model, terms.PAIR_WEIGHT, parameters)
+    edges['conn'] = edges[terms.PAIR_WEIGHT] > 0
     innervated = edges.groupby(
         list(parameters.columns)
         + [terms.POSTSYNAPTIC + terms.CELL_ID],
@@ -326,6 +326,11 @@ def fraction_innervated(model, parameters):
 #   they should be able to define relative excitation in terms of pathway current
 # TODO: rename all methods to be conditioned on their sub-measurement
 # NOTE: if we end up going row-by-row for this measurement, it will lead to some really inefficient results without caching
+# OK I've got it. What we have here is relative pathway excitation, which in our model we calculate with synaptic weight
+#   the generalizable side of this is the RELATIVE_TO calculation
+#   nothing to do with edge weights: the mapping of edge weights to relative pathway current is a model-side determination
+# the same applies to fraction_excitation
+# first, change terminology
 def relative_excitation(model, parameters):
     cond_per_tgid = _conductance_sum(model, parameters).reset_index()
     relativecols = [col for col in cond_per_tgid if col.startswith(terms.RELATIVE_TO)]
@@ -336,16 +341,33 @@ def relative_excitation(model, parameters):
             for col, val in zip(relativecols, grp)
         }
         relative_to = _conductance_sum(model, pd.DataFrame(relative_params, index=[0]))
-        conds[terms.RELATIVE_EXCITATION] = conds[terms.EDGE_WEIGHT] / relative_to.mean()
-        normalized.append(conds.drop(columns=[terms.EDGE_WEIGHT]))
+        conds[terms.RELATIVE_EXCITATION] = conds[terms.PAIR_WEIGHT] / relative_to.mean()
+        normalized.append(conds.drop(columns=[terms.PAIR_WEIGHT]))
     return pd.concat(normalized)
 
 
+def fraction_excitation_per_connection(model, parameters):
+    """Measure fraction excitation per connection from edge weights.
+    
+    see terms.FRACTION_INNERVATED for definition of term.
+    model must provide a measurement method for PAIR_WEIGHT
+    """
+    edges = measure(model, terms.PAIR_WEIGHT, parameters)
+    edges = edges[edges[terms.PAIR_WEIGHT] != 0]
+    groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
+    tot_exc = edges.groupby(groupcols,dropna=False)[
+        terms.PAIR_WEIGHT
+    ].sum()
+    fin = edges.set_index(groupcols + [terms.PRESYNAPTIC + terms.CELL_ID])[terms.PAIR_WEIGHT] / tot_exc
+    fin.name = terms.FRACTION_EXCITATION_PER_CONNECTION
+    return fin.reset_index()
+
+
 def _conductance_sum(model, parameters):
-    edges = measure(model, terms.EDGE_WEIGHT, parameters)
-    edges = edges[edges[terms.EDGE_WEIGHT] != 0]
+    edges = measure(model, terms.PAIR_WEIGHT, parameters)
+    edges = edges[edges[terms.PAIR_WEIGHT] != 0]
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
     cond_per_tgid = edges.groupby(groupcols, dropna=False)[
-        terms.EDGE_WEIGHT
+        terms.PAIR_WEIGHT
     ].sum()
     return cond_per_tgid
