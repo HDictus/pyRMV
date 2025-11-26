@@ -184,13 +184,13 @@ def test_measures_fraction_innervated():
 
 # TODO: we can do edge weight from synaptic conductance maybe
 
-def test_measure_relative_excitation_from_pair_weight():
+def test_measure_relative_excitation_from_conn_weight():
     edges = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, np.nan, 3, 3, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
         terms.PRESYNAPTIC + terms.LAYER: 1,
-        terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
-        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
-        terms.PAIR_WEIGHT: [0, 1, 2, 0, 0, 1, 2],
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.CONNECTION_WEIGHT: [1, 2, 1, 2],
     })
 
     class MockModel:
@@ -201,7 +201,7 @@ def test_measure_relative_excitation_from_pair_weight():
             res = test_module.relative_excitation(self, parameters)
             return res
 
-        def pair_weight(self, parameters):
+        def connection_weight(self, parameters):
             ewithp = edges.assign(**{
                 terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
                 terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan
@@ -239,11 +239,11 @@ def test_measure_relative_excitation_from_pair_weight():
 
 def test_measure_fraction_excitation_per_connection_from_pair_weights():
     edges = pd.DataFrame({
-        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, np.nan, 3, 3, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
         terms.PRESYNAPTIC + terms.LAYER: 1,
-        terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
-        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
-        terms.PAIR_WEIGHT: [0, 1, 2, 0, 0, 1, 2],
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.CONNECTION_WEIGHT: [1, 2, 1, 2],
     })
 
     class MockModel:
@@ -254,7 +254,7 @@ def test_measure_fraction_excitation_per_connection_from_pair_weights():
             res = test_module.fraction_excitation_per_connection(self, parameters)
             return res
 
-        def pair_weight(self, parameters):
+        def connection_weight(self, parameters):
             paramcols = edges.set_index(list(parameters.columns))
             out = []
             for i, row in parameters.iterrows():

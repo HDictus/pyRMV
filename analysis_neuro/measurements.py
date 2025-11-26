@@ -332,7 +332,7 @@ def fraction_innervated(model, parameters):
 # the same applies to fraction_excitation
 # first, change terminology
 def relative_excitation(model, parameters):
-    cond_per_tgid = _conductance_sum(model, parameters).reset_index()
+    cond_per_tgid = _weights_sum(model, parameters).reset_index()
     relativecols = [col for col in cond_per_tgid if col.startswith(terms.RELATIVE_TO)]
     normalized = []
     for grp, conds in cond_per_tgid.groupby(relativecols, dropna=False):
@@ -340,9 +340,9 @@ def relative_excitation(model, parameters):
             col.replace(terms.RELATIVE_TO, ''): val
             for col, val in zip(relativecols, grp)
         }
-        relative_to = _conductance_sum(model, pd.DataFrame(relative_params, index=[0]))
-        conds[terms.RELATIVE_EXCITATION] = conds[terms.PAIR_WEIGHT] / relative_to.mean()
-        normalized.append(conds.drop(columns=[terms.PAIR_WEIGHT]))
+        relative_to = _weights_sum(model, pd.DataFrame(relative_params, index=[0]))
+        conds[terms.RELATIVE_EXCITATION] = conds[terms.CONNECTION_WEIGHT] / relative_to.mean()
+        normalized.append(conds.drop(columns=[terms.CONNECTION_WEIGHT]))
     return pd.concat(normalized)
 
 
@@ -352,22 +352,21 @@ def fraction_excitation_per_connection(model, parameters):
     see terms.FRACTION_INNERVATED for definition of term.
     model must provide a measurement method for PAIR_WEIGHT
     """
-    edges = measure(model, terms.PAIR_WEIGHT, parameters)
-    edges = edges[edges[terms.PAIR_WEIGHT] != 0]
+    edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
+    edges = edges[edges[terms.CONNECTION_WEIGHT] != 0]
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
     tot_exc = edges.groupby(groupcols,dropna=False)[
-        terms.PAIR_WEIGHT
+        terms.CONNECTION_WEIGHT
     ].sum()
-    fin = edges.set_index(groupcols + [terms.PRESYNAPTIC + terms.CELL_ID])[terms.PAIR_WEIGHT] / tot_exc
+    fin = edges.set_index(groupcols + [terms.PRESYNAPTIC + terms.CELL_ID])[terms.CONNECTION_WEIGHT] / tot_exc
     fin.name = terms.FRACTION_EXCITATION_PER_CONNECTION
     return fin.reset_index()
 
 
-def _conductance_sum(model, parameters):
-    edges = measure(model, terms.PAIR_WEIGHT, parameters)
-    edges = edges[edges[terms.PAIR_WEIGHT] != 0]
+def _weights_sum(model, parameters):
+    edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
     cond_per_tgid = edges.groupby(groupcols, dropna=False)[
-        terms.PAIR_WEIGHT
+        terms.CONNECTION_WEIGHT
     ].sum()
     return cond_per_tgid
