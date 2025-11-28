@@ -21,10 +21,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 import analysis_neuro.terminology as terms
 from analysis_neuro.exceptions import TerminologyError
+
+# Import submodules
+from analysis_neuro.measurements import connection_probability
+from analysis_neuro.measurements import fraction_innervated
+from analysis_neuro.measurements import relative_excitation
+from analysis_neuro.measurements import fraction_excitation
+from analysis_neuro.measurements import orientation_selectivity
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -194,179 +200,3 @@ def extract_parameters(observations, measurement=None):
         return dframe[cols].groupby(cols, dropna=False).sum().reset_index()
 
     return _multicolumn_unique(observations, paramcols)
-
-
-def _calculate_osi(dataframe):
-    rates = dataframe[terms.FIRING_RATE]
-    orientations = dataframe[terms.STIM_ORIENTATION]
-    return np.abs(
-        np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates)
-    )
-
-
-def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
-    """Measure orientation selectivity on the basis of some response property (e.g. Firing rate).
-
-    Arguments:
-       model: an object which can measure the response_measurement
-       parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
-       response_measurement: (default: FIRING_RATE) the response property from which
-           to calculate orientation selectivity.
-    """
-    # we loop through the parameters at the moment.
-    # there may be a more efficient way to do this with batch processing
-    # but I haven't come up with it
-    out = []
-
-    for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
-        stimuli_shown = row[terms.STIMULUS].df
-        columns_both = [
-            c
-            for c in parameters.columns
-            if c in stimuli_shown and row[c] not in ["optimal"]
-        ]
-        if len(columns_both) > 0:
-            stimuli_shown = (
-                stimuli_shown.set_index(columns_both)
-                .loc[row[columns_both]]
-                .reset_index()
-            )
-        other_parameters = [c for c in parameters.columns if row[c] not in ["optimal"]]
-        stimuli_shown = stimuli_shown.assign(**row[other_parameters])
-
-        response = measure(model, response_measurement, stimuli_shown)
-        if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
-            continue
-
-        # if temporal frequency is set to optimal, we select a different
-        # temporal frequency for each cell. Specifically, the one to which
-        # it responds most strongly
-        tf_optimal = (
-            terms.TEMPORAL_FREQUENCY in parameters.columns
-            and row[terms.TEMPORAL_FREQUENCY] == "optimal"
-        )
-        if tf_optimal:
-            conditionwise_rates = (
-                response.groupby(
-                    [
-                        c
-                        for c in response
-                        if c not in (response_measurement, terms.TRIAL_ID)
-                    ]
-                )[response_measurement]
-                .mean()
-                .reset_index()
-            )
-            optimal_tf = (
-                conditionwise_rates.set_index(terms.TEMPORAL_FREQUENCY)
-                .groupby(terms.CELL_ID)[response_measurement]
-                .idxmax()
-            )
-            response = (
-                response.set_index([terms.CELL_ID, terms.TEMPORAL_FREQUENCY])
-                .loc[zip(optimal_tf.index, optimal_tf.values)]
-                .reset_index()
-            )
-
-        response["scaled"] = response[response_measurement] * np.exp(
-            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION])
-        )
-        grouped_by_cell = response.groupby(terms.CELL_ID)
-        selectivity = np.abs(
-            grouped_by_cell["scaled"].sum()
-            / grouped_by_cell[response_measurement].sum()
-        )
-        selectivity.name = terms.ORIENTATION_SELECTIVITY
-        out.append(selectivity.reset_index().assign(**row))
-
-    return pd.concat(out, axis=0)
-
-
-def connection_probability(model, parameters):
-    """Measure terms.CONNECTION_PROBABILITY
-
-    model must support measuring terms.PAIR_WEIGHT
-    """
-    edges = measure(model, terms.PAIR_WEIGHT, parameters)
-    edges['conn'] = edges[terms.PAIR_WEIGHT] > 0
-    groups = edges.groupby(list(parameters.columns))['conn']
-    connprob = pd.DataFrame({
-        terms.CONNECTION_PROBABILITY: groups.mean(),
-        terms.SAMPLE_SIZE: groups.count()
-    }).reset_index()
-    return connprob
-
-
-def fraction_innervated(model, parameters):
-    """Measure fraction innervated based on edge weights.
-
-    see terms.FRACTION_INNERVATED for definition of term.
-    model must provide a measurement method for PAIR_WEIGHT
-    """
-    edges = measure(model, terms.PAIR_WEIGHT, parameters)
-    edges['conn'] = edges[terms.PAIR_WEIGHT] > 0
-    innervated = edges.groupby(
-        list(parameters.columns)
-        + [terms.POSTSYNAPTIC + terms.CELL_ID],
-        dropna=False
-    )['conn'].any()
-
-    grouped_by_parameters = innervated.reset_index().groupby(
-        list(parameters.columns), dropna=False
-    )['conn']
-    finner = grouped_by_parameters.mean()
-    ncells = grouped_by_parameters.count()
-    return pd.DataFrame({
-        terms.FRACTION_INNERVATED: finner,
-        terms.SAMPLE_SIZE: ncells
-    }).reset_index()
-
-
-# TODO: some models will prefer to use connectivity like we did, others may prefer to use stimulation, like ji did
-#   they should be able to define relative excitation in terms of pathway current
-# TODO: rename all methods to be conditioned on their sub-measurement
-# NOTE: if we end up going row-by-row for this measurement, it will lead to some really inefficient results without caching
-# OK I've got it. What we have here is relative pathway excitation, which in our model we calculate with synaptic weight
-#   the generalizable side of this is the RELATIVE_TO calculation
-#   nothing to do with edge weights: the mapping of edge weights to relative pathway current is a model-side determination
-# the same applies to fraction_excitation
-# first, change terminology
-def relative_excitation(model, parameters):
-    cond_per_tgid = _weights_sum(model, parameters).reset_index()
-    relativecols = [col for col in cond_per_tgid if col.startswith(terms.RELATIVE_TO)]
-    normalized = []
-    for grp, conds in cond_per_tgid.groupby(relativecols, dropna=False):
-        relative_params = {
-            col.replace(terms.RELATIVE_TO, ''): val
-            for col, val in zip(relativecols, grp)
-        }
-        relative_to = _weights_sum(model, pd.DataFrame(relative_params, index=[0]))
-        conds[terms.RELATIVE_EXCITATION] = conds[terms.CONNECTION_WEIGHT] / relative_to.mean()
-        normalized.append(conds.drop(columns=[terms.CONNECTION_WEIGHT]))
-    return pd.concat(normalized)
-
-
-def fraction_excitation_per_connection(model, parameters):
-    """Measure fraction excitation per connection from edge weights.
-    
-    see terms.FRACTION_INNERVATED for definition of term.
-    model must provide a measurement method for PAIR_WEIGHT
-    """
-    edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
-    edges = edges[edges[terms.CONNECTION_WEIGHT] != 0]
-    groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
-    tot_exc = edges.groupby(groupcols,dropna=False)[
-        terms.CONNECTION_WEIGHT
-    ].sum()
-    fin = edges.set_index(groupcols + [terms.PRESYNAPTIC + terms.CELL_ID])[terms.CONNECTION_WEIGHT] / tot_exc
-    fin.name = terms.FRACTION_EXCITATION_PER_CONNECTION
-    return fin.reset_index()
-
-
-def _weights_sum(model, parameters):
-    edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
-    groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]
-    cond_per_tgid = edges.groupby(groupcols, dropna=False)[
-        terms.CONNECTION_WEIGHT
-    ].sum()
-    return cond_per_tgid

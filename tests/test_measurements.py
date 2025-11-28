@@ -37,7 +37,7 @@ def test_measures_osi_with_firing_rate():
             return pd.DataFrame(out)
         
         def orientation_selectivity(self, parameters):
-           return test_module.orientation_selectivity(self, parameters)
+           return test_module.orientation_selectivity.from_firing_rate(self, parameters)
 
     rates = np.array([1, 1, 1, 2, 1, 1, 1, 1])
     oris = np.array([0, 45, 90, 135, 180, 225, 270, 315])
@@ -109,7 +109,7 @@ def test_measures_connprob_from_pair_weight():
         label='mock'
 
         def connection_probability(self, parameters):
-            return test_module.connection_probability(self, parameters)
+            return test_module.connection_probability.from_pair_weights(self, parameters)
 
         def pair_weight(self, parameters):
             return edges
@@ -154,7 +154,7 @@ def test_measures_fraction_innervated():
         label='mock'
 
         def fraction_innervated(self, parameters):
-            res = test_module.fraction_innervated(self, parameters)
+            res = test_module.fraction_innervated.from_pair_weights(self, parameters)
             return res
 
         def pair_weight(self, parameters):
@@ -198,7 +198,7 @@ def test_measure_relative_excitation_from_conn_weight():
         label='mock'
 
         def relative_excitation(self, parameters):
-            res = test_module.relative_excitation(self, parameters)
+            res = test_module.relative_excitation.from_connection_weights(self, parameters)
             return res
 
         def connection_weight(self, parameters):
@@ -251,7 +251,7 @@ def test_measure_fraction_excitation_per_connection_from_pair_weights():
         label='mock'
 
         def fraction_excitation_per_connection(self, parameters):
-            res = test_module.fraction_excitation_per_connection(self, parameters)
+            res = test_module.fraction_excitation.from_connection_weights(self, parameters)
             return res
 
         def connection_weight(self, parameters):
