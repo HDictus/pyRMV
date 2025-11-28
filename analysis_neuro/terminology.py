@@ -146,8 +146,9 @@ CELL_ID = Term(
     "gid",
     description=(
         "A unique identifier for a cell. When a measurement returns an"
-        " observation for each of multiple cells, this column should be included"
+        " observation for each of multiple cells, this column should be included."
     ),
+    measurement_method='cell_id'
 )
 TRIAL_ID = Term(
     "trial id",

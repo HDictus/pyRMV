@@ -1,5 +1,4 @@
 """Fraction excitation measurement methods."""
-
 import pandas as pd
 
 import analysis_neuro.terminology as terms

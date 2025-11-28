@@ -200,3 +200,37 @@ def extract_parameters(observations, measurement=None):
         return dframe[cols].groupby(cols, dropna=False).sum().reset_index()
 
     return _multicolumn_unique(observations, paramcols)
+
+
+def _extract_prefixed(data, prefix):
+    """Get columns of a series which are prefixed with prefix."""
+    deprefixed = {
+        col.split(prefix)[1]: data[col] for col in data.keys() if col.startswith(prefix)
+    }
+    if isinstance(data, pd.DataFrame):
+        return pd.DataFrame(deprefixed)
+    return pd.Series(deprefixed)
+
+
+def pre_post_params(parameters: pd.Series):
+    """Extract the parameters referring to the pre and postsynaptic populations.
+
+    Arguments:
+       parameters: a Series of <parameter: value> describing a pathway
+
+    Returns:
+       pre_params, post_params : Series of parameters for the pre and post synaptic
+           populations respectively
+    """
+    common_params = [
+        col
+        for col in parameters.keys()
+        if not (col.startswith(terms.PRESYNAPTIC) or col.startswith(terms.POSTSYNAPTIC))
+    ]
+
+    pre_params = _extract_prefixed(parameters, terms.PRESYNAPTIC)
+    post_params = _extract_prefixed(parameters, terms.POSTSYNAPTIC)
+    for column in common_params:
+        pre_params[column] = parameters[column]
+        post_params[column] = parameters[column]
+    return pre_params, post_params
