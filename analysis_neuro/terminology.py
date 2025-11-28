@@ -456,7 +456,7 @@ PAIR_WEIGHT = Term(
     measurement_method='pair_weight'
 )
 CONNECTION_WEIGHT = Term(
-    'conn weight',
+    'connection weight',
     "Unitless measure of the weight of a synaptic connection.",
     measurement_method="connection_weight"
 )

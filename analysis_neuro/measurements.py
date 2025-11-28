@@ -319,7 +319,7 @@ def fraction_innervated(model, parameters):
     return pd.DataFrame({
         terms.FRACTION_INNERVATED: finner,
         terms.SAMPLE_SIZE: ncells
-        }).reset_index()
+    }).reset_index()
 
 
 # TODO: some models will prefer to use connectivity like we did, others may prefer to use stimulation, like ji did
