@@ -1,6 +1,4 @@
 """Fraction excitation measurement methods."""
-import pandas as pd
-
 import analysis_neuro.terminology as terms
 
 
@@ -24,6 +22,7 @@ def from_connection_weights(model, parameters):
     tot_exc = edges.groupby(groupcols, dropna=False)[
         terms.CONNECTION_WEIGHT
     ].sum()
-    fin = edges.set_index(groupcols + [terms.PRESYNAPTIC + terms.CELL_ID])[terms.CONNECTION_WEIGHT] / tot_exc
+    idx_cols = groupcols + [terms.PRESYNAPTIC + terms.CELL_ID]
+    fin = edges.set_index(idx_cols)[terms.CONNECTION_WEIGHT] / tot_exc
     fin.name = terms.FRACTION_EXCITATION_PER_CONNECTION
     return fin.reset_index()

@@ -45,7 +45,7 @@ def from_connection_weights(model, parameters):
     from analysis_neuro.measurements import measure, pre_post_params
     out = []
     for i, row in parameters.iterrows():
-        pre_params, post_params = pre_post_params(row)
+        _, post_params = pre_post_params(row)
         post_ids = measure(model, terms.CELL_ID, pd.DataFrame([post_params]))
         conns = measure(model, terms.CONNECTION_WEIGHT, parameters.loc[[i]])
         frac = np.isin(post_ids[terms.CELL_ID], conns[terms.POSTSYNAPTIC + terms.CELL_ID]).mean()
