@@ -17,9 +17,8 @@ import analysis_neuro.analyses.data.jiang_distances as jiangd
 from analysis_neuro import Analysis, plots, stats
 from analysis_neuro import terminology as terms
 
+
 DATADIR = files("analysis_neuro.analyses.data")
-
-
 
 
 ji_innervation_2016 = Analysis(
@@ -29,6 +28,7 @@ ji_innervation_2016 = Analysis(
     verdict=stats.PooledPValueThreshold(0.05),
     plotter=plots.wide_barplot,
 )
+
 
 ji_relative_2016 = Analysis(
     measurement=terms.RELATIVE_EXCITATION,
@@ -62,7 +62,30 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.lien_2013"
     ).thalamocortical_current,
-    measurement=terms.SOMATIC_CURRENT,
+    measurement=terms.PATHWAY_CURRENT,
+)
+
+# TODO: this was better wih pre and post
+lien_osi_fm_2013 = Analysis(
+    measurement=terms.OSI_CURRENT_FM,
+    observations=pd.DataFrame({
+        terms.MEAN + terms.OSI_CURRENT_FM: 0.23,
+        terms.SAMPLE_SIZE: 13,
+        terms.SILENCED + terms.REGION: "VISp",
+        terms.SPECIES: "mouse",
+        terms.VOLTAGE_CLAMP: -70,
+        terms.REGION: ["VISp"],
+        terms.LAYER: "L4",
+        terms.DATASET: 'Lien2013',
+        terms.MTYPE: "PC",
+        terms.STIMULUS: importlib.import_module(
+            "analysis_neuro.analyses.data.lien_2013"
+        ).stimulus.pointer(),
+        terms.RESPONSE_CLASS: "sON/tOFF",
+    }),
+    plotter=plots.hist,
+    stats=stats.bootstrap_mean,
+    verdict=stats.PooledPValueThreshold(0.05)
 )
 
 schuz_density_1989 = Analysis(
@@ -126,6 +149,7 @@ jiang_connprob_2015 = Analysis(
     stats=stats.binom_test,
     verdict=stats.PooledPValueThreshold(0.05),
 )
+
 
 jiang_intersomatic_2015 = Analysis(
     doc="""
@@ -326,17 +350,17 @@ pala_peterson_conprob_2015 = Analysis(
 )
 
 
-def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
+def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7):
     """Check whether 50% of psp strength is in 7% most correlated pairs"""
     # pylint: disable=too-many-locals,unused-argument
     hypotheses = {}
     n_pairs = 179 + 279 + 40 + 14 + 8
-    sevenpct = int(np.floor(n_pairs * 0.07))
-    n_samples = 1000
+    sevenpct = int(np.floor(n_pairs * pct / 100))
+    n_samples = 10000
     # presently we assume only one set of parameters
     for label, data_for_dataset in data.groupby(compare):
         hypothesis = (
-            f"The observation that the 7% pairs with highest {independent} "
+            f"The observation that the {pct}% pairs with highest {independent} "
             f"account for 50% of {dependent} "
             f"could be made from the dataset {label}."
         )
@@ -355,11 +379,9 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET):
             pvalue = np.mean(fraction_accounted >= 0.5)
         else:
             pvalue = np.mean(fraction_accounted <= 0.5)
+        print(label, meanfrac, pvalue)
         hypotheses[hypothesis] = pd.DataFrame({terms.PVALUE: [pvalue]})
     return hypotheses
-
-
-# pylint: disable=unused-argument
 
 
 cossell_correlation_psp_2015 = Analysis(

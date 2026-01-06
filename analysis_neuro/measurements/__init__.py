@@ -21,10 +21,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 import analysis_neuro.terminology as terms
 from analysis_neuro.exceptions import TerminologyError
+
+# Import submodules
+from analysis_neuro.measurements import connection_probability
+from analysis_neuro.measurements import fraction_innervated
+from analysis_neuro.measurements import relative_excitation
+from analysis_neuro.measurements import fraction_excitation
+from analysis_neuro.measurements import orientation_selectivity
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -154,8 +160,6 @@ def measure(model, measurement, parameters):
         first = measure(model, measurement[0], parameters)
         for m in measurement[1:]:
             first[m] = measure(model, m, parameters)[m]
-        # TODO: unreliable, error-prone
-        # maybe should expect model to provide sensible indexing?
         return first
 
     validate_measurement(measurement)
@@ -198,87 +202,35 @@ def extract_parameters(observations, measurement=None):
     return _multicolumn_unique(observations, paramcols)
 
 
-def _calculate_osi(dataframe):
-    rates = dataframe[terms.FIRING_RATE]
-    orientations = dataframe[terms.STIM_ORIENTATION]
-    return np.abs(
-        np.sum(rates * np.exp(2 * 1j * np.deg2rad(orientations))) / np.sum(rates)
-    )
+def _extract_prefixed(data, prefix):
+    """Get columns of a series which are prefixed with prefix."""
+    deprefixed = {
+        col.split(prefix)[1]: data[col] for col in data.keys() if col.startswith(prefix)
+    }
+    if isinstance(data, pd.DataFrame):
+        return pd.DataFrame(deprefixed)
+    return pd.Series(deprefixed)
 
 
-def orientation_selectivity(model, parameters, response_measurement=terms.FIRING_RATE):
-    """Measure orientation selectivity on the basis of some response property (e.g. Firing rate).
+def pre_post_params(parameters: pd.Series):
+    """Extract the parameters referring to the pre and postsynaptic populations.
 
     Arguments:
-       model: an object which can measure the response_measurement
-       parameters: a dataframe of measurement parameters, e.g. stimuli, cell populations
-       response_measurement: (default: FIRING_RATE) the response property from which
-           to calculate orientation selectivity.
+       parameters: a Series of <parameter: value> describing a pathway
+
+    Returns:
+       pre_params, post_params : Series of parameters for the pre and post synaptic
+           populations respectively
     """
-    # we loop through the parameters at the moment.
-    # there may be a more efficient way to do this with batch processing
-    # but I haven't come up with it
-    out = []
+    common_params = [
+        col
+        for col in parameters.keys()
+        if not (col.startswith(terms.PRESYNAPTIC) or col.startswith(terms.POSTSYNAPTIC))
+    ]
 
-    for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
-        stimuli_shown = row[terms.STIMULUS].df
-        columns_both = [
-            c
-            for c in parameters.columns
-            if c in stimuli_shown and row[c] not in ["optimal"]
-        ]
-        if len(columns_both) > 0:
-            stimuli_shown = (
-                stimuli_shown.set_index(columns_both)
-                .loc[row[columns_both]]
-                .reset_index()
-            )
-        other_parameters = [c for c in parameters.columns if row[c] not in ["optimal"]]
-        stimuli_shown = stimuli_shown.assign(**row[other_parameters])
-
-        response = measure(model, response_measurement, stimuli_shown)
-        if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
-            continue
-
-        # if temporal frequency is set to optimal, we select a different
-        # temporal frequency for each cell. Specifically, the one to which
-        # it responds most strongly
-        tf_optimal = (
-            terms.TEMPORAL_FREQUENCY in parameters.columns
-            and row[terms.TEMPORAL_FREQUENCY] == "optimal"
-        )
-        if tf_optimal:
-            conditionwise_rates = (
-                response.groupby(
-                    [
-                        c
-                        for c in response
-                        if c not in (response_measurement, terms.TRIAL_ID)
-                    ]
-                )[response_measurement]
-                .mean()
-                .reset_index()
-            )
-            optimal_tf = (
-                conditionwise_rates.set_index(terms.TEMPORAL_FREQUENCY)
-                .groupby(terms.CELL_ID)[response_measurement]
-                .idxmax()
-            )
-            response = (
-                response.set_index([terms.CELL_ID, terms.TEMPORAL_FREQUENCY])
-                .loc[zip(optimal_tf.index, optimal_tf.values)]
-                .reset_index()
-            )
-
-        response["scaled"] = response[response_measurement] * np.exp(
-            2 * 1j * np.deg2rad(response[terms.STIM_ORIENTATION])
-        )
-        grouped_by_cell = response.groupby(terms.CELL_ID)
-        selectivity = np.abs(
-            grouped_by_cell["scaled"].sum()
-            / grouped_by_cell[response_measurement].sum()
-        )
-        selectivity.name = terms.ORIENTATION_SELECTIVITY
-        out.append(selectivity.reset_index().assign(**row))
-
-    return pd.concat(out, axis=0)
+    pre_params = _extract_prefixed(parameters, terms.PRESYNAPTIC)
+    post_params = _extract_prefixed(parameters, terms.POSTSYNAPTIC)
+    for column in common_params:
+        pre_params[column] = parameters[column]
+        post_params[column] = parameters[column]
+    return pre_params, post_params

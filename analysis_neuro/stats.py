@@ -327,6 +327,8 @@ def _checkna(v):
         return False
 
 
+# pylint: disable=too-many-locals
+# will be addressed anyway when pandas 3.0 is out
 def mann_whitney_u(
     data: pd.DataFrame, dependent: str, independent: List[str], compare: str
 ):
@@ -362,7 +364,10 @@ def mann_whitney_u(
                 # when pandas 3.0 is released, this can be removed
                 nan_keys = [k for k, v in zip(independent, independent_values) if _checkna(v)]
                 non_nan_keys = [k for k, v in zip(independent, independent_values) if ~_checkna(v)]
-                non_nan_values = tuple(v for k, v in zip(independent, independent_values) if ~_checkna(v))
+                non_nan_values = tuple(
+                    v for k, v in zip(independent, independent_values)
+                    if ~_checkna(v)
+                )
                 if len(nan_keys) > 0:
                     nans = np.all([
                         data2[key].isna() for key in nan_keys

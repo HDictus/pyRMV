@@ -28,26 +28,30 @@ def crossplot(data: pd.DataFrame, dependent: str, independent: List[str],
         Dictionary mapping comparison names to matplotlib figures
     """
     figs = {}
-    
+
     group_cols = [compare] + independent
     averaged = data.groupby(group_cols)[dependent].mean().reset_index()
 
     for l1, data1, l2, data2 in _iter_compare(averaged, compare):
-        fig = plt.figure()
+        fig = _crossplot_one(l1, l2, data1, data2, dependent)
         figs[f"{l1}-{l2}"] = fig
-        
-        one = data1[dependent].values
-        other = data2[dependent].values
-
-        minimum = min(one.min(), other.min())
-        maximum = max(one.max(), other.max())
-
-        plt.scatter(one, other)
-        plt.plot([minimum, maximum], [minimum, maximum], color='gray')
-        plt.xlabel(str(l1))
-        plt.ylabel(str(l2))
-
     return figs
+
+
+def _crossplot_one(l1, l2, data1, data2, dependent):
+    fig = plt.figure()
+
+    one = data1[dependent].values
+    other = data2[dependent].values
+
+    minimum = min(one.min(), other.min())
+    maximum = max(one.max(), other.max())
+
+    plt.scatter(one, other)
+    plt.plot([minimum, maximum], [minimum, maximum], color='gray')
+    plt.xlabel(str(l1))
+    plt.ylabel(str(l2))
+    return fig
 
 
 def pathway_heatmap(data: pd.DataFrame, dependent: str,
@@ -187,37 +191,40 @@ def pathway_barplot(data: pd.DataFrame, dependent: str,
                 if terms.INTERSOMATIC_DISTANCE not in ind]
 
     for pway, pway_group in data.groupby(pathways):
-        vertical_cols = [
-            terms.MIN + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE,
-            terms.MAX + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
-        ]
-        grouped_by_vertical_distance = pway_group.groupby(vertical_cols)
-
-        ngroups = grouped_by_vertical_distance.ngroups
-        if ngroups == 0:
-            continue
-
-        fig, axes = plt.subplots(
-            ngroups, 1, sharex=True, figsize=(8, 3 * ngroups)
-        )
-        if ngroups == 1:
-            axes = [axes]
-
-        for i, ((min_vert, max_vert), group) in enumerate(
-            grouped_by_vertical_distance
-        ):
-            sns.barplot(
-                data=group,
-                x=terms.MIN + terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
-                y=dependent,
-                hue=compare,
-                ax=axes[i]
-            )
-            axes[i].set_title(f'Vertical distance: {min_vert}-{max_vert}')
-
-        figs[str(pway)] = fig
+        figs[str(pway)] = _barplot_for_pathway(pway, pway_group, dependent, compare)
 
     return figs
+
+def _barplot_for_pathway(pway, pway_group, dependent, compare):
+    vertical_cols = [
+        terms.MIN + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE,
+        terms.MAX + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
+    ]
+    grouped_by_vertical_distance = pway_group.groupby(vertical_cols)
+
+    ngroups = grouped_by_vertical_distance.ngroups
+    if ngroups == 0:
+        return
+
+    fig, axes = plt.subplots(
+        ngroups, 1, sharex=True, figsize=(8, 3 * ngroups)
+    )
+    if ngroups == 1:
+        axes = [axes]
+
+    for i, ((min_vert, max_vert), group) in enumerate(
+        grouped_by_vertical_distance
+    ):
+        sns.barplot(
+            data=group,
+            x=terms.MIN + terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
+            y=dependent,
+            hue=compare,
+            ax=axes[i]
+        )
+        axes[i].set_title(f'Vertical distance: {min_vert}-{max_vert}')
+
+    return fig
 
 
 def scatter_with_binned_mean(data: pd.DataFrame, dependent: str,

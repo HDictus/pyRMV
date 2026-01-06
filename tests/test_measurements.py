@@ -5,7 +5,8 @@ import analysis_neuro.measurements as test_module
 from analysis_neuro.analyses.data import stimuli
 
           
-
+# TODO: simplify: always optimal with respect to other stimulus parameters.
+#  if not, then is different property
 def test_measures_osi_with_firing_rate():
 
     class MockModel:
@@ -36,7 +37,7 @@ def test_measures_osi_with_firing_rate():
             return pd.DataFrame(out)
         
         def orientation_selectivity(self, parameters):
-           return test_module.orientation_selectivity(self, parameters)
+           return test_module.orientation_selectivity.from_firing_rate(self, parameters)
 
     rates = np.array([1, 1, 1, 2, 1, 1, 1, 1])
     oris = np.array([0, 45, 90, 135, 180, 225, 270, 315])
@@ -93,6 +94,220 @@ def test_measures_osi_with_firing_rate():
 
     assert list(measured[terms.CELL_ID]) == [0]
 
+def test_measures_connprob_from_pair_weight():
+
+    edges = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 2, 2, 3, 3, 3, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [1, 2, 3, 4, 5, 6, 7],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [0, 0, 0, 0, 0, 0, 0],
+        terms.PAIR_WEIGHT: [0, 1, 2, 0, 0, 1, 0]
+    })
+
+    class MockModel:
+
+        label='mock'
+
+        def connection_probability(self, parameters):
+            return test_module.connection_probability.from_pair_weights(self, parameters)
+
+        def pair_weight(self, parameters):
+            return edges
+    
+    expected = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [1, 1],
+        terms.CONNECTION_PROBABILITY: [2/3, 1/4],
+        terms.SAMPLE_SIZE: [3, 4],
+        terms.DATASET: 'mock'
+    })
+    params = pd.DataFrame({
+        terms.PRESYNAPTIC + terms.LAYER: [2, 3],
+        terms.POSTSYNAPTIC + terms.LAYER: [1, 1]}
+    )
+    result = test_module.measure(
+        MockModel(),
+        terms.CONNECTION_PROBABILITY,
+        params
+    )
+    pd.testing.assert_frame_equal(
+        result,
+        expected
+    )
+
+
+_finner_edges =  pd.DataFrame({
+    terms.POSTSYNAPTIC + terms.LAYER: [2, 2, 2, 3, 3, 3, 3],
+    terms.PRESYNAPTIC + terms.LAYER: 1,
+    terms.PRESYNAPTIC + terms.CELL_ID: [5, 6, 5, 5, 5, 5, 5],
+    terms.POSTSYNAPTIC + terms.CELL_ID: [0, 1, 1, 2, 3, 3, 4],
+    terms.PAIR_WEIGHT: [0, 1, 2, 0, 0, 1, 0],
+})
+
+def _test_fraction_innervated(func):
+    class MockModel:
+
+        label='mock'
+
+        def cell_id(self, parameters):
+            out = []
+            _ids_by_l = {1: [5, 6], 2: [0, 1], 3: [2, 3, 4]}
+            for i, row in parameters.iterrows():
+                ids = _ids_by_l[row[terms.LAYER]]
+                out.append(pd.DataFrame({terms.CELL_ID: ids,**row}))
+            return pd.concat(out)
+
+        def fraction_innervated(self, parameters):
+            res = func(self, parameters)
+            return res
+
+        def pair_weight(self, parameters):
+            paramcols = _finner_edges.set_index(list(parameters.columns))
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(paramcols.loc[tuple(row.values)].reset_index())
+            return pd.concat(out)
+
+        def connection_weight(self, parameters):
+            edges = self.pair_weight(parameters)
+            nonz = edges[terms.PAIR_WEIGHT] > 0
+            return edges[nonz].rename(columns={terms.PAIR_WEIGHT: terms.CONNECTION_WEIGHT})
+
+    expected = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1],
+        terms.FRACTION_INNERVATED: [1/2, 1/3],
+        terms.SAMPLE_SIZE: [2, 3],
+        terms.DATASET: 'mock'
+    })
+    parameters = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [2, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1],
+    })
+    result = test_module.measure(
+        MockModel(),
+        terms.FRACTION_INNERVATED,
+        parameters
+    )
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1).sort_values(list(parameters.columns)).reset_index(drop=True),
+        expected.sort_index(axis=1).sort_values(list(parameters.columns)).reset_index(drop=True)
+    )
+
+def test_measures_fraction_innervated_from_pair_weights():
+    # TODO: Consider whether pre and post id should be index
+    # TODO: here we see another example of where allowing nans in dataframes
+    #   leads to unintuitive behavior.
+    #   so what do we do when a value is specified for one measurement and not another?
+    #   should we define our own non-nan nantype?
+    _test_fraction_innervated(test_module.fraction_innervated.from_pair_weights)
+
+def test_measures_fraction_innervated_from_connection_weights():
+    _test_fraction_innervated(test_module.fraction_innervated.from_connection_weights)
+
+
+# TODO: we can do edge weight from synaptic conductance maybe
+
+def test_measure_relative_excitation_from_conn_weight():
+    edges = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.CONNECTION_WEIGHT: [1, 2, 1, 2],
+    })
+
+    class MockModel:
+
+        label='mock'
+
+        def relative_excitation(self, parameters):
+            res = test_module.relative_excitation.from_connection_weights(self, parameters)
+            return res
+
+        def connection_weight(self, parameters):
+            ewithp = edges.assign(**{
+                terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+                terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan
+            })
+            paramcols = ewithp.set_index(list(parameters.columns))
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(paramcols.loc[tuple(row.values)].reset_index())
+            return pd.concat(out)
+    
+    parameters = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan,
+    })
+
+    expected = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1, 1],
+        terms.RELATIVE_EXCITATION: [1, 1/3, 2/3],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 3, 4],
+        terms.RELATIVE_TO + terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.RELATIVE_TO + terms.POSTSYNAPTIC + terms.LAYER: np.nan,
+        terms.DATASET: 'mock'
+    })
+
+    result = test_module.measure(MockModel(), terms.RELATIVE_EXCITATION, parameters)
+
+    pd.testing.assert_frame_equal(
+        result.sort_index(axis=1).sort_values(list(result.columns)).reset_index(drop=True),
+        expected.sort_index(axis=1).sort_values(list(expected.columns)).reset_index(drop=True)
+    )
+
+
+def test_measure_fraction_excitation_per_connection_from_conn_weights():
+    edges = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: 1,
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.CONNECTION_WEIGHT: [1, 2, 1, 2],
+    })
+
+    class MockModel:
+
+        label='mock'
+
+        def fraction_excitation_per_connection(self, parameters):
+            res = test_module.fraction_excitation.from_connection_weights(self, parameters)
+            return res
+
+        def connection_weight(self, parameters):
+            paramcols = edges.set_index(list(parameters.columns))
+            out = []
+            for i, row in parameters.iterrows():
+                out.append(paramcols.loc[tuple(row.values)].reset_index())
+            return pd.concat(out)
+    
+    parameters = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1],
+    })
+
+    expected = pd.DataFrame({
+        terms.POSTSYNAPTIC + terms.LAYER: [np.nan, np.nan, 3, 3],
+        terms.PRESYNAPTIC + terms.LAYER: [1, 1, 1, 1],
+        terms.FRACTION_EXCITATION_PER_CONNECTION: [1/3, 2/3, 1, 1],
+        terms.PRESYNAPTIC + terms.CELL_ID: [6, 5, 5, 5],
+        terms.POSTSYNAPTIC + terms.CELL_ID: [1, 1, 3, 4],
+        terms.DATASET: 'mock'
+    })
+
+    result = test_module.measure(MockModel(), terms.FRACTION_EXCITATION_PER_CONNECTION, parameters)
+
+    res_sort = result.sort_index(axis=1)
+    exp_sort = expected.sort_index(axis=1)
+    pd.testing.assert_frame_equal(
+        res_sort.sort_values(list(res_sort.columns)).reset_index(drop=True),
+        exp_sort.sort_values(list(exp_sort.columns)).reset_index(drop=True)
+    )
+
 
 def test_measures_with_method():
 
@@ -113,6 +328,7 @@ def test_measures_with_method():
     dens = test_module.measure(
         MockModelWithDens(), density, params)
     assert dens[density].values[0] == 100
+
 
 def test_measure_tuple():
     
@@ -174,3 +390,4 @@ def test_extract_parameters():
             'b': ['b', 'c', 'd', 'e']
         })
     )
+

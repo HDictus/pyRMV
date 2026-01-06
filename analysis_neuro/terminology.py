@@ -146,8 +146,9 @@ CELL_ID = Term(
     "gid",
     description=(
         "A unique identifier for a cell. When a measurement returns an"
-        " observation for each of multiple cells, this column should be included"
+        " observation for each of multiple cells, this column should be included."
     ),
+    measurement_method='cell_id'
 )
 TRIAL_ID = Term(
     "trial id",
@@ -198,6 +199,12 @@ SOMATIC_CURRENT = Term(
     "Somatic current (nA)",
     description=("Total current recorded at soma, e.g. through a voltage clamp"),
     measurement_method="somatic_current",
+)
+
+PATHWAY_CURRENT = Term(
+    "pathway current (nA)",
+    description="Total current into a neuron along a pathway i.e. from a given source population",
+    measurement_method='pathway_current'
 )
 
 STIMULUS = Term(
@@ -335,6 +342,10 @@ RELATIVE_EXCITATION = Term(
     "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
     measurement_method="relative_excitation",
 )
+RELATIVE_TO = Term(
+    "relative to",
+    "Prefix for parameter combination to use to normalize relative measurements."
+)
 
 SILENCED = Term(
     "silenced ",
@@ -432,11 +443,25 @@ HOLDING_POTENTIAL = Term(
      "Holding a cell involves injecting a fixed amount of current that brings a neuron to a given potential."
      "The current is then not adapted, and so the potential can change with other sources.")
 )
+
+# TODO: distinguish connection and synaptic conductance
 SYNAPTIC_CONDUCTANCE = Term(
     "synaptic conductance (nS)",
-    "Total conductance of a synaptic connection.",
+    "Total conductance of a synapse",
     measurement_method='synaptic_conductance'
 )
+
+PAIR_WEIGHT = Term(
+    "pair weight",
+    "Unitless measure of the connection weight between pairs of neurons. Includes 0 for unconnected pairs of neurons.",
+    measurement_method='pair_weight'
+)
+CONNECTION_WEIGHT = Term(
+    'connection weight',
+    "Unitless measure of the weight of a synaptic connection.",
+    measurement_method="connection_weight"
+)
+
 REVERSAL_POTENTIAL = Term(
     "reversal potential (mV)",
     "The reversal potential of a conductance"
@@ -554,6 +579,22 @@ MAX = Term(
 
 MEAN = Term("mean ", description="Prefix to apply to specify a mean value")
 
+CURRENT_FM_AMPLITUDE = Term(
+    "Frequency modulation amplitude",
+    description="The extent to which the current entering a cell along a particular pathway is modulated at the stimulus temporal frequency",
+    measurement_method="current_fm_amplitude"
+)
+
+OSI_CURRENT_FM = Term(
+    "OSI frequency modulation",
+    description="The extent to which the level of frequency modulation (CURRENT_FM_AMPLITUDE) is modulated by the stimulus orientation",
+    measurement_method="osi_current_fm"
+)
+
+RESPONSE_CLASS = Term(
+    "response class",
+    description="Type of responses to visual stimuli. Can be sON, sOFF, tOFF, or some combination like sON/tOFF",
+)
 
 def describe(*terms):
     """Describe the given terms, or all terms if nothing passed."""
