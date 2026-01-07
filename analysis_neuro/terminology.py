@@ -343,7 +343,7 @@ RELATIVE_EXCITATION = Term(
     measurement_method="relative_excitation",
 )
 RELATIVE_TO = Term(
-    "relative to",
+    "relative to ",
     "Prefix for parameter combination to use to normalize relative measurements."
 )
 

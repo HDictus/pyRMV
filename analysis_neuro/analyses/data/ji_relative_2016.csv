@@ -1,4 +1,4 @@
-,Presynaptic region,Postsynaptic layer,Postsynaptic region,Postsynaptic gene expression,Postsynaptic synapse class,relative excitation,relative toPresynaptic region,relative toPostsynaptic region,relative toPostsynaptic layer,relative toPostsynaptic synapse class
+,Presynaptic region,Postsynaptic layer,Postsynaptic region,Postsynaptic gene expression,Postsynaptic synapse class,relative excitation,relative to Presynaptic region,relative to Postsynaptic region,relative to Postsynaptic layer,relative to Postsynaptic synapse class
 0,LGd,L1,VISp,,,0.3094251444717381,LGd,VISp,L4,EXC
 1,LGd,L1,VISp,,,0.3774559214294701,LGd,VISp,L4,EXC
 2,LGd,L1,VISp,,,0.5711022362278669,LGd,VISp,L4,EXC
@@ -53,7 +53,7 @@
 51,LGd,L4,VISp,PV,,3.2641024971957178,LGd,VISp,L4,EXC
 52,LGd,L4,VISp,PV,,2.9344190207797767,LGd,VISp,L4,EXC
 53,LGd,L4,VISp,PV,,2.769736796543365,LGd,VISp,L4,EXC
-54,LGd,L4,VISp,PV,,2.8721447662835597,LGd,VISp,L4,EXC
+54,LGd,L4,VISp,PV,,2.87214476628356,LGd,VISp,L4,EXC
 55,LGd,L4,VISp,PV,,2.0468194774428023,LGd,VISp,L4,EXC
 56,LGd,L4,VISp,PV,,2.225156097644573,LGd,VISp,L4,EXC
 57,LGd,L4,VISp,PV,,4.128668223039726,LGd,VISp,L4,EXC

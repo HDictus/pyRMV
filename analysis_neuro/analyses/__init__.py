@@ -379,7 +379,6 @@ def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7
             pvalue = np.mean(fraction_accounted >= 0.5)
         else:
             pvalue = np.mean(fraction_accounted <= 0.5)
-        print(label, meanfrac, pvalue)
         hypotheses[hypothesis] = pd.DataFrame({terms.PVALUE: [pvalue]})
     return hypotheses
 
