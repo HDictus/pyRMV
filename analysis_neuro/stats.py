@@ -403,7 +403,7 @@ def bootstrap_mean(
     dependent: str,
     independent: List[str],
     compare: str,
-    num_samples=1000,
+    num_samples=10000,
 ):
     """Test whether a mean value could be sampled from a distribution of values.
 
@@ -442,7 +442,10 @@ def bootstrap_mean(
             ssizes = grouped[dependent].count()
             ssizes.name = terms.SAMPLE_SIZE
             dataset1 = pd.concat([means, ssizes], axis=1).reset_index()
-        elif np.isnan(dataset1[terms.MEAN + dependent]).all():
+        elif (
+            np.isnan(dataset1[terms.MEAN + dependent]).all() 
+            or np.isnan(dataset2[dependent]).all()
+        ):
             continue
         mean_values = dataset1.set_index(independent)[
             [c for c in dataset1 if c not in [dependent, compare] + independent]
@@ -460,16 +463,8 @@ def bootstrap_mean(
                 mean, size = vals.values[0]
             else:
                 mean, size = vals.values
+            pvalue = _bootstrap(mean, distr[dependent], size, num_samples, rng)
 
-            samples = rng.choice(
-                distr[dependent], size=(int(size), num_samples), replace=True
-            )
-            distrmean = distr[dependent].mean()
-
-            if mean < distrmean:
-                pvalue = (samples.mean(axis=0) <= mean).mean()
-            else:
-                pvalue = (samples.mean(axis=0) >= mean).mean()
             tests.append(
                 {
                     **dict(zip(independent, group)),
@@ -483,3 +478,16 @@ def bootstrap_mean(
             f"The result of {label1} could be sampled from the same distribution as {label2}"
         ] = df
     return hypotheses
+
+def _bootstrap(target_mean, obs_distr, sample_size, num_samples, rng):
+    samples = rng.choice(
+        obs_distr, size=(int(sample_size), num_samples), replace=True
+    )
+    distrmean = obs_distr.mean()
+    sample_means = samples.mean(axis=0)
+
+    if target_mean < distrmean:
+        pvalue = (sample_means <= target_mean).mean()
+    else:
+        pvalue = (sample_means >= target_mean).mean()
+    return pvalue

@@ -20,6 +20,8 @@ setup(
         "numpy", 
         "pandas",
         "seaborn==0.12.2", 
+        "pyarrow",
+        "fastparquet",
         "scipy", 
         "mock", 
         "importlib-resources", 

@@ -296,33 +296,35 @@ def _region_violins(data, dependent, independent, compare):
     import matplotlib.pyplot as plt
     figures = {}
     for region, regiondata in data.groupby(terms.REGION):
-        figures[region] = plt.subplots(figsize=(10, 5))
+        f, a = plt.subplots(figsize=(10, 5))
+        figures[region] = f
         xdata = [', '.join([str(v) for v in row]) for row in regiondata[independent].values]
-        sns.violinplot(x=xdata, y=regiondata[dependent], hue=regiondata[compare])
+        sns.violinplot(ax=a, x=xdata, y=regiondata[dependent], hue=regiondata[compare])
     return figures
 
-siegle_osi_2019 = Analysis(
+
+siegle_osi_tf4_2021 = Analysis(
     doc="""
     We compare to the levels of orientation selectivity observed in
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2019"
+        "analysis_neuro.analyses.data.siegle_2021"
     ).osi,
     plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-siegle_spontaneous_2019 = Analysis(
+siegle_spontaneous_2021 = Analysis(
     doc="""
     We compare to the firing rate distribution for blank gray stimuli
-    observed in Siegle et al. 2019""",
+    observed in Siegle et al. 2021""",
     measurement=terms.FIRING_RATE,
-    observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2019"
-    ).spontaneous,
-    plotter=_region_violins,
+    observations=pd.read_parquet(
+        files("analysis_neuro.analyses.data").joinpath("siegle_spont.parquet")
+    ),
+    plotter=sns.boxplot,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )

@@ -114,9 +114,12 @@ GENE_EXPRESSION = Term(
     description=("Gene that the cell expresses." "For example: PV, Sst, Vip"),
 )
 SPIKING_CLASS = Term(
-    "spiking class", description=("Spiking class of a neuron, eiher FS or RS")
+    "spiking class",
+    description=(
+        "Spiking class of a neuron, either FS or RS"
+        "denoting fast-spiking and regular-spiking respectively"
+    )
 )
-
 CELL_DENSITY = Term(
     "cell density ($cells/mm^3$)",
     description="Number of cells per cubic millimetre",
@@ -216,22 +219,42 @@ STIMULUS = Term(
 )
 
 VISUAL_STIMULUS = Term(
-    "visual stimulus type",
-    description="The type of visual stimulus used in an experiment. "
-    "See stimuli.py for stimuli associated with different datasets.",
+    "visual stimulus ",
+    description=(
+        "Visual stimulus used. When used directly, designates the type of stimulus "
+        "('gray', 'sinusoidal grating', 'bar grating', 'natural images')."
+        " When used as a prefix, indicates that the"
+        "succeeding term describes a property of a visual stimulus, "
+        "such as contrast or orientation"
+    )
+)
+
+DURATION = Term(
+    "duration (ms)",
+    description=(
+        "Duration of some event, such as a stimulus."
+    )
+)
+
+SPIKE_RECORDING_METHOD = Term(
+    "spike recording method",
+    description=(
+        "The method by which neuron spikes are recorded. "
+        "E.G. 'extracellular', 'cell-attached' or 'whole-cell."
+    )
 )
 
 ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
     description=(
-        "A tuple: the range of horizontal angles that the stimulus covers"
+        "An interval: the range of horizontal angles that the stimulus covers"
         " in the visual field"
     ),
 )
 ANGLE_ELEVATION = Term(
     "stimulus height (degrees)",
     description=(
-        "A tuple: the range of vertical angles that the stimulus covers"
+        "An interval: the range of vertical angles that the stimulus covers"
         " in the visual field."
     ),
 )
@@ -525,7 +548,10 @@ RF_AREA = Term(
 
 FIRING_RATE = Term(
     "firing rate (Hz)",
-    description=("Rate of firing under the experimental conditions, in Hertz"),
+    description=(
+        "Rate of neuronal firing during a time window,"
+        " spikes/second"
+    ),
     measurement_method="firing_rate",
 )
 

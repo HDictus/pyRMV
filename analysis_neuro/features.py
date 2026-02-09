@@ -20,4 +20,3 @@ def g_OSI_signal(response, ori_degrees, groupby, null_shuffle=False):
     df['scaled_resp'] = df['resp'] * df['scaling']
     grouped = df.groupby(groupby)
     return (grouped['scaled_resp'].sum() / grouped['resp'].sum()).abs()
-    
