@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import dataframe_pointer
 import pandas as pd
+from rst2pdf.createpdf import RstToPdf
 
 DPI = 256
 
@@ -84,3 +85,33 @@ def save_result(result, path):
     print(resultdict)
     with open(jsonpath, "w", encoding="utf8") as jsonfile:
         json.dump(resultdict, jsonfile, indent=4)
+
+
+def _rst_table(df):
+    return "TODO: convert dataframes to tables"
+
+
+def save_pdf(result, path):
+    figures = ""# "\n".join([ for name in result['figures']])
+    for name, fig in result['figures'].items():
+        fn = path.parent / f'{name}.png'
+        fig.savefig(fn)
+        figures += f".. image:: {str(fn.absolute())}\n"
+    text = f"""
+Introduction
+============
+{result["Introduction"]}
+
+Results
+=======
+{_rst_table(result['measurement'])}
+
+{figures}
+
+
+Conclusions
+===========
+{_rst_table(result['stats'])}
+"""
+
+    RstToPdf().createPdf(text=text, output=str(path))

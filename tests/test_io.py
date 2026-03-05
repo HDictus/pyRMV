@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-from analysis_neuro.io import load_result, save_result
+from analysis_neuro.io import load_result, save_result, save_pdf
 from analysis_neuro.testing import assert_results_equal
 
 
@@ -58,6 +58,13 @@ def test_equality_assertion_handles_duplicate():
 
 # TODO: to allow models to 'volunteer' information, we need to be able to handle nans in this comparison
 
+def test_save_pdf():
+    result, _ = create_test_results()
+    with TemporaryDirectory() as tdir:
+        filename = Path(tdir) / 'result.pdf'
+        save_pdf(result, filename)
+        assert filename.exists()
+
 
 def create_test_results():
     measurement = pd.DataFrame(
@@ -73,3 +80,4 @@ def create_test_results():
                   measurement.assign(pvalue=1)},
     }
     return result, measurement
+
