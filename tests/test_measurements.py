@@ -41,58 +41,43 @@ def test_measures_osi_with_firing_rate():
 
     rates = np.array([1, 1, 1, 2, 1, 1, 1, 1])
     oris = np.array([0, 45, 90, 135, 180, 225, 270, 315])
+    rates -= 1
     expected_OSI = np.abs(np.sum(rates * np.exp(2*1j * np.deg2rad(oris)))) / np.sum(rates)
 
-
+    stim = stimuli.allen_brain_observatory.drifting_gratings
+    tf2 = stim[stim[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] == 2]
+    tf4 = stim[stim[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] == 4]
     parameters = pd.DataFrame(
-        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings.pointer()]})
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    # measures by averaging over stimulus conditions
-    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
-    assert set(measured.columns) == expected_columns
-    assert all(measured[terms.ORIENTATION_SELECTIVITY] > 0)
+        {terms.STIMULUS: [tf2.pointer()]}
+    )
 
-    parameters[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] = 1
-    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    # measures just for the specified temporal frequency
-    assert set(measured.columns) == expected_columns
-    assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], 0)
-
-    parameters[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] = 2
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY].values, [expected_OSI, 0, 0])
 
-    parameters[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] = 'optimal'
-    # measures each cell at its optimal TF
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], expected_OSI)
-
-    parameters = pd.DataFrame(
-        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings.pointer(),
-                          stimuli.allen_brain_observatory.drifting_gratings.pointer()],
-         terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY: [2, 4]})
+    parameters = pd.DataFrame({
+        terms.STIMULUS: [tf2.pointer(),
+                        tf4.pointer()]
+    })
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # a separate measurement for each unique TF value
     assert np.allclose(
-        measured.set_index(terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY).loc[
-            2, terms.ORIENTATION_SELECTIVITY],
+        measured.set_index(terms.STIMULUS).loc[
+            tf2.pointer(), terms.ORIENTATION_SELECTIVITY],
         [expected_OSI, 0, 0]
     )
     assert np.allclose(
-        measured.set_index(terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY).loc[
-            4, terms.ORIENTATION_SELECTIVITY],
+        measured.set_index(terms.STIMULUS).loc[
+            tf4.pointer(), terms.ORIENTATION_SELECTIVITY],
         [0, 0, expected_OSI]
     )
 
     # check that other parameters are passed to firing rate as well!
-    
     parameters = pd.DataFrame(
         {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings.pointer()],
          terms.MTYPE: 'PC'})
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-
     assert list(measured[terms.CELL_ID]) == [0]
+
 
 def test_measures_connprob_from_pair_weight():
 

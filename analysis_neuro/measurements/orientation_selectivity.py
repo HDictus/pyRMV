@@ -45,13 +45,13 @@ def from_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
         response = model.firing_rate(stimuli_shown.assign(**row)).reset_index()
         minfr = response.groupby(terms.CELL_ID)[terms.FIRING_RATE].min()
         response[terms.FIRING_RATE] -= minfr.loc[response[terms.CELL_ID]].values
-        if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
+        if len(response) == 0 or np.all(np.isnan(response[response_measurement])):
             continue
         selectivity = g_OSI_signal(
             response[response_measurement],
             response[terms.VISUAL_STIMULUS + terms.STIM_ORIENTATION],
-            groupby=terms.CELL_ID
-        )
+            groupby=response[terms.CELL_ID]
+        ).fillna(0)
         selectivity.name = terms.ORIENTATION_SELECTIVITY
         out.append(selectivity.reset_index().assign(**row))
 
