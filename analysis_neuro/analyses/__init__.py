@@ -311,7 +311,7 @@ siegle_osi_tf4_2021 = Analysis(
     observations=importlib.import_module(
         "analysis_neuro.analyses.data.siegle_2021"
     ).osi,
-    plotter=_region_violins,
+    plotter=plots.hist,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -324,7 +324,7 @@ siegle_spontaneous_2021 = Analysis(
     observations=pd.read_parquet(
         files("analysis_neuro.analyses.data").joinpath("siegle_spont.parquet")
     ),
-    plotter=sns.boxplot,
+    plotter=plots.hist,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
