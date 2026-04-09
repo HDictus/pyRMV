@@ -128,6 +128,14 @@ In this case, the parameters dataframe would turn out as.
 | VISp               | L23               | VISlm               |                               30   |
 +--------------------+-------------------+---------------------+------------------------------------+
 
+Installation
+============
+
+Clone the repository, cd into it and run `pip install .` to install in your current python environment.`
+To download the necessary validation datasets run `bash download_scripts/download_all.bash'` (this will take about 4GB of storage).
+Currently you need to download all datasets to use the package, in the future we will work on loading them only when necessary.
+
+
 Contributing
 ============
 

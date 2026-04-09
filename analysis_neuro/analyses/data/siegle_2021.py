@@ -20,4 +20,3 @@ osi[terms.STIMULUS] = tf4_only.pointer()
 spontaneous = pd.read_parquet(
     files("analysis_neuro.analyses.data").joinpath("siegle_spont.parquet")
 )
-
