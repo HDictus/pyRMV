@@ -147,7 +147,7 @@ class Analysis:
         see analysis_neuro.terminology.measurements
         """
         measured = measure(
-            model, measurement=self.measurement, parameters=self.parameters
+            model, measurement=self.measurement, parameters=self.parameters.copy()
         )
         # the model's label should be included to distinguish it from other
         # models and experimental data
