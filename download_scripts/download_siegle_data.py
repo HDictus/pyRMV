@@ -100,7 +100,7 @@ pd.DataFrame({
     terms.DATASET: 'Siegle2021',
     terms.SPIKE_RECORDING_METHOD: 'extracellular',
     terms.VISUAL_STIMULUS: 'gray',
-    terms.VISUAL_STIMULUS + terms.DURATION: 2.5,
+    terms.VISUAL_STIMULUS + terms.DURATION: 2500,
     # terms.MOVIE: bad idea to do like this: will depend on file path
     terms.VISUAL_STIMULUS + terms.FRAME_RATE: 1000,
     terms.VISUAL_STIMULUS + terms.ANGLE_AZIMUTH: pd.Interval(-120, 120),

@@ -16,6 +16,7 @@ drifting_gratings = pd.DataFrame(
             terms.VISUAL_STIMULUS + terms.STIM_ORIENTATION: ori,
             terms.VISUAL_STIMULUS + terms.ANGLE_AZIMUTH: pd.Interval(-120, 120),
             terms.VISUAL_STIMULUS + terms.ANGLE_ELEVATION: pd.Interval(-60, 60),
+            terms.VISUAL_STIMULUS + terms.DURATION: 2000
         }
         for ori in range(0, 360, 45)
         for tf in [1, 2, 4, 8, 15]
