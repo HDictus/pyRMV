@@ -16,7 +16,7 @@ drifting_gratings = pd.DataFrame(
             terms.ANGLE_ELEVATION: (-60, 60),
         }
         for ori in range(0, 360, 45)
-        for tf in [1, 2, 4, 8, 15]
+        for tf in [4]# temporarily limit to tf4[1, 2, 4, 8, 15]
     ]
 ).pointer()
 
