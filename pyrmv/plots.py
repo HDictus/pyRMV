@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from analysis_neuro import terminology as terms
-from analysis_neuro.stats import _iter_compare
+from pyrmv import terminology as terms
+from pyrmv.stats import _iter_compare
 
 
 def crossplot(data: pd.DataFrame, dependent: str, independent: List[str],

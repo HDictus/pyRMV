@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-from analysis_neuro.io import load_result, save_result, save_pdf
-from analysis_neuro.testing import assert_results_equal
+from pyrmv.io import load_result, save_result, save_pdf
+from pyrmv.testing import assert_results_equal
 
 
 

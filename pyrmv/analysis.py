@@ -6,9 +6,9 @@ from collections.abc import Callable
 import pandas as pd
 from lazy import lazy
 
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
-from analysis_neuro.measurements import (
+from pyrmv.measurements import (
     extract_parameters,
     measure,
     validate_measurement,
@@ -54,7 +54,7 @@ class Analysis:
     These components, provided at initialization are as follows:
 
     measurement: a string describing the measurement to analyze.
-       should have a corresponding entry in analysis_neuro.terminology.measurements
+       should have a corresponding entry in pyrmv.terminology.measurements
     observations: parameters or parameterized experimental data to use
        for the measurements.
     stats (optional): a callable for statistical tests accepting :
@@ -144,7 +144,7 @@ class Analysis:
         """Measure the required measurements on model.
 
         Model must have the method required to measure self.measurement
-        see analysis_neuro.terminology.measurements
+        see pyrmv.terminology.measurements
         """
         measured = measure(
             model, measurement=self.measurement, parameters=self.parameters

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
 
 def from_pair_weights(model, parameters):
@@ -15,7 +15,7 @@ def from_pair_weights(model, parameters):
     Returns:
         DataFrame with connection probability and sample size
     """
-    from analysis_neuro.measurements import measure
+    from pyrmv.measurements import measure
 
     edges = measure(model, terms.PAIR_WEIGHT, parameters)
     edges['conn'] = edges[terms.PAIR_WEIGHT] > 0

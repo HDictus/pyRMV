@@ -7,10 +7,10 @@ except ImportError:
 
 import pandas as pd
 
-from analysis_neuro import terminology as terms
-from analysis_neuro.analyses.data.stimuli import allen_brain_observatory
+from pyrmv import terminology as terms
+from pyrmv.analyses.data.stimuli import allen_brain_observatory
 
-osi = pd.read_parquet(files("analysis_neuro.analyses.data").joinpath("siegle_tf4.parquet"))
+osi = pd.read_parquet(files("pyrmv.analyses.data").joinpath("siegle_tf4.parquet"))
 tf4_only = allen_brain_observatory.drifting_gratings[
     allen_brain_observatory.drifting_gratings[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] == 4
 ]
@@ -18,6 +18,6 @@ osi[terms.STIMULUS] = tf4_only.pointer()
 
 
 spontaneous = pd.read_parquet(
-    files("analysis_neuro.analyses.data").joinpath("siegle_spont.parquet")
+    files("pyrmv.analyses.data").joinpath("siegle_spont.parquet")
 )
 

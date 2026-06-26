@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-import analysis_neuro.terminology as terms
-from analysis_neuro.features import g_OSI_signal
+import pyrmv.terminology as terms
+from pyrmv.features import g_OSI_signal
 
 
 # TODO: use g_OSI from features.py
@@ -38,7 +38,7 @@ def from_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
     Returns:
         DataFrame with orientation selectivity values per cell
     """
-    from analysis_neuro.measurements import measure
+    from pyrmv.measurements import measure
     out = []
     for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
         stimuli_shown = row[terms.STIMULUS].df

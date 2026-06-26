@@ -1,7 +1,7 @@
 import imp
 from setuptools import setup, find_packages
 
-VERSION = imp.load_source("", "analysis_neuro/version.py").VERSION
+VERSION = imp.load_source("", "pyrmv/version.py").VERSION
 
 with open("README.rst", encoding="utf-8") as f:
     README = f.read()

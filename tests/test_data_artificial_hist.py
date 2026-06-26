@@ -1,4 +1,4 @@
-from analysis_neuro.analyses.data import data_from_histogram
+from pyrmv.analyses.data import data_from_histogram
 
 
 def test_artificial_hist():

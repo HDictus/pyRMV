@@ -33,6 +33,6 @@ jobs:
         pytest
     - name: Lint with pycodestyle, pydocstyle, and pylint
       run: |
-        pylint analysis_neuro
-        pycodestyle analysis_neuro
-        pydocstyle analysis_neuro
+        pylint pyrmv
+        pycodestyle pyrmv
+        pydocstyle pyrmv

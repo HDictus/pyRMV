@@ -1,6 +1,6 @@
 """Data extracted from @ma_visual_2010"""
 import pandas as pd
-from analysis_neuro import terminology as terms
+from pyrmv import terminology as terms
 
 spontaneous = pd.DataFrame(
     {

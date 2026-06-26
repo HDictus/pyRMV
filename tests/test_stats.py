@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest as pyt
 import scipy
-from analysis_neuro import stats, terms, Assumption
+from pyrmv import stats, terms, Assumption
 
 
 def test_squared_error():

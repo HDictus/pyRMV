@@ -2,8 +2,6 @@
 PyRMV: Realist Model Validation
 ================================
 
-This is still a work in progress.
-Note that the package name analysis_neuro is currently being renamed
 
 Purpose
 =======
@@ -23,16 +21,16 @@ For blue brain circuit models, see the `bluebrain-models https://github.com/HDic
 This framework is referred to as realist to distinguish it from operationalist validation. 
 In an operationalist approach, experimental results are defined by the experimental operations used to arrive at them.
 In a realist approach, the measurements made by the experiment are regarded as representing "real" properties.
-The advantages and disadvantages of this will be detailed in a chapter of my thesis.
+The two approaches are contrasted in the paper where this framework was introduced (TODO: link)
 
 Features
 ========
 
 The following features are provided to aid in the construction of standardized validations:
- - A module of standardized terminology (``analysis_neuro.terminology``).
+ - A module of standardized terminology (``pyrmv.terminology``).
  - The ``Analysis`` class, which can be initialized with standardized experimental data, statistical hypothesis tests, and plotter objects. This is subsequently called on ``Model`` objects.
- - Statistical hypothesis tests (``analysis_neuro.stats``) and plotting tools (``analysis_neuro.plots``).
- - A library of existing model validations (``analysis_neuro.analyses``).
+ - Statistical hypothesis tests (``pyrmv.stats``) and plotting tools (``pyrmv.plots``).
+ - A library of existing model validations (``pyrmv.analyses``).
 
 Usage
 =====
@@ -41,7 +39,7 @@ A new validation can be defined using the Analysis class: the difference being t
 
 .. code-block::
 
-    from analysis_neuro import Analysis, stats, plots
+    from pyrmv import Analysis, stats, plots
     new_validation_name = Analysis(
        observations=pd.read_csv("path/to/experimental/data.csv"),
        measurement=terms.CONNECTION_PROBABILITY, # the real-world property we are interested in
@@ -76,7 +74,7 @@ If no existing terminology is defined for a relevant variable, the user should d
 
 .. code-block::
 
-    # (inside analysis_neuro/terminology.py)
+    # (inside pyrmv/terminology.py)
     CONNECTION_PROBABILITY = Term(
          "connection probability",
          "The probability for a random pair of cells in a pathway to have at least one synapse between them",

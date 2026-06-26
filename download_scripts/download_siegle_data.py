@@ -1,5 +1,5 @@
 import pandas as pd
-from analysis_neuro import terms
+from pyrmv import terms
 
 import os
 import shutil
@@ -10,7 +10,7 @@ from pathlib import Path
 from tqdm import tqdm
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
 
-OUT_DIR = Path(__file__).parent.parent / 'analysis_neuro/analyses/data/'
+OUT_DIR = Path(__file__).parent.parent / 'pyrmv/analyses/data/'
 
 # TODO: is there a way to safely run allensdk functions alongside analysis-neuro?
 data_directory = Path("/work/lnmc/visual_cortex/")  / 'data_store' / 'ecephys' # must be updated to a valid directory in your filesystem
@@ -130,8 +130,8 @@ def _osi(rate_data):
     rate_data = rate_data.groupby(['unit_id', 'orientation'])['rate'].mean().reset_index()
     minrates = rate_data.groupby('unit_id')['rate'].min()
     rate_data['relrate'] = rate_data['rate'] - minrates[rate_data['unit_id']].values
-    import analysis_neuro as an
-    from analysis_neuro import features
+    import pyrmv as an
+    from pyrmv import features
     osi = an.features.g_OSI_signal(rate_data['relrate'], rate_data['orientation'], rate_data['unit_id'])
     return osi
 osi = _osi(rate_data)

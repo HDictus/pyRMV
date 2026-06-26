@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import analysis_neuro.features as test_module
-from analysis_neuro.features import frequency_modulation_amplitude, g_OSI_signal
+import pyrmv.features as test_module
+from pyrmv.features import frequency_modulation_amplitude, g_OSI_signal
 
 
 def test_frequency_modulation_reproduces_amp():

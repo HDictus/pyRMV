@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from analysis_neuro import terminology as terms
-from analysis_neuro.exceptions import Assumption
+from pyrmv import terminology as terms
+from pyrmv.exceptions import Assumption
 
 
 def _iter_compare(data: pd.DataFrame, compare: str):

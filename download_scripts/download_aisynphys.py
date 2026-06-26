@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import aisynphys
 from aisynphys.database import SynphysDatabase
-from analysis_neuro import terms
+from pyrmv import terms
 from tqdm import tqdm
 from pathlib import Path
 import datetime
@@ -186,7 +186,7 @@ connprob.name = terms.CONNECTION_PROBABILITY
 connprob = connprob.reset_index()
 connprob[terms.SAMPLE_SIZE] = grouped_by_pathway_and_distance['connected'].count().values
 print("Saving...")
-DATA_DIR = Path('../../../analysis_neuro/analyses/data/')
+DATA_DIR = Path('../../../pyrmv/analyses/data/')
 import datetime
 
 connprob.reset_index(drop=True).to_csv(DATA_DIR / "campagnola_mouse_2022_connectivity.csv")

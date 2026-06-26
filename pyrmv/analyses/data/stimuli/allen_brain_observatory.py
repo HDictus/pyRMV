@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
 # TODO: consider describing as stimulus windows with set duration
 #   

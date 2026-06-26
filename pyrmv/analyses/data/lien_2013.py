@@ -1,6 +1,6 @@
 """Data extracted from @lien_tuned_2013."""
 import pandas as pd
-from analysis_neuro import terminology as terms
+from pyrmv import terminology as terms
 
 stimulus = pd.DataFrame({
     terms.VISUAL_STIMULUS: "bar grating",

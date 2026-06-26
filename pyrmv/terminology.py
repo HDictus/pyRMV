@@ -76,7 +76,7 @@ MTYPE = Term(
     "mtype",
     description=(
         "Morphological type as a capitalized string, e.g. L1_SAC, L23_CHC, PC, LBC."
-        " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
+        " See pyrmv.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
 
@@ -212,7 +212,7 @@ PATHWAY_CURRENT = Term(
 
 STIMULUS = Term(
     "stimulus",
-    description="Set of stimuli shown to a subject. Add stimuli to analysis_neuro.stimuli "
+    description="Set of stimuli shown to a subject. Add stimuli to pyrmv.stimuli "
     "and refer to their name with this parameter. For example, if an animal is shown the allen"
     " institute's brain observatory drifting gratings stimulus this may be "
     ' "brain_observatory 1.1drifting gratings"',

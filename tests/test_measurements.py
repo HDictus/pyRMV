@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-from analysis_neuro import terms
-import analysis_neuro.measurements as test_module
-from analysis_neuro.analyses.data import stimuli
+from pyrmv import terms
+import pyrmv.measurements as test_module
+from pyrmv.analyses.data import stimuli
 
           
 # TODO: simplify: always optimal with respect to other stimulus parameters.

@@ -13,12 +13,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-import analysis_neuro.analyses.data.jiang_distances as jiangd
-from analysis_neuro import Analysis, plots, stats
-from analysis_neuro import terminology as terms
+import pyrmv.analyses.data.jiang_distances as jiangd
+from pyrmv import Analysis, plots, stats
+from pyrmv import terminology as terms
 
 
-DATADIR = files("analysis_neuro.analyses.data")
+DATADIR = files("pyrmv.analyses.data")
 
 
 ji_innervation_2016 = Analysis(
@@ -41,7 +41,7 @@ ji_relative_2016 = Analysis(
 
 lien_fraction_excitation_2018 = Analysis(
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.lien_2013"
+        "pyrmv.analyses.data.lien_2013"
     ).fraction_excitation,
     measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
     stats=stats.bootstrap_mean,
@@ -60,7 +60,7 @@ lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     multiple.
     """,
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.lien_2013"
+        "pyrmv.analyses.data.lien_2013"
     ).thalamocortical_current,
     measurement=terms.PATHWAY_CURRENT,
 )
@@ -79,7 +79,7 @@ lien_osi_fm_2013 = Analysis(
         terms.DATASET: 'Lien2013',
         terms.MTYPE: "PC",
         terms.STIMULUS: importlib.import_module(
-            "analysis_neuro.analyses.data.lien_2013"
+            "pyrmv.analyses.data.lien_2013"
         ).stimulus.pointer(),
         terms.RESPONSE_CLASS: "sON/tOFF",
     }),
@@ -309,7 +309,7 @@ siegle_osi_tf4_2021 = Analysis(
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2021"
+        "pyrmv.analyses.data.siegle_2021"
     ).osi,
     plotter=_region_violins,
     stats=stats.mann_whitney_u,
@@ -322,7 +322,7 @@ siegle_spontaneous_2021 = Analysis(
     observed in Siegle et al. 2021""",
     measurement=terms.FIRING_RATE,
     observations=pd.read_parquet(
-        files("analysis_neuro.analyses.data").joinpath("siegle_spont.parquet")
+        files("pyrmv.analyses.data").joinpath("siegle_spont.parquet")
     ),
     plotter=sns.boxplot,
     stats=stats.mann_whitney_u,
@@ -332,7 +332,7 @@ siegle_spontaneous_2021 = Analysis(
 
 ma_spontaneous_2010 = Analysis(
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.ma_2010"
+        "pyrmv.analyses.data.ma_2010"
     ).spontaneous,
     measurement=terms.FIRING_RATE,
     plotter=plots.hist,

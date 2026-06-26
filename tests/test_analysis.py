@@ -3,7 +3,7 @@ import numpy as np
 import pytest as pyt
 import warnings
 from mock import MagicMock
-from analysis_neuro import Analysis, terms, TerminologyError, measurements
+from pyrmv import Analysis, terms, TerminologyError, measurements
 
 
 MEASURED_THING = terms.Term("measured thing", measurement_method="measured_thing")
@@ -319,7 +319,7 @@ def test_runs_verdict():
 
 def test_warns_invalid_term():
     matchstr = (
-        "Column header 'not in terms' is not defined in analysis_neuro.terminology"
+        "Column header 'not in terms' is not defined in pyrmv.terminology"
     )
     with pyt.warns(Warning, match=matchstr) as wrn:
         Analysis(

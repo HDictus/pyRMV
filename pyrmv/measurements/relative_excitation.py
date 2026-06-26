@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
 
 def _weights_sum(model, parameters):
@@ -15,7 +15,7 @@ def _weights_sum(model, parameters):
     Returns:
         Series of summed connection weights grouped by parameters and postsynaptic cell
     """
-    from analysis_neuro.measurements import measure
+    from pyrmv.measurements import measure
 
     edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]

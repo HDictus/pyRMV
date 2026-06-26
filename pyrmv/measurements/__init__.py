@@ -22,15 +22,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import analysis_neuro.terminology as terms
-from analysis_neuro.exceptions import TerminologyError
+import pyrmv.terminology as terms
+from pyrmv.exceptions import TerminologyError
 
 # Import submodules
-from analysis_neuro.measurements import connection_probability
-from analysis_neuro.measurements import fraction_innervated
-from analysis_neuro.measurements import relative_excitation
-from analysis_neuro.measurements import fraction_excitation
-from analysis_neuro.measurements import orientation_selectivity
+from pyrmv.measurements import connection_probability
+from pyrmv.measurements import fraction_innervated
+from pyrmv.measurements import relative_excitation
+from pyrmv.measurements import fraction_excitation
+from pyrmv.measurements import orientation_selectivity
 
 DATA_TERMS = [terms.DATASET, terms.CITATION, terms.NOTES, terms.CELL_ID, terms.TRIAL_ID]
 
@@ -129,7 +129,7 @@ def validate_observations(observations):
                         break
             if not is_valid_prefixed:
                 warnings.warn(
-                    f"Column header '{column}' is not defined in analysis_neuro.terminology"
+                    f"Column header '{column}' is not defined in pyrmv.terminology"
                 )
 
 
@@ -151,10 +151,10 @@ def measure(model, measurement, parameters):
         model: a class implementing a method measuring measurement
         measurement: string representing a measurement type.
             should be one of the terms represented in
-            analysis_neuro.measurements
+            pyrmv.measurements
         parameters: a DataFrame describing the parameters of the
             measurements to make. Use terminology from
-            analysis_neuro.terminology to ensure consistency.
+            pyrmv.terminology to ensure consistency.
     """
     if isinstance(measurement, list):
         first = measure(model, measurement[0], parameters)
