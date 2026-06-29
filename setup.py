@@ -7,15 +7,14 @@ with open("README.rst", encoding="utf-8") as f:
     README = f.read()
 
 setup(
-    name="analysis-neuro",
+    name="pyrmv",
     author="bbp",
     version=VERSION,
     long_description=README,
     long_description_content_type="text/x-rst",
-    description="collection of analyses and validations for neuroscience",
+    description="Module for constructing reusable validations and validation library",
     license="MIT",
     python_requires=">=3.6",
-    url="https://bbpteam.epfl.ch/documentation/projects/analysis-neuro/latest/index.html",
     install_requires=[
         "numpy", 
         "pandas",
