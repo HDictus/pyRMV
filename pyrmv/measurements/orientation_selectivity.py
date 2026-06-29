@@ -43,6 +43,9 @@ def from_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
     for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
         stimuli_shown = row[terms.STIMULUS].df
         response = model.firing_rate(stimuli_shown.assign(**row)).reset_index()
+        response = response.groupby(
+            [terms.CELL_ID, terms.VISUAL_STIMULUS + terms.STIM_ORIENTATION]
+        )[terms.FIRING_RATE].mean().reset_index()
         minfr = response.groupby(terms.CELL_ID)[terms.FIRING_RATE].min()
         response[terms.FIRING_RATE] -= minfr.loc[response[terms.CELL_ID]].values
         if len(response) == 0 or not np.any(~np.isnan(response[response_measurement])):
@@ -50,7 +53,7 @@ def from_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
         selectivity = g_OSI_signal(
             response[response_measurement],
             response[terms.VISUAL_STIMULUS + terms.STIM_ORIENTATION],
-            groupby=terms.CELL_ID
+            groupby=response[terms.CELL_ID]
         )
         selectivity.name = terms.ORIENTATION_SELECTIVITY
         out.append(selectivity.reset_index().assign(**row))
