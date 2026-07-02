@@ -2,11 +2,13 @@
 
 import inspect
 from collections.abc import Callable
+import warnings
 
 import pandas as pd
 from lazy import lazy
 
 import pyrmv.terminology as terms
+from pyrmv.exceptions import Assumption
 
 from pyrmv.measurements import (
     extract_parameters,
@@ -210,8 +212,9 @@ class Analysis:
 
     def __call__(self, *models):
         """Run this analysis instance on a model."""
-        to_concat = [self.measure(model) for model in models]
-
+        msr = [catch_assumptions(self.measure, model) for model in models]
+        assumptions = [a for a, _ in msr]
+        to_concat = [b for _, b in msr]
         if isinstance(self.measurement, str):
             measurements = [self.measurement]
         else:
@@ -229,14 +232,18 @@ class Analysis:
             )
             to_concat = [observations] + to_concat
         measurements = pd.concat(to_concat)
-        stats = self.statistical_tests(measurements)
+        stat_ass, stats = catch_assumptions(self.statistical_tests, measurements)
         verdict = "No verdict rendered" if self.verdict is None else self.verdict(stats)
         report = {
             "Introduction": self.doc,
+            "methods": {'stats': _append_assumptions(self.stats.__doc__, stat_ass)},
             "measurements": measurements,
             "stats": stats,
             "verdict": verdict,
         }
+        for ass, model in zip(assumptions, models):
+            report['methods'][model.label] = _append_assumptions(model.__doc__, ass)
+
         if self.plotter is not None:
             figure = self.plot(measurements)
             report["figures"] = figure
@@ -292,3 +299,32 @@ def _exclude_obs_only(observations, measured, independent_vars):
         msr_by_ind = msr.set_index(independent_vars)
         in_none = in_none.difference(msr_by_ind.index)
     return by_ind.drop(index=in_none).reset_index()
+
+
+def catch_assumptions(method, *args, **kwargs):
+    assumptions = []
+    warnings_ = []
+    with warnings.catch_warnings(record=True) as w:
+        result = method(*args, **kwargs)
+
+        for warning in w:
+            if issubclass(warning.category, Assumption):
+                assumptions.append(warning)
+            else:
+                warnings_.append(warning)
+    # re-emit warnings that don't match, so they still propagate\
+    for warning in warnings_:
+        warnings.warn_explicit(
+            warning.message,
+            warning.category,
+            warning.filename,
+            warning.lineno,
+        )
+    return assumptions, result
+
+
+def _append_assumptions(doc, assumptions):
+    newline = '\n'
+    doc = '' if doc is None else doc
+    assumptionstr = {newline.join([str(ass) for ass in assumptions])}
+    return doc + f"Assumptions:\n{assumptionstr}"

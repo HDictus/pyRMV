@@ -14,6 +14,7 @@ from pyrmv import Analysis, terms
 
 rng = np.random.default_rng(1)
 
+
 class MockModel:
     """Universal mock model that returns constant/random values for all measurements."""
 

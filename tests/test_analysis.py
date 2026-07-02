@@ -3,13 +3,15 @@ import numpy as np
 import pytest as pyt
 import warnings
 from mock import MagicMock
-from pyrmv import Analysis, terms, TerminologyError, measurements
+from pyrmv import Analysis, terms, TerminologyError, measurements, Assumption
 
 
 MEASURED_THING = terms.Term("measured thing", measurement_method="measured_thing")
 
 
 class MockModel:
+    """Mock model"""
+
     def __init__(self, num):
         self.num = num
         self.label = str(num)
@@ -500,7 +502,40 @@ def test_set_dependent_independent_compare():
     assert analysis.independent == [terms.DATASET]
     assert analysis.dependent == 'a'
     assert analysis.compare == MEASURED_THING
-    
+
+def test_catch_and_report_assumptions():
+
+    modelmessage = "model assumes something"
+    class MMWithAssumptions(MockModel):
+        """makes assumption"""
+        def measured_thing(self, parameters):
+            warnings.warn(Assumption(modelmessage))
+            warnings.warn(Warning("Otherwarning"))
+            return super().measured_thing(parameters)
+
+    statmessage = "test assumes something"
+    def statsass(data, dependent, independent, compare):
+        """A statistical method with assumptions"""
+        warnings.warn(Assumption(statmessage))
+        return {'hypothesis': pd.DataFrame()}
+        
+    analysis = Analysis(
+        observations=pd.DataFrame({
+            MEASURED_THING: [1, 2],
+            terms.DATASET: 'a',
+            'c': 'b'
+        }),
+        measurement=MEASURED_THING,
+        stats=statsass
+    )
+    model = MMWithAssumptions(1)
+    with pyt.warns(Warning):  # confirm otherwarnings still work
+        res = analysis(model)
+    assert model.__doc__ in res['methods']['1']
+    assert modelmessage in res['methods']['1']
+    assert statmessage in res['methods']['stats']
+    assert statsass.__doc__ in res['methods']['stats']
+
 
 @pyt.mark.xfail
 def test_with_fields():
