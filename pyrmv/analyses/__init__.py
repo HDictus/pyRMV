@@ -1,4 +1,5 @@
 """Collected analyses and validations."""
+# pylint: disable=fixme
 
 try:
     from importlib.resources import files
@@ -52,12 +53,13 @@ lien_fraction_excitation_2018 = Analysis(
 
 lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     doc="""
-    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
-    This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
+    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013.
+    This is likely to be an upper bound, as cortical silencing increases the activity of
+    thalamocortical cells.
 
-    In the experiment Lien and Scanziani reported that the mean current recorded was independent of stimulus direction.
-    For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
-    multiple.
+    In the experiment Lien and Scanziani reported that the mean current recorded was independent of
+    stimulus direction. For this reason we only use one stimulus direction, so that models do not
+    need to unnecessarily simulate multiple.
     """,
     observations=importlib.import_module(
         "pyrmv.analyses.data.lien_2013"
@@ -185,7 +187,7 @@ campagnola_connprob_2022 = Analysis(
 
 psc_measurements = [
     terms.PSC_AMPLITUDE,
-    terms.PSC_RISE_TIME, 
+    terms.PSC_RISE_TIME,
     terms.PSC_DECAY_TAU,
     terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
     terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
@@ -221,7 +223,7 @@ campagnola_psc_rise_2022 = Analysis(
 
 psp_measurements = [
     terms.PSP_AMPLITUDE,
-    terms.PSP_RISE_TIME, 
+    terms.PSP_RISE_TIME,
     terms.PSP_DECAY_TAU,
     terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
     terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
@@ -284,7 +286,9 @@ campagnola_stp_recovery_2022 = Analysis(
 )
 
 campagnola_ppd_2022 = Analysis(
-    observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]),
+    observations=stp_data.drop(
+        columns=[c for c in stp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]
+    ),
     measurement=terms.PAIRED_PULSE_DIFFERENCE,
     plotter=plots.pathway_barplot,
     stats=stats.mann_whitney_u,
@@ -293,7 +297,7 @@ campagnola_ppd_2022 = Analysis(
 
 
 def _region_violins(data, dependent, independent, compare):
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
     figures = {}
     for region, regiondata in data.groupby(terms.REGION):
         f, a = plt.subplots(figsize=(10, 5))
@@ -353,7 +357,7 @@ pala_peterson_conprob_2015 = Analysis(
 
 
 def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7):
-    """Check whether 50% of psp strength is in 7% most correlated pairs"""
+    """Check whether 50% of psp strength is in 7% most correlated pairs."""
     # pylint: disable=too-many-locals,unused-argument
     hypotheses = {}
     n_pairs = 179 + 279 + 40 + 14 + 8
@@ -442,14 +446,14 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
         DATADIR.joinpath("cossell_response_correlation_2015.csv")
     ).values
     figs = plots.hist(data, dependent, independent, compare)
-    
+
     for _, fig in figs.items():
         ax = fig.gca()
         ref_x, ref_y = cossell_digitized[:, 0], cossell_digitized[:, 1]
         ref_y = ref_y / np.trapz(ref_y, ref_x)
         ax.plot(ref_x, ref_y, label="Cossell et al. 2015 (digitized)")
         ax.legend()
-    
+
     return figs
 
 

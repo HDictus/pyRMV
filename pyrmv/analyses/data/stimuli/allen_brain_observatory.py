@@ -1,11 +1,12 @@
 """Stimuli used in the Allen Brain Observatory experiments."""
+# pylint: disable=fixme
 
 import pandas as pd
 
 import pyrmv.terminology as terms
 
 # TODO: consider describing as stimulus windows with set duration
-#   
+#
 drifting_gratings = pd.DataFrame(
     [
         {

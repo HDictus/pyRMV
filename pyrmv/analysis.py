@@ -70,7 +70,7 @@ class Analysis:
     verdict (optional): a callable for rendering verdicts on hypotheses
     """
 
-    # pylint: disable=too-many-positional-arguments,too-many-arguments
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         measurement,

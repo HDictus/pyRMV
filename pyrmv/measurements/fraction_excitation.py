@@ -14,7 +14,7 @@ def from_connection_weights(model, parameters):
     Returns:
         DataFrame with fraction excitation per connection
     """
-    from pyrmv.measurements import measure
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
 
     edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
     edges = edges[edges[terms.CONNECTION_WEIGHT] != 0]

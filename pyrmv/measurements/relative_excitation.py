@@ -15,7 +15,7 @@ def _weights_sum(model, parameters):
     Returns:
         Series of summed connection weights grouped by parameters and postsynaptic cell
     """
-    from pyrmv.measurements import measure
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
 
     edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
     groupcols = list(parameters.columns) + [terms.POSTSYNAPTIC + terms.CELL_ID]

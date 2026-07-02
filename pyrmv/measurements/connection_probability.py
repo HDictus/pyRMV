@@ -15,7 +15,7 @@ def from_pair_weights(model, parameters):
     Returns:
         DataFrame with connection probability and sample size
     """
-    from pyrmv.measurements import measure
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
 
     edges = measure(model, terms.PAIR_WEIGHT, parameters)
     edges['conn'] = edges[terms.PAIR_WEIGHT] > 0

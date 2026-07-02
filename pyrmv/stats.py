@@ -210,7 +210,6 @@ def binom_test(data: pd.DataFrame, dependent: str, independent: list, compare: s
             for s, n, p in zip(sampleprob, trials, probability)
         ]
 
-
     def binomtest(data1, data2, label1, label2):
         assume_1_accurate = np.logical_or(
             np.isnan(data1[terms.SAMPLE_SIZE].values),
@@ -384,9 +383,9 @@ def mann_whitney_u(
                 pvalue = np.nan
             else:
                 pvalue = stats.mannwhitneyu(
-                            sample1,
-                            sample2,
-                        ).pvalue
+                    sample1,
+                    sample2,
+                ).pvalue
 
             out_list.append(
                 {
@@ -443,7 +442,7 @@ def bootstrap_mean(
             ssizes.name = terms.SAMPLE_SIZE
             dataset1 = pd.concat([means, ssizes], axis=1).reset_index()
         elif (
-            np.isnan(dataset1[terms.MEAN + dependent]).all() 
+            np.isnan(dataset1[terms.MEAN + dependent]).all()
             or np.isnan(dataset2[dependent]).all()
         ):
             continue
@@ -478,6 +477,7 @@ def bootstrap_mean(
             f"The result of {label1} could be sampled from the same distribution as {label2}"
         ] = df
     return hypotheses
+
 
 def _bootstrap(target_mean, obs_distr, sample_size, num_samples, rng):
     samples = rng.choice(

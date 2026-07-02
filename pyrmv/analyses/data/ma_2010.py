@@ -1,4 +1,4 @@
-"""Data extracted from @ma_visual_2010"""
+"""Data extracted from @ma_visual_2010."""
 import pandas as pd
 from pyrmv import terminology as terms
 

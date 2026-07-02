@@ -87,12 +87,13 @@ def save_result(result, path):
         json.dump(resultdict, jsonfile, indent=4)
 
 
-def _rst_table(df):
+def _rst_table(_df):
     return "TODO: convert dataframes to tables"
 
 
 def save_pdf(result, path):
-    figures = ""# "\n".join([ for name in result['figures']])
+    """Save analysis report as a PDF"""
+    figures = ""  # "\n".join([ for name in result['figures']])
     for name, fig in result['figures'].items():
         fn = path.parent / f'{name}.png'
         fig.savefig(fn)

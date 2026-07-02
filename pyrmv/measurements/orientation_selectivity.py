@@ -1,4 +1,5 @@
 """Orientation selectivity measurement methods."""
+# pylint: disable=fixme
 
 import numpy as np
 import pandas as pd
@@ -38,7 +39,6 @@ def from_firing_rate(model, parameters, response_measurement=terms.FIRING_RATE):
     Returns:
         DataFrame with orientation selectivity values per cell
     """
-    from pyrmv.measurements import measure
     out = []
     for _, row in tqdm(parameters.iterrows(), total=len(parameters)):
         stimuli_shown = row[terms.STIMULUS].df
