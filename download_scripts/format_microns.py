@@ -2,9 +2,9 @@ import h5py as h5
 import numpy as np
 import conntility
 import matplotlib.pyplot as plt
-import analysis_neuro as an
-from analysis_neuro import terms
-from analysis_neuro import io
+import pyrmv as an
+from pyrmv import terms
+from pyrmv import io
 import pandas as pd
 
 # Downloaded from https://zenodo.org/records/13849415
@@ -135,7 +135,7 @@ microns_connprob = pd.DataFrame({
     terms.CONNECTION_PROBABILITY: connprob['connected'].values,
     terms.SAMPLE_SIZE: npairs.values
 })
-microns_connprob.to_feather("../../../analysis_neuro/analyses/data/microns-connprob-2021.feather")
+microns_connprob.to_feather("../../../pyrmv/analyses/data/microns-connprob-2021.feather")
 
 
 
@@ -171,8 +171,8 @@ microns_norm_weight = pd.DataFrame({
 
 # TODO: may be better to store multiple measurements with same parameterization in single df and load each one
 
-microns_indegree.to_feather("../../../analysis_neuro/analyses/data/microns-indegree-2021.feather")
-microns_outdegree.to_feather("../../../analysis_neuro/analyses/data/microns-outdegree-2021.feather")
-microns_connprob.to_feather("../../../analysis_neuro/analyses/data/microns-connprob-2021.feather")
-microns_nsyn.to_feather("../../../analysis_neuro/analyses/data/microns-nsyn-2021.feather")
-microns_norm_weight.to_feather("../../../analysis_neuro/analyses/data/microns-normweight-2021.feather")
+microns_indegree.to_feather("../../../pyrmv/analyses/data/microns-indegree-2021.feather")
+microns_outdegree.to_feather("../../../pyrmv/analyses/data/microns-outdegree-2021.feather")
+microns_connprob.to_feather("../../../pyrmv/analyses/data/microns-connprob-2021.feather")
+microns_nsyn.to_feather("../../../pyrmv/analyses/data/microns-nsyn-2021.feather")
+microns_norm_weight.to_feather("../../../pyrmv/analyses/data/microns-normweight-2021.feather")

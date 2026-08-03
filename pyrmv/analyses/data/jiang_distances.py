@@ -2,8 +2,8 @@
 
 import pandas as pd
 
-from analysis_neuro import terminology as terms
-from analysis_neuro.analyses.data import data_from_histogram
+from pyrmv import terminology as terms
+from pyrmv.analyses.data import data_from_histogram
 
 jiang_intersomatic_2015 = pd.DataFrame(
     {

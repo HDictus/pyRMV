@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from analysis_neuro import terminology as terms
-from analysis_neuro.stats import _iter_compare
+from pyrmv import terminology as terms
+from pyrmv.stats import _iter_compare
 
 
 def crossplot(data: pd.DataFrame, dependent: str, independent: List[str],
@@ -167,7 +167,6 @@ def wide_barplot(x: List[Any], y: List[float], hue: Optional[List[Any]]
     return sns.barplot(x=x, y=y, hue=hue, ax=axis)
 
 
-
 def pathway_barplot(data: pd.DataFrame, dependent: str,
                     independent: List[str], compare: str
                     ) -> Dict[str, plt.Figure]:
@@ -195,7 +194,8 @@ def pathway_barplot(data: pd.DataFrame, dependent: str,
 
     return figs
 
-def _barplot_for_pathway(pway, pway_group, dependent, compare):
+
+def _barplot_for_pathway(_pway, pway_group, dependent, compare):
     vertical_cols = [
         terms.MIN + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE,
         terms.MAX + terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
@@ -204,7 +204,7 @@ def _barplot_for_pathway(pway, pway_group, dependent, compare):
 
     ngroups = grouped_by_vertical_distance.ngroups
     if ngroups == 0:
-        return
+        return None
 
     fig, axes = plt.subplots(
         ngroups, 1, sharex=True, figsize=(8, 3 * ngroups)

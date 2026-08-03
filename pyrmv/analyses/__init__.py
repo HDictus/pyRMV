@@ -1,4 +1,5 @@
 """Collected analyses and validations."""
+# pylint: disable=fixme
 
 try:
     from importlib.resources import files
@@ -13,12 +14,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-import analysis_neuro.analyses.data.jiang_distances as jiangd
-from analysis_neuro import Analysis, plots, stats
-from analysis_neuro import terminology as terms
+import pyrmv.analyses.data.jiang_distances as jiangd
+from pyrmv import Analysis, plots, stats
+from pyrmv import terminology as terms
 
 
-DATADIR = files("analysis_neuro.analyses.data")
+DATADIR = files("pyrmv.analyses.data")
 
 
 ji_innervation_2016 = Analysis(
@@ -41,7 +42,7 @@ ji_relative_2016 = Analysis(
 
 lien_fraction_excitation_2018 = Analysis(
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.lien_2013"
+        "pyrmv.analyses.data.lien_2013"
     ).fraction_excitation,
     measurement=terms.FRACTION_EXCITATION_PER_CONNECTION,
     stats=stats.bootstrap_mean,
@@ -52,15 +53,16 @@ lien_fraction_excitation_2018 = Analysis(
 
 lien_thalamocortical_current_2013 = lien_fraction_excitation_2018.with_fields(
     doc="""
-    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013
-    This is likely to be an upper bound, as cortical silencing increases the activity of thalamocortical cells.
+    We evaluate the strength of thalamocortical exitation in L4PCs by comparing to Lien et al. 2013.
+    This is likely to be an upper bound, as cortical silencing increases the activity of
+    thalamocortical cells.
 
-    In the experiment Lien and Scanziani reported that the mean current recorded was independent of stimulus direction.
-    For this reason we only use one stimulus direction, so that models do not need to unnecessarily simulate
-    multiple.
+    In the experiment Lien and Scanziani reported that the mean current recorded was independent of
+    stimulus direction. For this reason we only use one stimulus direction, so that models do not
+    need to unnecessarily simulate multiple.
     """,
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.lien_2013"
+        "pyrmv.analyses.data.lien_2013"
     ).thalamocortical_current,
     measurement=terms.PATHWAY_CURRENT,
 )
@@ -79,7 +81,7 @@ lien_osi_fm_2013 = Analysis(
         terms.DATASET: 'Lien2013',
         terms.MTYPE: "PC",
         terms.STIMULUS: importlib.import_module(
-            "analysis_neuro.analyses.data.lien_2013"
+            "pyrmv.analyses.data.lien_2013"
         ).stimulus.pointer(),
         terms.RESPONSE_CLASS: "sON/tOFF",
     }),
@@ -185,7 +187,7 @@ campagnola_connprob_2022 = Analysis(
 
 psc_measurements = [
     terms.PSC_AMPLITUDE,
-    terms.PSC_RISE_TIME, 
+    terms.PSC_RISE_TIME,
     terms.PSC_DECAY_TAU,
     terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
     terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
@@ -221,7 +223,7 @@ campagnola_psc_rise_2022 = Analysis(
 
 psp_measurements = [
     terms.PSP_AMPLITUDE,
-    terms.PSP_RISE_TIME, 
+    terms.PSP_RISE_TIME,
     terms.PSP_DECAY_TAU,
     terms.HORIZONTAL + terms.INTERSOMATIC_DISTANCE,
     terms.VERTICAL + terms.INTERSOMATIC_DISTANCE
@@ -284,7 +286,9 @@ campagnola_stp_recovery_2022 = Analysis(
 )
 
 campagnola_ppd_2022 = Analysis(
-    observations=stp_data.drop(columns=[c for c in stp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]),
+    observations=stp_data.drop(
+        columns=[c for c in stp_measurements if c != terms.PAIRED_PULSE_DIFFERENCE]
+    ),
     measurement=terms.PAIRED_PULSE_DIFFERENCE,
     plotter=plots.pathway_barplot,
     stats=stats.mann_whitney_u,
@@ -293,36 +297,38 @@ campagnola_ppd_2022 = Analysis(
 
 
 def _region_violins(data, dependent, independent, compare):
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
     figures = {}
     for region, regiondata in data.groupby(terms.REGION):
-        figures[region] = plt.subplots(figsize=(10, 5))
+        f, a = plt.subplots(figsize=(10, 5))
+        figures[region] = f
         xdata = [', '.join([str(v) for v in row]) for row in regiondata[independent].values]
-        sns.violinplot(x=xdata, y=regiondata[dependent], hue=regiondata[compare])
+        sns.violinplot(ax=a, x=xdata, y=regiondata[dependent], hue=regiondata[compare])
     return figures
 
-siegle_osi_2019 = Analysis(
+
+siegle_osi_tf4_2021 = Analysis(
     doc="""
     We compare to the levels of orientation selectivity observed in
     Seigle et al. 2019""",
     measurement=terms.ORIENTATION_SELECTIVITY,
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2019"
+        "pyrmv.analyses.data.siegle_2021"
     ).osi,
     plotter=_region_violins,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
 
-siegle_spontaneous_2019 = Analysis(
+siegle_spontaneous_2021 = Analysis(
     doc="""
     We compare to the firing rate distribution for blank gray stimuli
-    observed in Siegle et al. 2019""",
+    observed in Siegle et al. 2021""",
     measurement=terms.FIRING_RATE,
-    observations=importlib.import_module(
-        "analysis_neuro.analyses.data.siegle_2019"
-    ).spontaneous,
-    plotter=_region_violins,
+    observations=pd.read_parquet(
+        files("pyrmv.analyses.data").joinpath("siegle_spont.parquet")
+    ),
+    plotter=sns.boxplot,
     stats=stats.mann_whitney_u,
     verdict=stats.PooledPValueThreshold(0.05),
 )
@@ -330,7 +336,7 @@ siegle_spontaneous_2019 = Analysis(
 
 ma_spontaneous_2010 = Analysis(
     observations=importlib.import_module(
-        "analysis_neuro.analyses.data.ma_2010"
+        "pyrmv.analyses.data.ma_2010"
     ).spontaneous,
     measurement=terms.FIRING_RATE,
     plotter=plots.hist,
@@ -351,7 +357,7 @@ pala_peterson_conprob_2015 = Analysis(
 
 
 def _cossell_respcorr(data, dependent, independent, compare=terms.DATASET, pct=7):
-    """Check whether 50% of psp strength is in 7% most correlated pairs"""
+    """Check whether 50% of psp strength is in 7% most correlated pairs."""
     # pylint: disable=too-many-locals,unused-argument
     hypotheses = {}
     n_pairs = 179 + 279 + 40 + 14 + 8
@@ -440,14 +446,14 @@ def _histogram_with_cossell_digitized(data, dependent, independent, compare):
         DATADIR.joinpath("cossell_response_correlation_2015.csv")
     ).values
     figs = plots.hist(data, dependent, independent, compare)
-    
+
     for _, fig in figs.items():
         ax = fig.gca()
         ref_x, ref_y = cossell_digitized[:, 0], cossell_digitized[:, 1]
         ref_y = ref_y / np.trapz(ref_y, ref_x)
         ax.plot(ref_x, ref_y, label="Cossell et al. 2015 (digitized)")
         ax.legend()
-    
+
     return figs
 
 

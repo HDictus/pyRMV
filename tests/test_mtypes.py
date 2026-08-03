@@ -1,4 +1,4 @@
-from analysis_neuro import mtypes
+from pyrmv import mtypes
 
 
 def test_resolve():

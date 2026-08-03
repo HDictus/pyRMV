@@ -1,5 +1,5 @@
 ================================
-Analysis-neuro (actual name TBD)
+PyRMV: Realist Model Validation
 ================================
 
 
@@ -16,67 +16,33 @@ When it comes to comparing different modeling approaches, the difference is even
 This library aims to be a growing, standardized library of neuroscientific validations.
 All model-specific details are abstracted away so that the validations can be applied to any model for which the validation is in its scope.
 This requires the construction of a ``Model`` object which manages the model's implementation details and maps its properties onto scientifically meaningful observables.
-For blue brain circuit models, see the `bluebrain-models <https://bbpgitlab.epfl.ch/circuits/personal/bluebrain-models>`_ library for an example.
+For blue brain circuit models, see the `bluebrain-models https://github.com/HDictus/bluebrain-models/tree/refactor-osi`_ library for an example.
 
-Although the primary purpose of the library is standardizing validations, in principle, any analysis involving scientifically meaningful properties can be constructed using it, and re-used across models.
+This framework is referred to as realist to distinguish it from operationalist validation. 
+In an operationalist approach, experimental results are defined by the experimental operations used to arrive at them.
+In a realist approach, the measurements made by the experiment are regarded as representing "real" properties.
+The two approaches are contrasted in the paper where this framework was introduced (TODO: link)
 
 Features
 ========
 
 The following features are provided to aid in the construction of standardized validations:
- - A module of standardized terminology (``analysis_neuro.terminology``).
+ - A module of standardized terminology (``pyrmv.terminology``).
  - The ``Analysis`` class, which can be initialized with standardized experimental data, statistical hypothesis tests, and plotter objects. This is subsequently called on ``Model`` objects.
- - Statistical hypothesis tests (``analysis_neuro.stats``) and plotting tools (``analysis_neuro.plots``).
- - A library of existing model validations (``analysis_neuro.analyses``).
+ - Statistical hypothesis tests (``pyrmv.stats``) and plotting tools (``pyrmv.plots``).
+ - A library of existing model validations (``pyrmv.analyses``).
 
 Usage
 =====
 
-An example analysis could be a calcium-depolarization scan in which we visualize the mean firing rates of different cell populations under different levels of depolarizing noise and calcium concentration.
-It can be defined with the ``Analysis`` (note that the plotter and several terms are not yet defined).
-
-.. code-block::
-   
-   from analysis_neuro import Analysis, plots, terms
-
-    def no_stuck_cells(data, **kw):
-        """Verify that all cells fire at sufficient depolarization and ca concentration"""
-        smallest_rates = data.groupby([terms.CA_CONCENTRATION, terms.PERCENT_DEPOLARIZATION]).min()
-        hypothesis = "At some level of depolarization and calcium concentration all neurons fire"
-        verdict = "Confirmed" if np.any(smallest_rates > 0) else "Unconfirmed"
-        return {hypothesis: verdict}
-
-    ca_dep_scan_l4PC = Analysis(
-       observations=ca_scan_parameters_df, # contains info such as Ca concentration, cell groups to measure. see below
-        measurement=terms.FIRING_RATE, # the real-world property to extract from the model
-        plotter=plots.HeatMap(horizontal=terms.CA_CONCENTRATION, vertical=terms.PERCENT_DEPOLARIZATION),
-        # plot the desired measurement with a heatmap across calcium concentration and percent depolarization
-        verdict=no_stuck_cells)
-
-
-In this case, observations will be a dataframe of the form:
-
-+---------------------------+------------------+-------+-------+
-| Ca concentration(mol/mm3) | % depolarization | layer | mtype |
-+===========================+==================+=======+=======+
-|                 0.1       |               0  | L4    | PC    |
-+---------------------------+------------------+-------+-------+
-|                 0.2       |               0  | L4    | PC    |
-+---------------------------+------------------+-------+-------+
-|                etc.       |                  |       |       |
-+---------------------------+------------------+-------+-------+
-
-
-Similarly, a new validation can be defined using the Analysis class: the difference being that 'observations' contains experimental data, and the hypothesis tested concerns the match between the model and experiment.
-
-
+A new validation can be defined using the Analysis class: the difference being that 'observations' contains experimental data, and the hypothesis tested concerns the match between the model and experiment.
 
 .. code-block::
 
-    from analysis_neuro import Analysis, stats, plots
+    from pyrmv import Analysis, stats, plots
     new_validation_name = Analysis(
        observations=pd.read_csv("path/to/experimental/data.csv"),
-       measurement=terms.CONNECITON_PROBABILITY, # the real-world property we are interested in
+       measurement=terms.CONNECTION_PROBABILITY, # the real-world property we are interested in
        plotter=plots.crossplot, # visualize the comparison with a crossplot
        stats=stats.binom_test, # use a binomial test to check whether the model's estimate matches the observed value
        verdict=stats.PValueThreshold(0.05)) # regard the validation as failed if the p-value is below 0.05
@@ -108,7 +74,7 @@ If no existing terminology is defined for a relevant variable, the user should d
 
 .. code-block::
 
-    # (inside analysis_neuro/terminology.py)
+    # (inside pyrmv/terminology.py)
     CONNECTION_PROBABILITY = Term(
          "connection probability",
          "The probability for a random pair of cells in a pathway to have at least one synapse between them",
@@ -149,7 +115,7 @@ For many forms of data, there are multiple measurements per combination of param
 +====================+===================+=====================+====================================+=========================+
 | VISp               | L23               | VISlm               |                               30   |                  3      |
 +--------------------+-------------------+---------------------+------------------------------------+-------------------------+
-| VISp               | L23               | VISlm               |                               30   |                  2     |
+| VISp               | L23               | VISlm               |                               30   |                  2      |
 +--------------------+-------------------+---------------------+------------------------------------+-------------------------+
 
 In this case, the parameters dataframe would turn out as.
@@ -163,7 +129,8 @@ In this case, the parameters dataframe would turn out as.
 Contributing
 ============
 
-All aspects of the library are open to modification as required by user needs.
+Don't contribute yet, WIP.
+
 Any new terminology required should be documented in the terminology module.
 Analyses created should be saved within the ``Analysis`` module, and must be a callable accepting one or more ``Model`` objects and returning a dict.
 
@@ -176,5 +143,5 @@ Testing strategy
 
 We rely on two levels of tests: the first is for whole analyses run on 'mock' models which provide fake data. This works best for analyses that test a hypothesis: provide data that you know will pass the hypothesis test in one case and test that the analysis does so, and pass data that you know will fail the hypothesis test and test that the analysis does so.
 
-The second is unit tests for any reusable or sufficiently complex abstractions created.
+The second is unit tests for any reusable or sufficiently complex methods created.
 
