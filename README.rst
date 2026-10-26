@@ -129,7 +129,7 @@ In this case, the parameters dataframe would turn out as.
 Contributing
 ============
 
-Don't contribute yet, WIP.
+Before contributing, please create an issue to discuss your intended contribution and how best to organize any additional modules needed.
 
 Any new terminology required should be documented in the terminology module.
 Analyses created should be saved within the ``Analysis`` module, and must be a callable accepting one or more ``Model`` objects and returning a dict.
