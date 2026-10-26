@@ -1,5 +1,5 @@
 """Fraction excitation measurement methods."""
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
 
 def from_connection_weights(model, parameters):
@@ -14,7 +14,7 @@ def from_connection_weights(model, parameters):
     Returns:
         DataFrame with fraction excitation per connection
     """
-    from analysis_neuro.measurements import measure
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
 
     edges = measure(model, terms.CONNECTION_WEIGHT, parameters)
     edges = edges[edges[terms.CONNECTION_WEIGHT] != 0]

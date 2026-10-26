@@ -1,5 +1,5 @@
 """
-Refined, simple test suite for analysis_neuro analyses.
+Refined, simple test suite for pyrmv analyses.
 
 This approach uses two universal model classes and pytest parameterization
 to eliminate code duplication while being accessible to scientist contributors.
@@ -9,10 +9,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import analysis_neuro.analyses as ana
-from analysis_neuro import Analysis, terms
+import pyrmv.analyses as ana
+from pyrmv import Analysis, terms
 
 rng = np.random.default_rng(1)
+
 
 class MockModel:
     """Universal mock model that returns constant/random values for all measurements."""

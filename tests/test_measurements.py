@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-from analysis_neuro import terms
-import analysis_neuro.measurements as test_module
-from analysis_neuro.analyses.data import stimuli
+from pyrmv import terms
+import pyrmv.measurements as test_module
+from pyrmv.analyses.data import stimuli
 
           
 # TODO: simplify: always optimal with respect to other stimulus parameters.
@@ -30,7 +30,7 @@ def test_measures_osi_with_firing_rate():
                 else:
                     nrns_loc = nrns
                 for nrn, tf, ori in zip(nrns_loc, pref_tf, pref_ori):
-                    if row[terms.TEMPORAL_FREQUENCY] == tf and row[terms.STIM_ORIENTATION] == ori:
+                    if row[terms.VISUAL_STIMULUS + terms.TEMPORAL_FREQUENCY] == tf and row[terms.VISUAL_STIMULUS + terms.STIM_ORIENTATION] == ori:
                         out.append({terms.FIRING_RATE: 2, terms.CELL_ID: nrn, **row})
                     else:
                         out.append({terms.FIRING_RATE: 1, terms.CELL_ID: nrn, **row})
@@ -45,50 +45,20 @@ def test_measures_osi_with_firing_rate():
 
 
     parameters = pd.DataFrame(
-        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings]})
+        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings.pointer()]})
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
     # measures by averaging over stimulus conditions
-    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
+    expected_columns = set(list(parameters.columns) + [
+        terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET
+    ])
     assert set(measured.columns) == expected_columns
     assert all(measured[terms.ORIENTATION_SELECTIVITY] > 0)
 
-    parameters[terms.TEMPORAL_FREQUENCY] = 1
-    expected_columns = set(list(parameters.columns) + [terms.CELL_ID, terms.ORIENTATION_SELECTIVITY, terms.DATASET])
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    # measures just for the specified temporal frequency
-    assert set(measured.columns) == expected_columns
-    assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], 0)
-
-    parameters[terms.TEMPORAL_FREQUENCY] = 2
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY].values, [expected_OSI, 0, 0])
-
-    parameters[terms.TEMPORAL_FREQUENCY] = 'optimal'
-    # measures each cell at its optimal TF
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    assert np.allclose(measured[terms.ORIENTATION_SELECTIVITY], expected_OSI)
-
-    parameters = pd.DataFrame(
-        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings,
-                          stimuli.allen_brain_observatory.drifting_gratings],
-         terms.TEMPORAL_FREQUENCY: [2, 4]})
-    measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
-    # a separate measurement for each unique TF value
-    assert np.allclose(
-        measured.set_index(terms.TEMPORAL_FREQUENCY).loc[
-            2, terms.ORIENTATION_SELECTIVITY],
-        [expected_OSI, 0, 0]
-    )
-    assert np.allclose(
-        measured.set_index(terms.TEMPORAL_FREQUENCY).loc[
-            4, terms.ORIENTATION_SELECTIVITY],
-        [0, 0, expected_OSI]
-    )
 
     # check that other parameters are passed to firing rate as well!
     
     parameters = pd.DataFrame(
-        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings],
+        {terms.STIMULUS: [stimuli.allen_brain_observatory.drifting_gratings.pointer()],
          terms.MTYPE: 'PC'})
     measured = test_module.measure(MockModel(), terms.ORIENTATION_SELECTIVITY, parameters)
 

@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 
 
 def from_pair_weights(model, parameters):
@@ -19,7 +19,7 @@ def from_pair_weights(model, parameters):
     Returns:
         DataFrame with fraction innervated and sample size
     """
-    from analysis_neuro.measurements import measure
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
 
     edges = measure(model, terms.PAIR_WEIGHT, parameters)
     edges['conn'] = edges[terms.PAIR_WEIGHT] > 0
@@ -42,7 +42,8 @@ def from_pair_weights(model, parameters):
 
 def from_connection_weights(model, parameters):
     """Measure FRACTION_INNERVATED from cell ids and connections."""
-    from analysis_neuro.measurements import measure, pre_post_params
+    from pyrmv.measurements import measure  # pylint: disable=import-outside-toplevel
+    from pyrmv.measurements import pre_post_params  # pylint: disable=import-outside-toplevel
     out = []
     for i, row in parameters.iterrows():
         _, post_params = pre_post_params(row)
@@ -52,6 +53,6 @@ def from_connection_weights(model, parameters):
         out.append({
             terms.FRACTION_INNERVATED: frac,
             terms.SAMPLE_SIZE: len(post_ids),
-             **row}
+            **row}
         )
     return pd.DataFrame(out)

@@ -1,4 +1,4 @@
-from analysis_neuro.terminology import Term, ALL_TERMS
+from pyrmv.terminology import Term, ALL_TERMS
 
 
 def test_terms_added_together_makes_string():

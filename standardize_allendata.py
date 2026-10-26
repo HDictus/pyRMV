@@ -1,6 +1,6 @@
 import pandas as pd
 cell_types_data = pd.read_csv("../cell_types_specimen_details.csv")
-from analysis_neuro import terminology as terms
+from pyrmv import terminology as terms
 standardized = pd.DataFrame()
 standardized[terms.LAYER] = ["L23" if l == "2/3" else f"L{l}" for l in cell_types_data.structure__layer]
 standardized[terms.REGION] = cell_types_data.structure_parent__acronym

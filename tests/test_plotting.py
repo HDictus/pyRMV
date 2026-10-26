@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-import analysis_neuro.terminology as terms
+import pyrmv.terminology as terms
 import matplotlib.pyplot as plt
-from analysis_neuro import plots
+from pyrmv import plots
 import pytest
 
 

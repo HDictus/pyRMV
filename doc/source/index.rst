@@ -24,10 +24,10 @@ Features
 ========
 
 The following features are provided to aid in the construction of standardized validations:
- - A module of standardized terminology (``analysis_neuro.terminology``).
+ - A module of standardized terminology (``pyrmv.terminology``).
  - The ``Analysis`` class, which can be initialized with standardized experimental data, statistical hypothesis tests, and plotter objects. This is subsequently called on ``Model`` objects.
- - Statistical hypothesis tests (``analysis_neuro.stats``) and plotting tools (``analysis_neuro.plots``).
- - A library of existing model validations (``analysis_neuro.analyses``).
+ - Statistical hypothesis tests (``pyrmv.stats``) and plotting tools (``pyrmv.plots``).
+ - A library of existing model validations (``pyrmv.analyses``).
 
 Usage
 =====
@@ -37,7 +37,7 @@ It can be defined with the ``Analysis`` (note that the plotter and several terms
 
 .. code-block::
    
-   from analysis_neuro import Analysis, plots, terms
+   from pyrmv import Analysis, plots, terms
 
     def no_stuck_cells(data, **kw):
         """Verify that all cells fire at sufficient depolarization and ca concentration"""
@@ -73,7 +73,7 @@ Similarly, a new validation can be defined using the Analysis class: the differe
 
 .. code-block::
 
-    from analysis_neuro import Analysis, stats, plots
+    from pyrmv import Analysis, stats, plots
     new_validation_name = Analysis(
        observations=pd.read_csv("path/to/experimental/data.csv"),
        measurement=terms.CONNECITON_PROBABILITY, # the real-world property we are interested in
@@ -108,7 +108,7 @@ If no existing terminology is defined for a relevant variable, the user should d
 
 .. code-block::
 
-    # (inside analysis_neuro/terminology.py)
+    # (inside pyrmv/terminology.py)
     CONNECTION_PROBABILITY = Term(
          "connection probability",
          "The probability for a random pair of cells in a pathway to have at least one synapse between them")

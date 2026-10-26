@@ -1,5 +1,5 @@
 import pandas as pd
-from analysis_neuro import terminology as terms
+from pyrmv import terminology as terms
 import numpy as np
 
 sm_edges = pd.read_csv("inhibitory_edgelist.csv")
@@ -95,5 +95,5 @@ nsyn[terms.CITATION] = 'schneider-mizell_cell-type_2024'
 connprob[terms.DATASET] = 'Schneider-Mizell2024'
 connprob[terms.CITATION] = 'schneider-mizell_cell-type_2024'
 
-nsyn.to_csv("../../../analysis_neuro/analyses/data/schneider-mizell-nsyn.csv")
-connprob.to_csv("../../../analysis_neuro/analyses/data/schneider-mizell-connprob.csv")
+nsyn.to_csv("../../../pyrmv/analyses/data/schneider-mizell-nsyn.csv")
+connprob.to_csv("../../../pyrmv/analyses/data/schneider-mizell-connprob.csv")

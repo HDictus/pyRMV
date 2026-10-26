@@ -1,6 +1,6 @@
-"""Data extracted from @ma_visual_2010"""
+"""Data extracted from @ma_visual_2010."""
 import pandas as pd
-from analysis_neuro import terminology as terms
+from pyrmv import terminology as terms
 
 spontaneous = pd.DataFrame(
     {
@@ -23,17 +23,13 @@ spontaneous = pd.DataFrame(
         terms.REGION: "VISp",
         terms.GENE_EXPRESSION: ["Sst", "Pvalb", "Sst", "Pvalb"],
         terms.DATASET: "Ma2010",
-        terms.STIMULUS: pd.DataFrame(
-            {
-                terms.VISUAL_STIMULUS: "gray",
-                terms.ANGLE_AZIMUTH: [(-120, 120)],
-                terms.ANGLE_ELEVATION: [(-60, 60)],
-            }
-        ).pointer(),
+        terms.VISUAL_STIMULUS: "gray",
+        terms.VISUAL_STIMULUS + terms.ANGLE_AZIMUTH: pd.Interval(10, 80),
+        terms.VISUAL_STIMULUS + terms.ANGLE_ELEVATION: pd.Interval(-27, 27),
         terms.NOTES: "Manually digitized from Figure 1F."
     }
 )
-# std ysed error bar locations - so must subtract the mean
+# std was based on error bar locations - so must subtract the mean to get it
 spontaneous[terms.STD + terms.FIRING_RATE] -= spontaneous[
     terms.MEAN + terms.FIRING_RATE
 ]

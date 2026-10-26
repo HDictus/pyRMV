@@ -11,6 +11,7 @@ with terms that represent a measured quality.
 e.g. terminology.measurements[terminology.CONNECTION_PROBABILITY]
 -> {'method name': 'connection_probability'}
 """
+# pylint: disable=fixme
 
 ALL_TERMS = {}
 
@@ -76,7 +77,7 @@ MTYPE = Term(
     "mtype",
     description=(
         "Morphological type as a capitalized string, e.g. L1_SAC, L23_CHC, PC, LBC."
-        " See analysis_neuro.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
+        " See pyrmv.mtypes.SUPPORTED_MTYPE_LABELS to see possible values"
     ),
 )
 
@@ -114,9 +115,12 @@ GENE_EXPRESSION = Term(
     description=("Gene that the cell expresses." "For example: PV, Sst, Vip"),
 )
 SPIKING_CLASS = Term(
-    "spiking class", description=("Spiking class of a neuron, eiher FS or RS")
+    "spiking class",
+    description=(
+        "Spiking class of a neuron, either FS or RS"
+        "denoting fast-spiking and regular-spiking respectively"
+    )
 )
-
 CELL_DENSITY = Term(
     "cell density ($cells/mm^3$)",
     description="Number of cells per cubic millimetre",
@@ -209,29 +213,49 @@ PATHWAY_CURRENT = Term(
 
 STIMULUS = Term(
     "stimulus",
-    description="Set of stimuli shown to a subject. Add stimuli to analysis_neuro.stimuli "
+    description="Set of stimuli shown to a subject. Add stimuli to pyrmv.stimuli "
     "and refer to their name with this parameter. For example, if an animal is shown the allen"
     " institute's brain observatory drifting gratings stimulus this may be "
     ' "brain_observatory 1.1drifting gratings"',
 )
 
 VISUAL_STIMULUS = Term(
-    "visual stimulus type",
-    description="The type of visual stimulus used in an experiment. "
-    "See stimuli.py for stimuli associated with different datasets.",
+    "visual stimulus ",
+    description=(
+        "Visual stimulus used. When used directly, designates the type of stimulus "
+        "('gray', 'sinusoidal grating', 'bar grating', 'natural images')."
+        " When used as a prefix, indicates that the"
+        "succeeding term describes a property of a visual stimulus, "
+        "such as contrast or orientation"
+    )
+)
+
+DURATION = Term(
+    "duration (ms)",
+    description=(
+        "Duration of some event, such as a stimulus."
+    )
+)
+
+SPIKE_RECORDING_METHOD = Term(
+    "spike recording method",
+    description=(
+        "The method by which neuron spikes are recorded. "
+        "E.G. 'extracellular', 'cell-attached' or 'whole-cell."
+    )
 )
 
 ANGLE_AZIMUTH = Term(
     "stimulus width (degrees)",
     description=(
-        "A tuple: the range of horizontal angles that the stimulus covers"
+        "An interval: the range of horizontal angles that the stimulus covers"
         " in the visual field"
     ),
 )
 ANGLE_ELEVATION = Term(
     "stimulus height (degrees)",
     description=(
-        "A tuple: the range of vertical angles that the stimulus covers"
+        "An interval: the range of vertical angles that the stimulus covers"
         " in the visual field."
     ),
 )
@@ -328,18 +352,25 @@ NUM_SYNAPSES = Term(
 )
 FRACTION_EXCITATION_PER_CONNECTION = Term(
     "Fraction excitation (per connection)",
-    description="The fraction that each connection contributes to the total excitation along a pathway",
+    description=(
+        "The fraction that each connection contributes to the total excitation along a pathway"
+    ),
     measurement_method="fraction_excitation_per_connection",
 )
 
 TOTAL_EXCITATION = Term(
     "total excitation (nA)",
-    description="Total excitatory current from a presynaptic population into postsynaptic neurons during stimulation",
+    description=(
+        "Total excitatory current from a presynaptic population into postsynaptic neurons"
+        " during stimulation"
+    ),
     measurement_method="total_excitation",
 )
 RELATIVE_EXCITATION = Term(
     "relative excitation",
-    "The relative strength of excitatory current from a presynaptic population to postsynaptic cells. For a given set of measurements, relative excitation should be scaled so that the mean is 1.",
+    ("The relative strength of excitatory current from a presynaptic population to postsynaptic"
+     " cells. For a given set of measurements, relative excitation should be scaled so that the"
+     " mean is 1."),
     measurement_method="relative_excitation",
 )
 RELATIVE_TO = Term(
@@ -351,23 +382,29 @@ SILENCED = Term(
     "silenced ",
     description=(
         "prefix indicating a cell group was silenced, i.e. prevented from spiking. "
-        "For instance, terms.SILENCED + terms.REGION : 'VISp' indicates that cells in primary visual cortex were prevented from spiking."
+        "For instance, terms.SILENCED + terms.REGION : 'VISp' indicates that cells in"
+        " primary visual cortex were prevented from spiking."
     ),
 )
 
 PSP_AMPLITUDE = Term(
     "PSP amplitude (mV)",
-    description="The size of the change in potential of a post-synaptic cell when the presynaptic cell is stimulated",
+    description=(
+        "The size of the change in potential of a post-synaptic cell when the presynaptic"
+        " cell is stimulated"
+    ),
     measurement_method="psp_amplitude",
 )
 
 HORIZONTAL = Term(
     "Horizontal ",
-    "Perpendicular to the principal axis of a brain region. In cortex, this is perpendicular to WM-pia axis."
+    "Perpendicular to the principal axis of a brain region. In cortex, this is perpendicular"
+    " to WM-pia axis."
 )
 VERTICAL = Term(
     "Vertical ",
-    "Parallel to the principal axis of a brain region. In cortex, this is parallel to WM-pia axis."
+    "Parallel to the principal axis of a brain region. In cortex, this is parallel to"
+    " WM-pia axis."
 )
 
 # TODO: these values are median across trials : that is something we need to be able to communicate!
@@ -376,30 +413,35 @@ PAIRED_PULSE_DIFFERENCE = Term(
     "Paired pulse difference",
     ("median difference first and second psp in burst"
      "normalized by 90th percentile of PSP amplitude. "
-     "see https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"
+     "see https://portal.brain-map.org/explore/connectivity/synaptic-physiology/"
+     "synaptic-physiology-analysis-methods/synapse-characterization#stp"
      ),
-     measurement_method='paired_pulse_difference'
+    measurement_method='paired_pulse_difference'
 )
 
-# TODO: there are details on this property, like the percentile used to normalize and the number of end pulses to average
-#  that may be different in other experiments measuring the same thing.
-#  these should  be split into other parameters and their relationship to STP induction made clear.
-#  maybe like STP_INDUCTION + END_SPIKE_NUMBERS?
-#  There should be a public method that measures STP induction and applies the relevant parameter-dependent computations
+# TODO: there are details on this property, like the percentile used to normalize and the
+#  number of end pulses to average that may be different in other experiments measuring the
+#  same thing. These should be split into other parameters and their relationship to STP
+#  induction made clear. Maybe like STP_INDUCTION + END_SPIKE_NUMBERS?
+#  There should be a public method that measures STP induction and applies the relevant
+#  parameter-dependent computations
 STP_INDUCTION = Term(
     "stp induction",
-    ("The median difference between PSP amplitude on the first, and last three spikes of a burst of pulses, normalized by 90th percentile of PSP amplitude. "
-     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"),
-     measurement_method='stp_induction'
+    ("The median difference between PSP amplitude on the first, and last three spikes of a"
+     " burst of pulses, normalized by 90th percentile of PSP amplitude. "
+     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/"
+     "synaptic-physiology-analysis-methods/synapse-characterization#stp"),
+    measurement_method='stp_induction'
 )
 # TODO: perhaps the documentation on these could be more extensive?
 STP_RECOVERY = Term(
     "stp recovery",
-    ("The median difference between PSP amplitude on the first four pulses of two spike trains separated by an interval, normalized by the 90th percentile of PSP amplitude. ",
-     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/synaptic-physiology-analysis-methods/synapse-characterization#stp"),
-     measurement_method='stp_recovery'
+    ("The median difference between PSP amplitude on the first four pulses of two spike"
+     " trains separated by an interval, normalized by the 90th percentile of PSP amplitude. ",
+     "See https://portal.brain-map.org/explore/connectivity/synaptic-physiology/"
+     "synaptic-physiology-analysis-methods/synapse-characterization#stp"),
+    measurement_method='stp_recovery'
 )
-
 
 
 PSC_AMPLITUDE = Term(
@@ -440,8 +482,9 @@ HOLDING_POTENTIAL = Term(
     "Holding potential (mV)",
     ("Potential at which a neuron recorded from in an experiment. "
      "Not to be confused with voltage clamp, which fixes the voltage by adapting the current. "
-     "Holding a cell involves injecting a fixed amount of current that brings a neuron to a given potential."
-     "The current is then not adapted, and so the potential can change with other sources.")
+     "Holding a cell involves injecting a fixed amount of current that brings a neuron to a"
+     " given potential. The current is then not adapted, and so the potential can change with"
+     " other sources.")
 )
 
 # TODO: distinguish connection and synaptic conductance
@@ -453,7 +496,8 @@ SYNAPTIC_CONDUCTANCE = Term(
 
 PAIR_WEIGHT = Term(
     "pair weight",
-    "Unitless measure of the connection weight between pairs of neurons. Includes 0 for unconnected pairs of neurons.",
+    ("Unitless measure of the connection weight between pairs of neurons."
+     " Includes 0 for unconnected pairs of neurons."),
     measurement_method='pair_weight'
 )
 CONNECTION_WEIGHT = Term(
@@ -478,7 +522,8 @@ NUM_PULSES = Term(
 
 INTERBURST_INTERVAL = Term(
     "Interburst interval",
-    "Interval between bursts in a stimulus protocol, for instance to measure recovery from synaptic depression."
+    ("Interval between bursts in a stimulus protocol, for instance to measure recovery"
+     " from synaptic depression.")
 )
 
 NUM_BURSTS = Term(
@@ -500,7 +545,9 @@ RESPONSE_CORRELATION = Term(
 
 INCLUDE_UNCONNECTED = Term(
     "include unconnected",
-    description="Whether unconnected pairs of cells are included as zeros in a connectivity measurement.",
+    description=(
+        "Whether unconnected pairs of cells are included as zeros in a connectivity measurement."
+    ),
 )
 
 ORIENTATION_PREFERENCE_DIFFERENCE = Term(
@@ -525,7 +572,10 @@ RF_AREA = Term(
 
 FIRING_RATE = Term(
     "firing rate (Hz)",
-    description=("Rate of firing under the experimental conditions, in Hertz"),
+    description=(
+        "Rate of neuronal firing during a time window,"
+        " spikes/second"
+    ),
     measurement_method="firing_rate",
 )
 
@@ -581,20 +631,30 @@ MEAN = Term("mean ", description="Prefix to apply to specify a mean value")
 
 CURRENT_FM_AMPLITUDE = Term(
     "Frequency modulation amplitude",
-    description="The extent to which the current entering a cell along a particular pathway is modulated at the stimulus temporal frequency",
+    description=(
+        "The extent to which the current entering a cell along a particular pathway is"
+        " modulated at the stimulus temporal frequency"
+    ),
     measurement_method="current_fm_amplitude"
 )
 
 OSI_CURRENT_FM = Term(
     "OSI frequency modulation",
-    description="The extent to which the level of frequency modulation (CURRENT_FM_AMPLITUDE) is modulated by the stimulus orientation",
+    description=(
+        "The extent to which the level of frequency modulation (CURRENT_FM_AMPLITUDE) is"
+        " modulated by the stimulus orientation"
+    ),
     measurement_method="osi_current_fm"
 )
 
 RESPONSE_CLASS = Term(
     "response class",
-    description="Type of responses to visual stimuli. Can be sON, sOFF, tOFF, or some combination like sON/tOFF",
+    description=(
+        "Type of responses to visual stimuli. Can be sON, sOFF, tOFF, or some combination"
+        " like sON/tOFF"
+    ),
 )
+
 
 def describe(*terms):
     """Describe the given terms, or all terms if nothing passed."""

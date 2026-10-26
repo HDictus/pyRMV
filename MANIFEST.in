@@ -1,1 +1,2 @@
 include analysis_neuro/analyses/data/*.csv
+include analysis_neuro/analyses/data/*.parquet
