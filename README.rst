@@ -16,7 +16,7 @@ When it comes to comparing different modeling approaches, the difference is even
 This library aims to be a growing, standardized library of neuroscientific validations.
 All model-specific details are abstracted away so that the validations can be applied to any model for which the validation is in its scope.
 This requires the construction of a ``Model`` object which manages the model's implementation details and maps its properties onto scientifically meaningful observables.
-For blue brain circuit models, see the `bluebrain-models https://github.com/HDictus/bluebrain-models/tree/refactor-osi`_ library for an example.
+For blue brain circuit models, see https://github.com/HDictus/bluebrain-models/tree/refactor-osi  for an example.
 
 This framework is referred to as realist to distinguish it from operationalist validation. 
 In an operationalist approach, experimental results are defined by the experimental operations used to arrive at them.
@@ -129,7 +129,7 @@ In this case, the parameters dataframe would turn out as.
 Contributing
 ============
 
-Don't contribute yet, WIP.
+Before contributing, please create an issue to discuss your intended contribution and how best to organize any additional modules needed.
 
 Any new terminology required should be documented in the terminology module.
 Analyses created should be saved within the ``Analysis`` module, and must be a callable accepting one or more ``Model`` objects and returning a dict.
